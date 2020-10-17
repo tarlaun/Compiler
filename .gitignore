@@ -1,3 +1,10 @@
+*.in
+*.out
+*.sh
+comp.py
+main.cpp
+main.py
+main.java
 # Prerequisites
 *.d
 
