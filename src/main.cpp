@@ -23,6 +23,9 @@ int main(int argc, char* argv[]){
     
     yyin = fopen(input_file_path.c_str(), "r");
     yyout = fopen(output_file_path.c_str(), "w");
-    yylex()
+    yylex();
+    fclose(yyin);
+    fclose(yyout);
+    
     
 }
