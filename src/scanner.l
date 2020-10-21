@@ -2,12 +2,10 @@
 #undef yywrap
 #define yywrap() 1
 #include <stdio.h>
-
 %}
 
 delim [ \t\n\s\r]
 whiteSpace {delim}+
-
 boolVal true|false
 reservedWord void|int|double|bool|string|class|interface|null|this|extends|implements|for|while|if|else|return|break|continue|new|NewArray|Print|ReadInteger|ReadLine|dtoi|itod|btoi|itob|private|protected|public
 letter [A-Za-z]
@@ -23,18 +21,15 @@ simpleDouble {digit}+\.{digit}*
 scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
 
-
 %%
 
-{delim} {
-
-}
+{delim} {}
 
 "/*" {
 	char c;
 	while(1){	
-		while(c=input()!='*');
-		if(c=input()=='/')
+		while(c=input() != '*');
+		if(c=input() == '/')
 			break;		
 	}
 }
@@ -45,45 +40,40 @@ double {simpleDouble}|{scientificDouble}
 }
 
 {reservedWord} {
-	fprintf(yyout, "%s\n",yytext);
+	fprintf(yyout, "%s\n", yytext);
 }
 
 
 {integer} {
-	fprintf(yyout, "T_INTLITERAL %s\n",yytext);
+	fprintf(yyout, "T_INTLITERAL %s\n", yytext);
 }
 
 {doubleSign} {
-	fprintf(yyout, "%s\n",yytext);
+	fprintf(yyout, "%s\n", yytext);
 }
 
 {sign} {
-	fprintf(yyout,"%s\n",yytext);
+	fprintf(yyout,"%s\n", yytext);
 }
 
 {double} {
-	fprintf(yyout,"T_DOUBLELITERAL %s\n",yytext);
+	fprintf(yyout, "T_DOUBLELITERAL %s\n", yytext);
 }
 
 {string} {
-	fprintf(yyout,"T_STRINGLITERAL %s\n",yytext);
+	fprintf(yyout, "T_STRINGLITERAL %s\n", yytext);
 }
 
 {boolVal} {
-	fprintf(yyout,"T_BOOLEANLITERAL %s\n",yytext );
+	fprintf(yyout, "T_BOOLEANLITERAL %s\n", yytext );
 }
 {id} {
-	fprintf(yyout,"T_ID %s\n",yytext);
+	fprintf(yyout, "T_ID %s\n", yytext);
 }
-
-
-
-
 
 %%
 
-int main()
-{
-		yylex();
+int main(){
+	yylex();
 	return 0;
 }
