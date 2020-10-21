@@ -4,7 +4,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "lex.yy.h"
 using namespace std ;
 
 extern FILE *yyin,*yyout;
@@ -20,8 +20,9 @@ int main(int argc, char* argv[]){
 
     ofstream output_file(output_file_path);
     ifstream input_file;
-    fprintf(yyout, "s");
+    
     yyin = fopen(input_file_path.c_str(), "r");
     yyout = fopen(output_file_path.c_str(), "w");
+    yylex()
     
 }

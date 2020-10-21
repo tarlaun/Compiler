@@ -1,9 +1,11 @@
+%option noyywrap
+%option header-file="lex.yy.h"
 %{
-#undef yywrap
-#define yywrap() 1
-#include <stdio.h>
-%}
+#include <iostream>
 
+#define YY_DECL int yylex()
+%}
+%%
 delim [ \t\n\s\r]
 whiteSpace {delim}+
 boolVal true|false
@@ -21,7 +23,7 @@ simpleDouble {digit}+\.{digit}*
 scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
 
-%%
+
 
 {delim} {}
 
@@ -72,8 +74,3 @@ double {simpleDouble}|{scientificDouble}
 }
 
 %%
-
-int main(){
-	yylex();
-	return 0;
-}
