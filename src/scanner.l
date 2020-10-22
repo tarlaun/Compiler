@@ -1,10 +1,11 @@
 %option noyywrap
 %option header-file="lex.yy.h"
+
 %{
 #include <iostream>
-
 #define YY_DECL int yylex()
 %}
+
 %%
 delim [ \t\n\s\r]
 whiteSpace {delim}+
@@ -13,7 +14,7 @@ reservedWord void|int|double|bool|string|class|interface|null|this|extends|imple
 letter [A-Za-z]
 digit [0-9]
 id {letter}({letter}|_|{digit})*
-string \".*\"
+string (\".*\")
 decimalInteger {digit}+
 hexInteger 0(x|X)[0-9a-fA-F]+
 integer {hexInteger}|{decimalInteger}
@@ -22,12 +23,11 @@ sign [+\-\*/\%<>={\|\|}\!;,\.\[\]\(\)]
 simpleDouble {digit}+\.{digit}*
 scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
+%% 
 
+{whiteSpace};
 
-
-{delim} {}
-
-"/*" {
+"\/\*" {
 	char c;
 	while(1){	
 		while(c=input() != '*');
@@ -36,7 +36,7 @@ double {simpleDouble}|{scientificDouble}
 	}
 }
 
-"//" {
+"\/\/" {
 	char c;
 	while((c = input()) != '\n');
 }
@@ -73,4 +73,6 @@ double {simpleDouble}|{scientificDouble}
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
 
-%%
+int main(){
+	 return yylex()
+}
