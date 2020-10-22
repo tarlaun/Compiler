@@ -6,7 +6,7 @@
 #define YY_DECL int yylex()
 %}
 
-%%
+
 delim [ \t\n\s\r]
 whiteSpace {delim}+
 boolVal true|false
@@ -23,8 +23,8 @@ sign [+\-\*/\%<>={\|\|}\!;,\.\[\]\(\)]
 simpleDouble {digit}+\.{digit}*
 scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
-%% 
 
+%%
 {whiteSpace};
 
 "\/\*" {
@@ -72,7 +72,8 @@ double {simpleDouble}|{scientificDouble}
 {id} {
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
+%%
 
 int main(){
-	 return yylex()
+	yylex();
 }
