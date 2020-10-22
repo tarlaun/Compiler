@@ -68,7 +68,3 @@ comment  {comment1}|{comment2}
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
 %%
-
-int main(){
-	yylex();
-}
