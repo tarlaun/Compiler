@@ -8,33 +8,43 @@
 
 delim [ \t\n\s\r]
 whiteSpace {delim}+
+
 boolVal true|false
+
 reservedWord void|int|double|bool|string|class|interface|null|this|extends|implements|for|while|if|else|return|break|continue|new|NewArray|Print|ReadInteger|ReadLine|dtoi|itod|btoi|itob|private|protected|public
+
 letter [A-Za-z]
 digit [0-9]
 id {letter}({letter}|_|{digit})*
-string (\".*\")
+
+str (\".*\")
+
 decimalInteger {digit}+
 hexInteger 0(x|X)[0-9a-fA-F]+
 integer {hexInteger}|{decimalInteger}
+
 doubleSign ==|!=|<=|>=|!=|(\&\&)|(\|\|)
+
 sign [+\-\*/\%<>={\|\|}\!;,\.\[\]\(\)]
+
 simpleDouble {digit}+\.{digit}*
 scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
+
 commentStart \/\/
 comment {commentStart}.*
 anyChar .
+undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&!{sign}&!{boolVal}&!{id}&!{doubleSign}
 
 %x COM
 
 %%
-{whiteSpace} {
+{whiteSpace};
 
-}
+{comment};
 
-{comment} {
-
+{reservedWord} {
+	fprintf(yyout, "%s\n", yytext);
 }
 
 "/*" {
@@ -49,9 +59,7 @@ anyChar .
 
 }
 
-{reservedWord} {
-	fprintf(yyout, "%s\n", yytext);
-}
+
 
 
 {integer} {
@@ -70,7 +78,7 @@ anyChar .
 	fprintf(yyout, "T_DOUBLELITERAL %s\n", yytext);
 }
 
-{string} {
+{str} {
 	fprintf(yyout, "T_STRINGLITERAL %s\n", yytext);
 }
 
@@ -81,8 +89,4 @@ anyChar .
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
 
-{anyChar} {
-	fprintf(yyout,"UNDEFINED_TOKEN\n");
-	yyterminate();
-}
 %%
