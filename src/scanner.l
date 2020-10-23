@@ -1,5 +1,6 @@
 %option noyywrap
 %option header-file="lex.yy.h"
+
 %{
 #include <iostream>
 #define YY_DECL int yylex()
@@ -32,20 +33,33 @@ scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
 
 commentStart \/\/
-comment {commentStart}.*
-anyChar .
+
+anyChar .*
+anyCharN .
 undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&!{sign}&!{boolVal}&!{id}&!{doubleSign}
 
-%x COM
+%x COM SCO
 
 %%
 {whiteSpace};
 
-{comment};
 
 {reservedWord} {
 	fprintf(yyout, "%s\n", yytext);
 }
+
+{commentStart} {
+	BEGIN(SCO);
+}
+
+<SCO>"\n" {
+	BEGIN(INITIAL);
+}
+
+<SCO>{anyChar} {
+
+}
+
 
 "/*" {
 	BEGIN(COM);
@@ -55,7 +69,7 @@ undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&
 	BEGIN(INITIAL);
 }
 
-<COM>{anyChar} {
+<COM>{anyCharN} {
 
 }
 
@@ -90,3 +104,4 @@ undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&
 }
 
 %%
+
