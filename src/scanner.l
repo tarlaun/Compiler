@@ -105,10 +105,6 @@ undef .|\n
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
 
-{undef}  {  
-	fprintf(yyout , "UNDEFINED_TOKEN\n");
-	yyterminate();
-}
 
 %%
 
