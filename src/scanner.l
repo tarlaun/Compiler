@@ -33,15 +33,17 @@ scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
 
 commentStart \/\/
+css \/\*
 
 anyChar .*
 anyCharN .
-undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&!{sign}&!{boolVal}&!{id}&!{doubleSign}
-
-%x COM SCO
+undef .|\n
+%x COM SCOM
 
 %%
-{whiteSpace};
+{whiteSpace} {
+
+}
 
 
 {reservedWord} {
@@ -49,10 +51,10 @@ undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&
 }
 
 {commentStart} {
-	BEGIN(SCO);
+	BEGIN(SCOM);
 }
 
-<SCO>"\n" {
+<SCOM>"\n" {
 	BEGIN(INITIAL);
 }
 
@@ -101,6 +103,11 @@ undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&
 }
 {id} {
 	fprintf(yyout, "T_ID %s\n", yytext);
+}
+
+{undef}  {  
+	fprintf(yyout , "UNDEFINED_TOKEN\n");
+	yyterminate();
 }
 
 %%
