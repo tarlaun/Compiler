@@ -6,7 +6,7 @@
 %}
 
 
-delim [ \t\n\s\r]
+delim [ \t\n\f\r]
 whiteSpace {delim}+
 
 boolVal true|false
@@ -32,7 +32,9 @@ anyCharN .
 undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&!{sign}&!{boolVal}&!{id}&!{doubleSign}
 %x COM SCO
 %%
-{whiteSpace};
+{whiteSpace} {
+
+}
 {reservedWord} {
 	fprintf(yyout, "%s\n", yytext);
 }
@@ -74,5 +76,11 @@ undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
 
+{anyCharN} {
+	fprintf(yyout, "UNDEFINED_TOKEN\n");
+	yyterminate();
+}
+
 
 %%
+
