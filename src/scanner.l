@@ -74,8 +74,5 @@ undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
 
-{anyCharN} {
-	fprintf(yyout , "UNDEFINED_TOKEN\n");
-	yyterminate();
-}
+
 %%
