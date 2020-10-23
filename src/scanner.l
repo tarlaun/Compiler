@@ -23,18 +23,23 @@ sign [+\-\*/\%<>={\|\|}\!;,\.\[\]\(\)]
 simpleDouble {digit}+\.{digit}*
 scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
-commentStart1 \/\*
-commentEnd \*\/
-commentStart2 \/\/
-
-comment1 {commentStart1}[^commentEnd]{commentEnd}
-comment2 {commentStart2}.*
-comment  {comment1}|{comment2}
+commentStart \/\/
+comment {commentStart}.*
+anyChar .
+%x COM
 
 %%
 {whiteSpace};
 
 {comment};
+
+"/*" BEGIN(COM);
+
+<COM> "*/"{
+	BEGIN(INITIAL);
+}
+
+<COM>{anyChar};
 
 {reservedWord} {
 	fprintf(yyout, "%s\n", yytext);
