@@ -29,9 +29,13 @@ anyChar .
 %x COM
 
 %%
-{whiteSpace};
+{whiteSpace} {
 
-{comment};
+}
+
+{comment} {
+
+}
 
 "/*" {
 	BEGIN(COM);
