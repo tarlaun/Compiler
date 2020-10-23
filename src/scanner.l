@@ -1,6 +1,5 @@
 %option noyywrap
 %option header-file="lex.yy.h"
-
 %{
 #include <iostream>
 #define YY_DECL int yylex()
@@ -26,6 +25,7 @@ double {simpleDouble}|{scientificDouble}
 commentStart \/\/
 comment {commentStart}.*
 anyChar .
+
 %x COM
 
 %%
@@ -33,13 +33,17 @@ anyChar .
 
 {comment};
 
-"/*" BEGIN(COM);
+"/*" {
+	BEGIN(COM);
+}
 
-<COM> "*/"{
+<COM>"*/" {
 	BEGIN(INITIAL);
 }
 
-<COM>{anyChar};
+<COM>{anyChar} {
+
+}
 
 {reservedWord} {
 	fprintf(yyout, "%s\n", yytext);
@@ -71,5 +75,10 @@ anyChar .
 }
 {id} {
 	fprintf(yyout, "T_ID %s\n", yytext);
+}
+
+{anyChar} {
+	fprintf(yyout,"UNDEFINED_TOKEN\n");
+	yyterminate();
 }
 %%
