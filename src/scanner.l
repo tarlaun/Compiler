@@ -1,6 +1,5 @@
 %option noyywrap
 %option header-file="lex.yy.h"
-
 %{
 #include <iostream>
 #define YY_DECL int yylex()
@@ -19,85 +18,55 @@ digit [0-9]
 id {letter}({letter}|_|{digit})*
 
 str (\".*\")
-
 decimalInteger {digit}+
 hexInteger 0(x|X)[0-9a-fA-F]+
 integer {hexInteger}|{decimalInteger}
-
 doubleSign ==|!=|<=|>=|!=|(\&\&)|(\|\|)
-
 sign [+\-\*/\%<>={\|\|}\!;,\.\[\]\(\)]
-
 simpleDouble {digit}+\.{digit}*
 scientificDouble {simpleDouble}(e|E)(\+|-)?{decimalInteger}
 double {simpleDouble}|{scientificDouble}
-
 commentStart \/\/
-css \/\*
-
 anyChar .*
 anyCharN .
-undef .|\n
-%x COM SCOM
-
+undef !{reservedWord}&!{whiteSpace}&!{double}!{integer}&!{comment}&!\/\*&!{str}&!{sign}&!{boolVal}&!{id}&!{doubleSign}
+%x COM SCO
 %%
-{whiteSpace} {
-
-}
-
-
+{whiteSpace};
 {reservedWord} {
 	fprintf(yyout, "%s\n", yytext);
 }
-
 {commentStart} {
-	BEGIN(SCOM);
+	BEGIN(SCO);
 }
-
-<SCOM>"\n" {
+<SCO>"\n" {
 	BEGIN(INITIAL);
 }
-
 <SCO>{anyChar} {
-
 }
-
-
 "/*" {
 	BEGIN(COM);
 }
-
 <COM>"*/" {
 	BEGIN(INITIAL);
 }
-
 <COM>{anyCharN} {
-
 }
-
-
-
-
 {integer} {
 	fprintf(yyout, "T_INTLITERAL %s\n", yytext);
 }
-
 {doubleSign} {
 	fprintf(yyout, "%s\n", yytext);
 }
-
 {sign} {
 	fprintf(yyout,"%s\n", yytext);
 }
-
 {double} {
 	fprintf(yyout, "T_DOUBLELITERAL %s\n", yytext);
 }
-
 {str} {
 	fprintf(yyout, "T_STRINGLITERAL %s\n", yytext);
 }
-
 {boolVal} {
 	fprintf(yyout, "T_BOOLEANLITERAL %s\n", yytext );
 }
@@ -105,6 +74,8 @@ undef .|\n
 	fprintf(yyout, "T_ID %s\n", yytext);
 }
 
-
+{anyCharN} {
+	fprintf(yyout , "UNDEFINED_TOKEN\n");
+	yyterminate();
+}
 %%
-
