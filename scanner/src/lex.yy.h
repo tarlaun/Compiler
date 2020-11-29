@@ -209,6 +209,8 @@ extern char *yytext;
 
 #ifdef YY_HEADER_EXPORT_START_CONDITIONS
 #define INITIAL 0
+#define COM 1
+#define SCO 2
 
 #endif
 
@@ -312,9 +314,9 @@ extern int yylex (void);
 #undef YY_DECL
 #endif
 
-#line 70 "scanner.l"
+#line 85 "scanner.l"
 
 
-#line 319 "lex.yy.h"
+#line 321 "lex.yy.h"
 #undef yyIN_HEADER
 #endif /* yyHEADER_H */
