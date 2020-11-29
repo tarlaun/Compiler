@@ -17,9 +17,9 @@ def main(argv):
             outputfile = arg
     with open("tests/" + inputfile, "r") as input_file:
         passed = True
-        from src.parser import decaf_parser
         test = input_file.read()
         try:
+            from src.parser import decaf_parser
             decaf_parser.parse(test)
         except:
             passed = False
