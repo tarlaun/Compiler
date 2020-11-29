@@ -101,16 +101,3 @@ MULTILINE_COMMENT : /\/\* ([^{COMMENT_END}]*) \*\//
 %ignore WS
 """
 decaf_parser = Lark(decaf_grammar , start="start" , parser="lalr")
-
-# for i in range(10):
-#     j = i + 1
-#     x = str(j)
-#     if j < 10:
-#         x = '0' + x
-#     file_name = 't' + x + '.in'
-#     text = open(file_name , 'r').read()
-#     try:
-#         decaf_parser.parse(text)
-#         print("OK")
-#     except:
-#         print("SYNTAX ERROR")
