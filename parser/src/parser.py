@@ -90,7 +90,7 @@ BOOL: "true"
     | "false"
 INTEGER: /([-\+])?[0-9]+/
 DOUBLE: /([-\+])?([0-9])+\.([0-9])*((E|e)(\+|\-)?([0-9])+)?/
-IDENTIFIER: /[a-zA-Z][_a-zA-Z0-9]*/
+IDENTIFIER: /(?!void|int|double|bool|string|class|interface|null|this|extends|implements|for|while|if|else|return|break|continue|new|NewArray|Print|ReadInteger|ReadLine|dtoi|itod|btoi|itob|private|protected|public)[a-zA-Z][_a-zA-Z0-9]*/
 STRING : /"([^"\r\n]*)"/
 INLINE_COMMENT : /\/\/.*/
 COMMENT_END : /\*\/ / 
