@@ -1,38 +1,29 @@
+from lark.visitors import Interpreter
 from parser import get_parse_tree
 
 
-def if_cgen():
-    return None
+class Cgen(Interpreter):
+    def start(self, tree):
+        print('#### start the code generation')
+        next = tree.children[0]
+        self.visit(next)
+
+    def if_stmt(self, tree):
+        return None
+
+    def for_stmt(self, tree):
+        return None
 
 
-def for_cgen():
-    return None
+code = """
+int main() {
+    if(a){
+        Print(a);
+    }
+}
 
-
-def while_cgen():
-    return None
-
-
-def function_cgen():
-    return None
-
-
-def statement_cgen():
-    return None
-
-
-def class_cgen():
-    return None
-
-
-def cgen(code):
-    parse_tree = get_parse_tree(code)
-    print('Parse Tree#############')
-    print(parse_tree)
-    print('#######################')
-
-
-test_code = 'int a;'
-
+"""
 if __name__ == '__main__':
-    cgen(test_code)
+    tree = get_parse_tree(code)
+    print(tree)
+    Cgen().visit(tree)
