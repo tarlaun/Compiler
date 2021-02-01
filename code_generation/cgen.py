@@ -1,3 +1,6 @@
+from parser import get_parse_tree
+
+
 def if_cgen():
     return None
 
@@ -22,5 +25,14 @@ def class_cgen():
     return None
 
 
+def cgen(code):
+    parse_tree = get_parse_tree(code)
+    print('Parse Tree#############')
+    print(parse_tree)
+    print('#######################')
+
+
+test_code = 'int a;'
+
 if __name__ == '__main__':
-    print('this is cgen.')
+    cgen(test_code)

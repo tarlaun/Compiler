@@ -101,3 +101,13 @@ MULTILINE_COMMENT : /\/\* ([^{COMMENT_END}]*) \*\//
 %ignore WS
 """
 decaf_parser = Lark(decaf_grammar, start="start", parser="lalr")
+
+
+def remove_white_space(code):
+    # not sure if we want it
+    return code
+
+
+def get_parse_tree(code):
+    code_whitout_whitespace = remove_white_space(code)
+    return decaf_parser.parse(code_whitout_whitespace)
