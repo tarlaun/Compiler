@@ -6,6 +6,7 @@ class SymbolTable(Interpreter):
     def __init__(self):
         super().__init__()
         self.stack = []
+        self.functions = []
 
     def push_scope(self, scope):
         self.stack.append(scope)
@@ -30,6 +31,9 @@ class SymbolTable(Interpreter):
         raise Exception(
             'SymbolTable Error:symbol does not exist in symbolTable.')
 
+    def push_function(self, function):
+        self.functions.append(function)
+
     def start(self, tree):
         root = Scope('root')
         self.push_scope(root)
@@ -37,7 +41,7 @@ class SymbolTable(Interpreter):
 
     def declaration(self, tree):
         for node in tree.children:
-            if node.data in ['variable_declaration', 'function_declaration', 'class_declaration']:
+            if node.data in ['variable_declaration', 'function_declaration', 'class_declaration', 'interface_declaration']:
                 self.visit(node)
 
     def variable_declaration(self, tree):
@@ -57,11 +61,37 @@ class SymbolTable(Interpreter):
     def function_declaration(self, tree):
         print('function_declaration')
 
+        isVoid = len(tree.children) == 3
+        if isVoid:
+            name, formals, stmt_block = tree.children[0:3]
+            return_type = None
+        else:
+            return_type, name, formals, stmt_block = tree.children[0:4]
+            # it needs to check return type
+
+        function_scope = Scope(name, self.get_current_scope())
+        self.push_scope(function_scope)
+        function_obj = Function(function_scope, name,
+                                formals, stmt_block, return_type)
+        self.push_function(function_obj)
+        self.pop_scope()
+
         self.visit_children(tree)
+
+    def formals(self, tree):
+        print('formals')
+        self.visit_children(tree)
+
+    def stmt_block(self, tree):
+        self.visit_children(tree)
+        print('stmt_block')
 
     def class_declaration(self, tree):
         print('class_declaration')
         self.visit_children(tree)
+
+    def interface_declaration(self, tree):
+        print('interface_declaration')
 
 
 class Symbol:
@@ -82,6 +112,31 @@ class Scope:
     def add_symbol(self, symbol):
         self.symbols.append(symbol)
 
+    def get_id(self):
+        id = self.name
+        parent = self.parent_scope
+        while parent:
+            id += ('/' + parent.name)
+            parent = parent.parent_scope
+        return id
+
+
+class Function:
+    def __init__(self, scope, name, formals, stmt_block, return_type=None):
+        self.scope = scope
+        self.name = name
+        self.formals = formals
+        self.stmt_block = stmt_block
+        self.return_type = return_type
+
+    def find_formal(self, name: str):
+        counter = 0
+        for formal in self.formals:
+            if formal[0] == name:
+                return formal, counter
+            counter += 1
+        raise ChildProcessError("We're doomed")
+
 
 if_test_code = """
 int main() {
@@ -94,6 +149,10 @@ int main() {
 }
 
 void func2(){
+
+}
+
+void func3(int a){
 
 }
 """
