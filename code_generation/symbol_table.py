@@ -49,7 +49,7 @@ class SymbolTable(Interpreter):
         self.visit(variable)
 
     def variable(self, tree):
-        print('variable')
+        print('SymbolTable: variable')
         current_scope = self.get_current_scope()
         type = tree.children[0]
         name = tree.children[1].value
@@ -59,7 +59,7 @@ class SymbolTable(Interpreter):
         self.visit(type)
 
     def function_declaration(self, tree):
-        print('function_declaration')
+        print('SymbolTable: function_declaration')
 
         isVoid = len(tree.children) == 3
         if isVoid:
@@ -79,19 +79,19 @@ class SymbolTable(Interpreter):
         self.visit_children(tree)
 
     def formals(self, tree):
-        print('formals')
+        print('SymbolTable: formals')
         self.visit_children(tree)
 
     def stmt_block(self, tree):
         self.visit_children(tree)
-        print('stmt_block')
+        print('SymbolTable: stmt_block')
 
     def class_declaration(self, tree):
-        print('class_declaration')
+        print('SymbolTable: class_declaration')
         self.visit_children(tree)
 
     def interface_declaration(self, tree):
-        print('interface_declaration')
+        print('SymbolTable: interface_declaration')
 
 
 class Symbol:
@@ -129,14 +129,6 @@ class Function:
         self.stmt_block = stmt_block
         self.return_type = return_type
 
-    def find_formal(self, name: str):
-        counter = 0
-        for formal in self.formals:
-            if formal[0] == name:
-                return formal, counter
-            counter += 1
-        raise ChildProcessError("We're doomed")
-
 
 if_test_code = """
 int main() {
@@ -160,8 +152,6 @@ void func3(int a){
 
 if __name__ == '__main__':
     tree = get_parse_tree(if_test_code)
-    print(tree)
-    print(tree.pretty())
     SymbolTable().visit(tree)
 
 

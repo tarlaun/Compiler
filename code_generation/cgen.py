@@ -1,5 +1,6 @@
 from lark.visitors import Interpreter
 from parser import get_parse_tree
+from symbol_table import SymbolTable
 
 
 class Cgen(Interpreter):
@@ -12,9 +13,13 @@ class Cgen(Interpreter):
     def __init__(self):
         super().__init__()
         self.loop_labels = []
+        self.symbolTable = SymbolTable()
 
     def start(self, tree):
         print('#### start the code generation')
+
+        self.symbolTable.visit(tree)
+
         self.visit_children(tree)
 
     def expr(self, tree):
