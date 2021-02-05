@@ -73,7 +73,7 @@ class SymbolTable(Interpreter):
         self.push_scope(function_scope)
         function_obj = Function(function_scope, name,
                                 formals, stmt_block, return_type)
-        self.push_function(function_obj)
+        tree._meta = function_obj
         self.pop_scope()
 
         self.visit_children(tree)

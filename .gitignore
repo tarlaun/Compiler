@@ -2,3 +2,4 @@ scanner/out/
 scanner/report/
 parser/out/
 parser/report/
+code_generation/__pycache__

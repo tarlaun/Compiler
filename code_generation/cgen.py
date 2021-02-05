@@ -13,14 +13,34 @@ class Cgen(Interpreter):
     def __init__(self):
         super().__init__()
         self.loop_labels = []
-        self.symbolTable = SymbolTable()
+        self.symbol_table = SymbolTable()
 
     def start(self, tree):
         print('#### start the code generation')
 
-        self.symbolTable.visit(tree)
+        self.symbol_table.visit(tree)
 
-        self.visit_children(tree)
+        return self.visit_children(tree)
+
+    def function_declaration(self, tree):
+        function = tree._meta
+        self.symbol_table.push_scope(function.scope)
+        self.visit(function.formals)
+        self.visit(function.stmt_block)
+        self.symbol_table.pop_scope()
+        return None
+
+    def formals(self, tree):
+        # push to stack
+        return None
+
+    def stmt_block(self, tree):
+        print('#### start stmt')
+        child = tree.children[0]
+        stmt_label = self.count_label()
+        child._meta = stmt_label
+        self.visit(child)
+        return None
 
     def expr(self, tree):
         print('#### start expr')
@@ -39,13 +59,6 @@ class Cgen(Interpreter):
         child._meta = stmt_label
         self.visit(child)
         return None
-
-    def stmt_block(self, tree):
-        print('#### start stmt')
-        child = tree.children[0]
-        stmt_label = self.count_label()
-        child._meta = stmt_label
-        self.visit(child)
 
     def if_stmt(self, tree):
         print('### start if_stmt')
