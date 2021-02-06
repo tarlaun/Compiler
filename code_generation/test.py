@@ -1,5 +1,5 @@
 from lark.visitors import Interpreter
-from parser import get_parse_tree
+from parser_code import get_parse_tree
 
 
 class IncreaseSomeOfTheNumbers(Interpreter):

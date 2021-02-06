@@ -1,5 +1,5 @@
 scanner/out/
 scanner/report/
-parser/out/
-parser/report/
+parser_phase/out/
+parser_phase/report/
 code_generation/__pycache__
