@@ -109,6 +109,25 @@ def label_gen():  # generates labels for MIPS code. Works well until 26*26
     return "".join(arr[::-1])
 
 
+semantic_error = '''
+.text
+.globl main
+
+main:
+la $a0 , errorMsg
+addi $v0 , $zero, 4
+syscall
+jr $ra
+
+.data
+errorMsg: .asciiz "Semantic Error"
+'''
+
+
+def mips_semantic_error():
+    return semantic_error
+
+
 text = ""
 text += mips_add("$t1", "$t1", "$t2")
 print(text)
