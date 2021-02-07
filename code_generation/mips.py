@@ -8,59 +8,59 @@ def align_stack(top):
     if top != fp_dis:
         tmp = top - fp_dis
         fp_dis = top
-        return ("addi $sp, $sp, " + str(tmp))
+        return ("addi $sp, $sp, " + str(tmp)+'\n')
 
 
 def mips_add(v1, v2, v3):
-    return ("add " + v1 + ", " + v2 + ", " + v3)
+    return ("add " + v1 + ", " + v2 + ", " + v3+'\n')
 
 
 def mips_addi(v1, v2, v3):
-    return ("addi " + v1 + ", " + v2 + ", " + v3)
+    return ("addi " + v1 + ", " + v2 + ", " + v3+'\n')
 
 
 def mips_move(dst, src):
-    return ("move " + dst + ", " + src)
+    return ("move " + dst + ", " + src+'\n')
 
 
 def mips_jump(label):
-    return ("j " + label)
+    return ("j " + label+'\n')
 
 
 def mips_jal(label):
-    return ("jal " + label)
+    return ("jal " + label+'\n')
 
 
 def mips_jalr(reg):
-    return ("jalr " + reg)
+    return ("jalr " + reg+'\n')
 
 
 def mips_label(label):
-    return (label + " :")
+    return (label + " :"+'\n')
 
 
 def mips_load_address(dst, label):
-    return ('la ' + dst + ' ' + label)
+    return ('la ' + dst + ' ' + label+'\n')
 
 
 def mips_load(dst, src, offset=0):
-    return ("lw " + dst + ", " + str(offset) + "(" + src + ")")
+    return ("lw " + dst + ", " + str(offset) + "(" + src + ")"+'\n')
 
 
 def mips_load_double(dst, src, offset=0):
-    return ("l.s " + dst + ", " + str(offset) + "(" + src + ")")
+    return ("l.s " + dst + ", " + str(offset) + "(" + src + ")"+'\n')
 
 
 def mips_li(dst, val):
-    return ("li " + dst + ", " + str(val))
+    return ("li " + dst + ", " + str(val)+'\n')
 
 
 def mips_load_byte(dst, src, offset=0):
-    return ("lb " + dst + ", " + str(offset) + "(" + src + ")")
+    return ("lb " + dst + ", " + str(offset) + "(" + src + ")"+'\n')
 
 
 def mips_syscall():
-    return ("syscall")
+    return ("syscall"+'\n')
 
 
 data_section = '''.data
@@ -108,6 +108,53 @@ def label_gen():  # generates labels for MIPS code. Works well until 26*26
     label_number += 1
     return "".join(arr[::-1])
 
+def emit_array_length():
+    code = ""
+    code+=('___array_length:'+'\n')
+    code+=mips_load('$s0', '$fp', 4+'\n')
+    code+=mips_load('$v0', '$s0'+'\n')
+    code+=('jr $ra'+'\n')
+    return code
+
+
+def mips_btoi():
+    code = ""
+    code+=('___btoi:\n')
+    code+=('lw $v0, 4($fp)\n')
+    code+=('jr $ra\n')
+    return code
+
+
+def mips_itob():
+    code = ""
+    code+=('___itob:\n')
+    code+=('lw $s0, 4($fp)\n')
+    code+=('li $v0, 0\n')
+    code+=('beqz $s0, ___itob_jump\n')
+    code+=('li $v0, 1\n')
+    code+=('___itob_jump: jr $ra\n')
+    return code
+
+
+def mips_dtoi():
+    code = ""
+    code+=('___dtoi:\n')
+    code+=('l.s $f0, 4($fp)\n')
+    code+=('round.w.s $f0, $f0\n')
+    code+=('mfc1 $v0, $f0\n')
+    code+=('jr $ra\n')
+    return code
+
+
+def mips_itod():
+    code=""
+    code +=('___itod:\n')
+    code+=('lw $s0, 4($fp)\n')
+    code+=('mtc1 $s0, $f0\n')
+    code+=('cvt.s.w $f0, $f0\n')
+    code+=('mfc1 $v0, $f0\n')
+    code+=('jr $ra\n')
+    return code
 
 semantic_error = '''
 .text
@@ -128,6 +175,8 @@ def mips_semantic_error():
     return semantic_error
 
 
+
 text = ""
 text += mips_add("$t1", "$t1", "$t2")
+text+= mips_btoi()
 print(text)
