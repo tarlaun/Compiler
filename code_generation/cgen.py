@@ -1,6 +1,8 @@
+import lark
 from lark.visitors import Interpreter
-from parser import get_parse_tree
+from parser_code import get_parse_tree
 from symbol_table import SymbolTable
+import mips
 
 
 class Cgen(Interpreter):
@@ -16,36 +18,76 @@ class Cgen(Interpreter):
         self.symbol_table = SymbolTable()
 
     def start(self, tree):
+        code = ''
         print('#### start the code generation')
 
         self.symbol_table.visit(tree)
 
-        return self.visit_children(tree)
+        code += ''.join(self.visit_children(tree))
+        return code
+
+    def declaration(self, tree):
+        code = ''
+        for decl in tree.children:
+            code += self.visit(decl)
+        return code
 
     def function_declaration(self, tree):
+        code = ''
         function = tree._meta
         self.symbol_table.push_scope(function.scope)
-        self.visit(function.formals)
-        self.visit(function.stmt_block)
+        if len(tree.children) == 4:
+            ident = tree.children[1]
+            formals = tree.children[2]
+            stmt_block = tree.children[3]
+        else:
+            ident = tree.children[0]
+            formals = tree.children[1]
+            stmt_block = tree.children[2]
+        code += self.visit(tree.children[0])
+        code += self.visit(formals)
+        code += self.visit(stmt_block)
+        if ident == 'main':
+            code += 'main func'
+        else:
+            code += mips.mips_semantic_error()  # just for testing... its BS
         self.symbol_table.pop_scope()
-        return None
+        return code
+
+    def variable_declaration(self, tree):
+        code = ''
+        code += ''.join(self.visit_children(tree))
+        return 'fucking variable decl'
+
+    def variable(self, tree):
+        code = ''
+        return 'fucking variable'
 
     def formals(self, tree):
         # push to stack
-        return None
+        return 'formals'
+
+    def type(self, tree):
+        return 'type'
+
+    def IDENT(self, tree):
+        return 'ident'
 
     def stmt_block(self, tree):
+        code = ''
         print('#### start stmt')
         child = tree.children[0]
         stmt_label = self.count_label()
         child._meta = stmt_label
-        self.visit(child)
-        return None
+        code += self.visit(tree.children[0])
+        code += self.visit(tree.children[1])
+        return code
 
     def expr(self, tree):
         print('#### start expr')
         self.visit_children(tree)
-        return None
+        print(tree.children)
+        return 'expression'
 
     def l_value(self, tree):
         print('#### start l-value')
@@ -53,12 +95,13 @@ class Cgen(Interpreter):
         return None
 
     def stmt(self, tree):
+        code = ''
         print('#### start stmt')
         child = tree.children[0]
         stmt_label = self.count_label()
         child._meta = stmt_label
-        self.visit(child)
-        return None
+        code += self.visit(child)
+        return code
 
     def if_stmt(self, tree):
         print('### start if_stmt')
@@ -135,8 +178,18 @@ int main() {
 }
 """
 
+shit_test_code = '''
+int fucker(){
+int fuck;
+fuck = 12;
+}
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(if_test_code)
-    print(tree)
+    tree = get_parse_tree(shit_test_code)
+    # print(tree)
     print(tree.pretty())
-    Cgen().visit(tree)
+    code = ''
+    code += str(Cgen().visit(tree))
+    print("CODE:")
+    print(code)
