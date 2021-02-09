@@ -1,3 +1,7 @@
+def mips(stmt):
+    return stmt + '\n'
+
+
 fp_dis = - 4  # sp = fp + fp_dis
 
 
