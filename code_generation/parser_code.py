@@ -1,5 +1,6 @@
 from lark import Lark
 
+
 def remove_white_space(code):
     # not sure if we want it
     return code
@@ -8,6 +9,7 @@ def remove_white_space(code):
 def get_parse_tree(code):
     code_without_whitespace = remove_white_space(code)
     return decaf_parser.parse(code_without_whitespace)
+
 
 decaf_grammar = r"""
 start: (declaration)+
@@ -54,47 +56,20 @@ for_stmt: "for" "(" (expr)? ";" expr ";" (expr)? ")" stmt
 return_stmt: "return" (expr)? ";"
 break_stmt: "break" ";"
 print_stmt : "Print" "(" expr ("," expr)* ")" ";" 
-expr : l_value "=" expr
-    | constant
-    | l_value
-    | "this"
-    | call
-    | "(" expr ")"
-    | expr "+" expr
-    | expr "-" expr
-    | expr "*" expr
-    | expr "/" expr
-    | expr "%" expr
-    | "-" expr
-    | expr "<" expr
-    | expr "<=" expr
-    | expr ">" expr
-    | expr ">=" expr
-    | expr "==" expr
-    | expr "!=" expr
-    | expr "&&" expr
-    | expr "||" expr
-    | "!" expr
-    | "ReadInteger" "(" ")"
-    | "ReadLine" "(" ")"
-    | "new" IDENTIFIER
-    | "NewArray" "(" expr "," type ")"
-    | "itod" "(" expr ")"
-    | "dtoi" "(" expr ")"
-    | "itob" "(" expr ")"
-    | "btoi" "(" expr ")"
-l_value: IDENTIFIER
-    | expr "." IDENTIFIER
-    | expr "[" expr "]"
-call: IDENTIFIER "(" actuals ")"
-    | expr "." IDENTIFIER "(" actuals ")"
-actuals:  expr ("," expr)*
-    |
-constant:  INTEGER
-    | DOUBLE
-    | BOOL
-    | STRING
-    | "null"
+    expr : l_value "=" expr -> assignment | expr0
+    expr0 : expr8 "||" expr1 -> or_bool | expr1
+    expr1 : expr1 "&&" expr2 -> and_bool | expr2
+    expr2 : expr2 "==" expr3 -> eq | expr2 "!=" expr3 -> ne | expr3
+    expr3 : expr3 "<" expr4 -> lt | expr3 "<=" expr4 -> le | expr3 ">" expr4 -> gt | expr3 ">=" expr4 -> ge | expr4
+    expr4 : expr4 "+" expr5 -> add | expr4 "-" expr5 -> sub | expr5
+    expr5 : expr5 "*" expr6 -> mul | expr5 "/" expr6 -> div | expr5 "%" expr6 -> mod | expr6
+    expr6 : "-" expr6 -> neg | "!" expr6 -> not_expr | expr7
+    expr7 : constant | "ReadInteger" "(" ")" -> read_integer | "ReadLine" "(" ")" -> read_line | "new" IDENT -> class_inst | "NewArray" "(" expr "," type ")" -> new_array | "(" expr ")" | l_value -> val | call
+    l_value : IDENT -> var_addr |  expr7 "." IDENT -> var_access | expr7 "[" expr "]" -> subscript
+    call : IDENT  "(" actuals ")" |  expr7  "."  IDENT  "(" actuals ")" -> method
+    actuals :  expr (","expr)* |  
+    constant : INT -> const_int | DOUBLE -> const_double | DOUBLE_SCI -> const_double | BOOL -> const_bool |  STRING -> const_str | "null" -> null
+
 BOOL: "true"
     | "false"
 INTEGER: /([-\+])?[0-9]+/
