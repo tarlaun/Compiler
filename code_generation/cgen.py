@@ -5,6 +5,32 @@ from symbol_table import SymbolTable
 import mips
 
 
+# Typechecking... might move to a different file later.
+class Type:
+    double = "double"
+    int = "int"
+    bool = "bool"
+    string = "string"
+    array = "array"
+    null = "null"
+
+
+def is_primitive(type):
+    return type in [Type.double, Type.string, Type.int, Type.bool]
+
+
+def is_array(type):
+    return not isinstance(type, str)
+
+
+def convertible(type1, type2):  # type1 (Derived), type2 (Base)
+    if is_primitive(type1) or is_primitive(type2):
+        return type1 == type2
+
+    if is_array(type1) or is_array(type2):
+        return type1 == type2
+
+
 class Cgen(Interpreter):
     label_counter = 0
 
@@ -14,7 +40,9 @@ class Cgen(Interpreter):
 
     def __init__(self):
         super().__init__()
+        self.current_scope = None
         self.loop_labels = []
+        self._types = []
         self.symbol_table = SymbolTable()
 
     def start(self, tree):
@@ -70,7 +98,7 @@ class Cgen(Interpreter):
     def type(self, tree):
         return 'type'
 
-    def IDENT(self, tree):
+    def IDENTIFIER(self, tree):
         return 'ident'
 
     def stmt_block(self, tree):
@@ -84,15 +112,141 @@ class Cgen(Interpreter):
         return code
 
     def expr(self, tree):
-        print('#### start expr')
-        self.visit_children(tree)
-        print(tree.children)
-        return 'expression'
+        return ''.join(self.visit_children(tree))
+
+    def expr0(self, tree):
+        return ''.join(self.visit_children(tree))
+
+    def expr1(self, tree):
+        return ''.join(self.visit_children(tree))
+
+    def expr2(self, tree):
+        return ''.join(self.visit_children(tree))
+
+    def expr3(self, tree):
+        return ''.join(self.visit_children(tree))
+
+    def expr4(self, tree):
+        return ''.join(self.visit_children(tree))
+
+    def expr5(self, tree):
+        return ''.join(self.visit_children(tree))
+
+    def expr6(self, tree):
+        return ''.join(self.visit_children(tree))
+
+    def expr7(self, tree):
+        code = ''
+        more_code = self.visit_children(tree)
+        if len(more_code) == 0:
+            return code
+        return ''.join(more_code)
+
+    def assignment(self, tree):
+        code = ''.join(self.visit_children(tree))
+        ''' typ = self._types[-1]
+        if typ.name == 'double' and typ.dimension == 0:
+            code += '.text\n'
+            code += '\tlw $t0, 8($sp)\n'
+            code += '\tl.d $f0, 0($sp)\n'
+            code += '\ts.d $f0, 0($t0)\n'
+            code += '\ts.d $f0, 8($sp)\n'
+            code += '\taddi $sp, $sp, 8\n\n'
+        else:
+            code += '.text\n'
+            code += '\tlw $t0, 8($sp)\n'
+            code += '\tlw $t1, 0($sp)\n'
+            code += '\tsw $t1, 0($t0)\n'
+            code += '\tsw $t1, 8($sp)\n'
+            code += '\taddi $sp, $sp, 8\n\n'
+        self._types.pop()'''
+        return code
+
+    def var_addr(self, tree):
+        var_scope = self.current_scope
+        var_name = tree.children[0].value
+        return 'var_addr'
+
+    def var_access(self, tree):
+        return 'var_access'
+
+    def val(self, tree):
+        print("#### val code gen")
+        code = ''.join(self.visit_children(tree))
+        '''typ = self._types[-1]
+        if typ.name == 'double' and typ.dimension == 0:
+            code += '.text\n'
+            code += '\tlw $t0, 0($sp)\n'
+            code += '\tl.d $f0, 0($t0)\n'
+            code += '\ts.d $f0, 0($sp)\n\n'
+        else:
+            code += '.text\n'
+            code += '\tlw $t0, 0($sp)\n'
+            code += '\tlw $t0, 0($t0)\n'
+            code += '\tsw $t0, 0($sp)\n\n' '''
+        return code
 
     def l_value(self, tree):
         print('#### start l-value')
         print(tree.children[0])
-        return None
+        return 'l_value'
+
+    def const_int(self, tree):
+        return 'const_int'
+
+    def cosnt_bool(self, tree):
+        return 'const_bool'
+
+    def const_string(self, tree):
+        return 'const_string'
+
+    def null(self, tree):
+        return 'NULL'
+
+    def mul(self, tree):
+        return 'MUL'
+
+    def mod(self, tree):
+        return 'MOD'
+
+    def div(self, tree):
+        return 'DIV'
+
+    def add(self, tree):
+        return 'ADD'
+
+    def sub(self, tree):
+        return 'SUB'
+
+    def eq(self, tree):
+        return 'eq'
+
+    def gt(self, tree):
+        return 'gt'
+
+    def ge(self, tree):
+        return 'ge'
+
+    def lt(self, tree):
+        return 'lt'
+
+    def le(self, tree):
+        return 'le'
+
+    def neg(self, tree):
+        return 'neg'
+
+    def actuals(self, tree):
+        return 'actuals'
+
+    def method(self, tree):
+        return 'METH'
+
+    def call(self, tree):
+        return 'CALL'
+
+    def subscript(self, tree):
+        return 'subs_ '
 
     def stmt(self, tree):
         code = ''
@@ -193,3 +347,9 @@ if __name__ == '__main__':
     code += str(Cgen().visit(tree))
     print("CODE:")
     print(code)
+
+'''  def expr(self, tree):
+        print('#### start expr')
+        self.visit_children(tree)
+        print(tree.children)
+        return 'expression' '''
