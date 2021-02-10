@@ -92,7 +92,7 @@ print_stmt : "Print" "(" expr ("," expr)* ")" ";"
     constant : INTEGER -> const_int 
     | DOUBLE -> const_double  
     | BOOL -> const_bool 
-    | STRING -> const_str
+    | STRING -> const_string
     | "null" -> null
 
 TYPE : "int" | "double" | "bool" | "string"

@@ -6,12 +6,29 @@ fp_dis = - 4  # sp = fp + fp_dis
 
 
 # mips code producers for certain instructions:
+def mips_data():
+    return '.data\n'
+
+
+def mips_text():
+    return '.text\n'
+
+def mips_asciiz(str):
+    ret = ' .asciiz ' + str + '\n'
+    return ret
+
+def mips_align(n):
+    ret = '.align '+str(n) +'\n'
+    return ret
+
+
 def align_stack(top):
     global fp_dis
     if top != fp_dis:
         tmp = top - fp_dis
         fp_dis = top
         return ("addi $sp, $sp, " + str(tmp) + '\n')
+
 
 def sub_stack(disp):
     return ("sub $sp, $sp, " + str(disp) + '\n')
@@ -46,14 +63,16 @@ def mips_label(label):
 
 
 def mips_load_address(dst, label):
-    return ('la ' + dst + ' ' + label + '\n')
+    return ('la ' + dst + ' , ' + label + '\n')
 
 
 def mips_load(dst, src, offset=0):
     return ("lw " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
 
-def mips_store(dst, src, offset = 0):
+
+def mips_store(dst, src, offset=0):
     return ("sw " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
+
 
 def mips_load_double(dst, src, offset=0):
     return ("l.s " + dst + ", " + str(offset) + "(" + src + ")" + '\n')

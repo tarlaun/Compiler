@@ -33,10 +33,14 @@ def convertible(type1, type2):  # type1 (Derived), type2 (Base)
 
 class Cgen(Interpreter):
     label_counter = 0
-
+    string_label = 0
     def count_label(self):
         self.label_counter += 1
         return self.label_counter
+
+    def next_string_label(self):
+        self.string_label += 1
+
 
     def __init__(self):
         super().__init__()
@@ -218,7 +222,21 @@ class Cgen(Interpreter):
         return code
 
     def const_string(self, tree):
-        return 'const_string'
+        code = ''
+        code += mips_data()
+        code+= mips_align(2)
+        str_val = tree.children[0].value
+        string_name = '__string__{}'.format(self.string_label)
+        code += string_name+':'
+        code += mips_asciiz(str_val)
+        code += mips_text()
+        code += mips_load_address('$t0', string_name)
+        code += sub_stack(8)
+        code += mips_store('$t0', '$sp')
+        self.next_string_label()
+        self._types.append(Type.string)
+        return code
+
 
     def null(self, tree):
         return 'NULL'
@@ -357,8 +375,8 @@ int main() {
 
 shit_test_code = '''
 bool main(){
-bool fuck;
-fuck = true;
+string fuck;
+fuck = "gooo";
 }
 '''
 
