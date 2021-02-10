@@ -19,12 +19,7 @@ declaration: variable_declaration
     | interface_declaration
 variable_declaration: variable ";"
 variable: type IDENTIFIER
-type: "int"
-    | "double"
-    | "bool"
-    | "string"
-    | IDENTIFIER
-    | type "[]"
+type : TYPE | IDENTIFIER | type "[]"
 function_declaration: type IDENTIFIER "(" formals ")" stmt_block
     | "void" IDENTIFIER "(" formals ")" stmt_block
     | "static void" IDENTIFIER "(" formals ")" stmt_block
@@ -56,25 +51,56 @@ for_stmt: "for" "(" (expr)? ";" expr ";" (expr)? ")" stmt
 return_stmt: "return" (expr)? ";"
 break_stmt: "break" ";"
 print_stmt : "Print" "(" expr ("," expr)* ")" ";" 
-    expr : l_value "=" expr -> assignment | expr0
-    expr0 : expr0 "||" expr1 -> or_bool | expr1
-    expr1 : expr1 "&&" expr2 -> and_bool | expr2
-    expr2 : expr2 "==" expr3 -> eq | expr2 "!=" expr3 -> ne | expr3
-    expr3 : expr3 "<" expr4 -> lt | expr3 "<=" expr4 -> le | expr3 ">" expr4 -> gt | expr3 ">=" expr4 -> ge | expr4
-    expr4 : expr4 "+" expr5 -> add | expr4 "-" expr5 -> sub | expr5
-    expr5 : expr5 "*" expr6 -> mul | expr5 "/" expr6 -> div | expr5 "%" expr6 -> mod | expr6
-    expr6 : "-" expr6 -> neg | "!" expr6 -> not_expr | expr7
-    expr7 : constant | "ReadInteger" "(" ")" -> read_integer | "ReadLine" "(" ")" -> read_line | "new" IDENTIFIER -> class_inst | "NewArray" "(" expr "," type ")" -> new_array | "(" expr ")" | l_value -> val | call
-    l_value : IDENTIFIER -> var_addr |  expr7 "." IDENTIFIER -> var_access | expr7 "[" expr "]" -> subscript
-    call : IDENTIFIER  "(" actuals ")" |  expr7  "."  IDENTIFIER "(" actuals ")" -> method
+    expr : l_value "=" expr -> assignment 
+    | expr0
+    expr0 : expr0 "||" expr1 -> or_bool 
+    | expr1
+    expr1 : expr1 "&&" expr2 -> and_bool 
+    | expr2
+    expr2 : expr2 "==" expr3 -> eq 
+    | expr2 "!=" expr3 -> ne 
+    | expr3
+    expr3 : expr3 "<" expr4 -> lt 
+    | expr3 "<=" expr4 -> le 
+    | expr3 ">" expr4 -> gt 
+    | expr3 ">=" expr4 -> ge 
+    | expr4
+    expr4 : expr4 "+" expr5 -> add 
+    | expr4 "-" expr5 -> sub 
+    | expr5
+    expr5 : expr5 "*" expr6 -> mul 
+    | expr5 "/" expr6 -> div 
+    | expr5 "%" expr6 -> mod 
+    | expr6
+    expr6 : "-" expr6 -> neg 
+    | "!" expr6 -> not_expr 
+    | expr7
+    expr7 : constant 
+    | "ReadInteger" "(" ")" -> read_integer 
+    | "ReadLine" "(" ")" -> read_line 
+    | "new" IDENTIFIER -> class_inst 
+    | "NewArray" "(" expr "," type ")" -> new_array 
+    | "(" expr ")" 
+    | l_value -> val 
+    | call
+    l_value : IDENTIFIER -> var_addr 
+    |  expr7 "." IDENTIFIER -> var_access 
+    | expr7 "[" expr "]" -> subscript
+    call : IDENTIFIER  "(" actuals ")" 
+    |  expr7  "."  IDENTIFIER "(" actuals ")" -> method
     actuals :  expr (","expr)* |  
-    constant : INTEGER -> const_int | DOUBLE -> const_double  | BOOL -> const_bool |  STRING -> const_str | "null" -> null
+    constant : INTEGER -> const_int 
+    | DOUBLE -> const_double  
+    | BOOL -> const_bool 
+    | STRING -> const_str
+    | "null" -> null
 
-BOOL: "true"
-    | "false"
+TYPE : "int" | "double" | "bool" | "string"
+
+BOOL: "true" | "false"
 INTEGER: /([-\+])?[0-9]+/
 DOUBLE: /([-\+])?([0-9])+\.([0-9])*((E|e)(\+|\-)?([0-9])+)?/
-IDENTIFIER: /(?!void|int|double|bool|string|class|interface|null|this|extends|implements|for|while|if|else|return|break|continue|new|NewArray|Print|ReadInteger|ReadLine|dtoi|itod|btoi|itob|private|protected|public)[a-zA-Z][_a-zA-Z0-9]*/
+IDENTIFIER: /(?!void|int|double|bool|string|true|false|class|interface|null|this|extends|implements|for|while|if|else|return|break|continue|new|NewArray|Print|ReadInteger|ReadLine|dtoi|itod|btoi|itob|private|protected|public)[a-zA-Z][_a-zA-Z0-9]*/
 STRING : /"([^"\r\n]*)"/
 INLINE_COMMENT : /\/\/.*/
 COMMENT_END : /\*\/ / 

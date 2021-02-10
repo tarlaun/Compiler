@@ -2,7 +2,7 @@ import lark
 from lark.visitors import Interpreter
 from parser_code import get_parse_tree
 from symbol_table import SymbolTable
-import mips
+from mips import *
 
 
 # Typechecking... might move to a different file later.
@@ -78,7 +78,7 @@ class Cgen(Interpreter):
         if ident == 'main':
             code += 'main func'
         else:
-            code += mips.mips_semantic_error()  # just for testing... its BS
+            code += ' not main func '  # just for testing... its BS
         self.symbol_table.pop_scope()
         return code
 
@@ -112,6 +112,7 @@ class Cgen(Interpreter):
         return code
 
     def expr(self, tree):
+        print("#### EXPR")
         return ''.join(self.visit_children(tree))
 
     def expr0(self, tree):
@@ -143,6 +144,7 @@ class Cgen(Interpreter):
         return ''.join(more_code)
 
     def assignment(self, tree):
+        print("#### ASS")
         code = ''.join(self.visit_children(tree))
         ''' typ = self._types[-1]
         if typ.name == 'double' and typ.dimension == 0:
@@ -172,6 +174,7 @@ class Cgen(Interpreter):
 
     def val(self, tree):
         print("#### val code gen")
+        print(len(tree.children))
         code = ''.join(self.visit_children(tree))
         '''typ = self._types[-1]
         if typ.name == 'double' and typ.dimension == 0:
@@ -192,10 +195,27 @@ class Cgen(Interpreter):
         return 'l_value'
 
     def const_int(self, tree):
-        return 'const_int'
+        code = ''
+        # code += '.text'
+        const_val = tree.children[0].value.lower()
+        code += mips_li('$t0', const_val)
+        code += sub_stack(8)
+        code += mips_store('$t0', '$sp')
+        self._types.append(Type.int)
+        return code
 
-    def cosnt_bool(self, tree):
-        return 'const_bool'
+    def const_bool(self, tree):
+        code = ''
+        # code += '.text'
+        const_val = tree.children[0].value.lower()
+        numerical_val = 0
+        if const_val == 'true':
+            numerical_val = 1
+        code += mips_li('$t0', numerical_val)
+        code += sub_stack(8)
+        code += mips_store('$t0', '$sp')
+        self._types.append(Type.bool)
+        return code
 
     def const_string(self, tree):
         return 'const_string'
@@ -235,6 +255,9 @@ class Cgen(Interpreter):
 
     def neg(self, tree):
         return 'neg'
+
+    def not_exprs(self, tree):
+        return 'NOT_EXPRS'
 
     def actuals(self, tree):
         return 'actuals'
@@ -333,9 +356,9 @@ int main() {
 """
 
 shit_test_code = '''
-int fucker(){
-int fuck;
-fuck = 12;
+bool main(){
+bool fuck;
+fuck = true;
 }
 '''
 
