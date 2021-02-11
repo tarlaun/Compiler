@@ -140,6 +140,59 @@ def mips_syscall():
     return ("syscall" + '\n')
 
 
+def print_bool(label_num):
+    return """
+            lw $a0, 0($sp)
+            addi $sp, $sp, 8
+            beq $a0, 0, _false_print_{label}
+            li $v0, 4
+            la $a0, true
+            syscall
+            j _printbool_end_{label}
+            _false_print_{label}:
+            li $v0, 4
+            la $a0, false
+            syscall 
+            _printbool_end_{label}:
+                        """.format(label=label_num)
+
+
+def print_newline():
+    return """
+                li $v0, 4
+                la $a0, __newLine
+                syscall
+            """
+
+
+def print_int():
+    return """
+            li $v0, 1
+            lw $a0, 0($sp)
+            addi $sp, $sp, 8
+            syscall   
+        """
+
+
+def print_string():
+    return """
+        li $v0, 4
+        lw $a0, 0($sp)
+        addi $sp, $sp, 8
+        syscall
+        """
+
+
+def print_double():
+    return """
+            l.d $f12, 0($sp)
+            addi $sp, $sp, 8
+            cvt.s.d $f12, $f12
+            li $v0, 2
+            syscall
+        """
+
+
 data_section = '''.data
 __read:
     .space 400
@@ -257,9 +310,11 @@ def mips_semantic_error():
     return semantic_error
 
 
+'''
 text = ""
 text += mips_add("$t1", "$t1", "$t2")
 text += mips_btoi()
 print(text)
 for i in range(100):
-    print(label_gen())
+    print(label_gen())'''
+print(print_bool(56))

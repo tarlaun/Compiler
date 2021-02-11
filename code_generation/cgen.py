@@ -40,10 +40,11 @@ class Cgen(Interpreter):
 
     def new_label(self):
         self.label_counter += 1
-        return self.label_counter
+        return str(self.label_counter)
 
-    def next_string_label(self):
+    def new_string_label(self):
         self.string_label += 1
+        return str(self.string_label)
 
     def __init__(self):
         super().__init__()
@@ -179,17 +180,34 @@ class Cgen(Interpreter):
         print("#### val code gen")
         print(len(tree.children))
         code = ''.join(self.visit_children(tree))
-        typ = self._types[-1]
-        if typ.name == 'double':  # and typ.dimension == 0:
+        operand_type = self._types[-1]
+        if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load_double('$f0', '$t0')
             code += mips_store_double('$f0', '$sp')
-        else: #bool, int
+        else:  # bool, int
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$t0')
             code += mips_store('$t1', '$sp')
+        return code
+
+    def print_stmt(self, tree):  # todo - not sure about the type checking
+        code = mips_text()
+        for child in tree.children[0].children:
+            code += self.visit(child)
+            operand_type = self._types.pop()
+            if operand_type == Type.double:
+                code += print_double()
+            elif operand_type == Type.int:
+                code += print_int()
+            elif operand_type == Type.string:
+                code += print_string()
+            elif operand_type == Type.bool:  # and t.dimension == 0:
+                label_num = self.new_label()
+                code += print_bool(label_num)
+        code += print_newline()
         return code
 
     def l_value(self, tree):
@@ -197,7 +215,7 @@ class Cgen(Interpreter):
 
     def const_int(self, tree):
         code = ''
-        # code += '.text'
+        code += mips_text()
         const_val = tree.children[0].value.lower()
         code += mips_li('$t0', const_val)
         code += sub_stack(8)
@@ -206,8 +224,7 @@ class Cgen(Interpreter):
         return code
 
     def const_bool(self, tree):
-        code = ''
-        # code += '.text'
+        code = mips_text()
         const_val = tree.children[0].value.lower()
         numerical_val = 0
         if const_val == 'true':
@@ -223,14 +240,14 @@ class Cgen(Interpreter):
         code += mips_data()
         code += mips_align(2)
         str_val = tree.children[0].value
-        string_name = '__string__{}'.format(self.string_label)
+        string_num = self.new_string_label()
+        string_name = '__string__'+string_num
         code += string_name + ':'
         code += mips_asciiz(str_val)
         code += mips_text()
         code += mips_load_address('$t0', string_name)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
-        self.next_string_label()
         self._types.append(Type.string)
         return code
 
@@ -363,7 +380,7 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         type = self._types.pop()
         if type == Type.double:  # and typ.dimension == 0: #todo - no clue what type dimension is!!!
-            label_number = str(self.new_label())
+            label_number = self.new_label()
             label = '__d_eq__' + label_number
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
@@ -417,7 +434,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
         if operand_type == Type.double:
-            label_number = str(self.new_label())
+            label_number = self.new_label()
             label = '__d_gt__' + label_number
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
@@ -444,7 +461,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
         if operand_type == Type.double:
-            label_number = str(self.new_label())
+            label_number = self.new_label()
             label = '__d_ge__' + label_number
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
@@ -471,7 +488,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
         if operand_type == Type.double:
-            label_number = str(self.new_label())
+            label_number = self.new_label()
             label = '__d_lt__' + label_number
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
@@ -498,7 +515,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
         if operand_type == Type.double:
-            label_number = str(self.new_label())
+            label_number = self.new_label()
             label = '__d_le__' + label_number
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
@@ -516,7 +533,7 @@ class Cgen(Interpreter):
 
     def not_bool(self, tree):  # operation for getting opposite of a bool value.
         code = ''.join(self.visit_children(tree))
-        label_number = str(self.new_label())
+        label_number = self.new_label()
         label = '__not__' + label_number
         code += mips_text()
         code += mips_load('$t0', '$sp')
