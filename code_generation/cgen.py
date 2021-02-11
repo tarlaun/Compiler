@@ -3,9 +3,12 @@ from lark.visitors import Interpreter
 from parser_code import get_parse_tree
 from symbol_table import SymbolTable
 from mips import *
+from code_generation.mips import *
 
 
 # Typechecking... might move to a different file later.
+
+
 class Type:
     double = "double"
     int = "int"
@@ -34,13 +37,13 @@ def convertible(type1, type2):  # type1 (Derived), type2 (Base)
 class Cgen(Interpreter):
     label_counter = 0
     string_label = 0
+
     def count_label(self):
         self.label_counter += 1
         return self.label_counter
 
     def next_string_label(self):
         self.string_label += 1
-
 
     def __init__(self):
         super().__init__()
@@ -64,7 +67,7 @@ class Cgen(Interpreter):
             code += self.visit(decl)
         return code
 
-    def function_declaration(self, tree):
+    def function_declaration(self, tree):  # todo - is incomplete (chera commentesh zard shod? cool!)
         code = ''
         function = tree._meta
         self.symbol_table.push_scope(function.scope)
@@ -86,26 +89,26 @@ class Cgen(Interpreter):
         self.symbol_table.pop_scope()
         return code
 
-    def variable_declaration(self, tree):
+    def variable_declaration(self, tree):  # todo - is incomplete
         code = ''
         code += ''.join(self.visit_children(tree))
-        return 'fucking variable decl'
+        return code
 
-    def variable(self, tree):
+    def variable(self, tree):  # todo
         code = ''
         return 'fucking variable'
 
-    def formals(self, tree):
+    def formals(self, tree):  # todo
         # push to stack
         return 'formals'
 
-    def type(self, tree):
+    def type(self, tree):  # todo
         return 'type'
 
-    def IDENTIFIER(self, tree):
+    def IDENTIFIER(self, tree):  # todo
         return 'ident'
 
-    def stmt_block(self, tree):
+    def stmt_block(self, tree):  # todo - is incomplete
         code = ''
         print('#### start stmt')
         child = tree.children[0]
@@ -147,7 +150,7 @@ class Cgen(Interpreter):
             return code
         return ''.join(more_code)
 
-    def assignment(self, tree):
+    def assignment(self, tree):  # todo - figure out how to do the type checking
         print("#### ASS")
         code = ''.join(self.visit_children(tree))
         ''' typ = self._types[-1]
@@ -176,7 +179,7 @@ class Cgen(Interpreter):
     def var_access(self, tree):
         return 'var_access'
 
-    def val(self, tree):
+    def val(self, tree):  # todo - figure out how to do the type checking
         print("#### val code gen")
         print(len(tree.children))
         code = ''.join(self.visit_children(tree))
@@ -194,9 +197,7 @@ class Cgen(Interpreter):
         return code
 
     def l_value(self, tree):
-        print('#### start l-value')
-        print(tree.children[0])
-        return 'l_value'
+        return ''.join(self.visit_children(tree))
 
     def const_int(self, tree):
         code = ''
@@ -224,10 +225,10 @@ class Cgen(Interpreter):
     def const_string(self, tree):
         code = ''
         code += mips_data()
-        code+= mips_align(2)
+        code += mips_align(2)
         str_val = tree.children[0].value
         string_name = '__string__{}'.format(self.string_label)
-        code += string_name+':'
+        code += string_name + ':'
         code += mips_asciiz(str_val)
         code += mips_text()
         code += mips_load_address('$t0', string_name)
@@ -237,24 +238,104 @@ class Cgen(Interpreter):
         self._types.append(Type.string)
         return code
 
-
     def null(self, tree):
-        return 'NULL'
+        code = mips_text()
+        code += sub_stack(8)
+        code += mips_store('$zero', '$sp')
+        code += mips_store('$zero', '$sp')
+        self._types.append(Type.null)
+        return code
 
     def mul(self, tree):
-        return 'MUL'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += mips_mul('$t2', '$t1', '$t0')
+            code += mips_store(src='$t2', dst='$sp', offset=8)
+            code += add_stack(8)
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_mul_double('$f4', '$f2', '$f0')
+            code += mips_store_double('$f4', '$sp', offset=8)
+            code += add_stack(8)
+        return code
 
     def mod(self, tree):
-        return 'MOD'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += mips_div('$t2', '$t1', '$t0')
+            code += 'mfhi $t2\n'
+            code += mips_store(src='$t2', dst='$sp', offset=8)
+            code += add_stack(8)
+
+        return code
 
     def div(self, tree):
-        return 'DIV'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += mips_div('$t2', '$t1', '$t0')
+            code += 'mflo $t2\n'
+            code += mips_store(src='$t2', dst='$sp', offset=8)
+            code += add_stack(8)
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_div_double('$f4', '$f2', '$f0')
+            code += mips_store_double('$f4', '$sp', offset=8)
+            code += add_stack(8)
+        return code
 
     def add(self, tree):
-        return 'ADD'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += mips_add('$t2', '$t0', '$t1')
+            code += mips_store(src='$t2', dst='$sp', offset=8)
+            code += add_stack(8)
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_add_double('$f4', '$f0', '$f2')
+            code += mips_store_double('$f4', '$sp', offset=8)
+            code += add_stack(8)
+        return code
 
     def sub(self, tree):
-        return 'SUB'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += mips_sub('$t2', '$t1', '$t0')
+            code += mips_store(src='$t2', dst='$sp', offset=8)
+            code += add_stack(8)
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_sub_double('$f4', '$f2', '$f0')
+            code += mips_store_double('$f4', '$sp', offset=8)
+            code += add_stack(8)
+        return code
 
     def eq(self, tree):
         return 'eq'
@@ -289,7 +370,7 @@ class Cgen(Interpreter):
     def subscript(self, tree):
         return 'subs_ '
 
-    def stmt(self, tree):
+    def stmt(self, tree): #todo - very incomplete
         code = ''
         print('#### start stmt')
         child = tree.children[0]
@@ -298,7 +379,7 @@ class Cgen(Interpreter):
         code += self.visit(child)
         return code
 
-    def if_stmt(self, tree):
+    def if_stmt(self, tree): #todo - i have no clue
         print('### start if_stmt')
         expr = tree.children[0]
         self.visit(expr)
@@ -315,7 +396,7 @@ class Cgen(Interpreter):
             None
         return None
 
-    def for_stmt(self, tree):
+    def for_stmt(self, tree):#todo - i have no clue
         print('### start for_stmt')
         for_label = tree._meta
         self.loop_labels.append(for_label)
@@ -329,7 +410,7 @@ class Cgen(Interpreter):
         self.loop_labels.pop()
         return None
 
-    def while_stmt(self, tree):
+    def while_stmt(self, tree):#todo - i have no clue
         print('### start while_stmt')
         while_label = tree._meta
         print(while_label)
