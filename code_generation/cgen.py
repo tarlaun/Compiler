@@ -147,14 +147,14 @@ class Cgen(Interpreter):
         print("#### ASS")
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
-        if operand_type == Type.double: # and typ.dimension == 0:
+        if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
-            code += mips_load('$t0', '$sp', offset=8) # sp+8 is stored in t0 -- why?
+            code += mips_load('$t0', '$sp', offset=8)  # sp+8 is stored in t0 -- why?
             code += mips_load_double('$f0', '$sp')
-            code += mips_store_double('$f0', '$t0') # f0 is stored in where t0 is pointing to -- why??
+            code += mips_store_double('$f0', '$t0')  # f0 is stored in where t0 is pointing to -- why??
             code += mips_store_double('$f0', '$sp', offset=8)
             code += add_stack(8)
-        else: # int, bool
+        else:  # int, bool
             code += mips_text()
             code += mips_load('$t0', '$sp', offset=8)
             code += mips_load('$t1', '$sp')
@@ -163,33 +163,33 @@ class Cgen(Interpreter):
             code += add_stack(8)
         self._types.pop()
         return code
-    
-    def class_inst(self, tree): # todo
+
+    def class_inst(self, tree):  # todo
         return 'class_inst'
 
-    def var_addr(self, tree): # todo
+    def var_addr(self, tree):  # todo
         var_scope = self.current_scope
         var_name = tree.children[0].value
         return 'var_addr'
 
-    def var_access(self, tree): # todo
+    def var_access(self, tree):  # todo
         return 'var_access'
 
-    def val(self, tree):  # todo - figure out how to do the type checking
+    def val(self, tree):  # todo - dimension chie namoosan
         print("#### val code gen")
         print(len(tree.children))
         code = ''.join(self.visit_children(tree))
-        '''typ = self._types[-1]
-        if typ.name == 'double' and typ.dimension == 0:
-            code += '.text\n'
-            code += '\tlw $t0, 0($sp)\n'
-            code += '\tl.d $f0, 0($t0)\n'
-            code += '\ts.d $f0, 0($sp)\n\n'
-        else:
-            code += '.text\n'
-            code += '\tlw $t0, 0($sp)\n'
-            code += '\tlw $t0, 0($t0)\n'
-            code += '\tsw $t0, 0($sp)\n\n' '''
+        typ = self._types[-1]
+        if typ.name == 'double':  # and typ.dimension == 0:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load_double('$f0', '$t0')
+            code += mips_store_double('$f0', '$sp')
+        else: #bool, int
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$t0')
+            code += mips_store('$t1', '$sp')
         return code
 
     def l_value(self, tree):
@@ -561,7 +561,7 @@ class Cgen(Interpreter):
         code = ''
         print('#### start stmt')
         child = tree.children[0]
-        stmt_label = self.count_label()
+        stmt_label = self.new_label()
         child._meta = stmt_label
         code += self.visit(child)
         return code
