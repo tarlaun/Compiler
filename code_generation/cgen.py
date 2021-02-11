@@ -38,7 +38,7 @@ class Cgen(Interpreter):
     label_counter = 0
     string_label = 0
 
-    def count_label(self):
+    def new_label(self):
         self.label_counter += 1
         return self.label_counter
 
@@ -337,20 +337,186 @@ class Cgen(Interpreter):
             code += add_stack(8)
         return code
 
+    def and_bool(self, tree):
+        code = ''.join(self.visit_children(tree))
+        code += mips_text()
+        code += mips_load('$t0', '$sp')
+        code += mips_load('$t0', '$sp', offset=8)
+        code += mips_and('$t2', '$t0', '$t1')
+        code += mips_store('$t2', '$sp', offset=8)
+        code += add_stack(8)
+        self._types.pop()
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
+
+    def or_bool(self, tree):
+        code = ''.join(self.visit_children(tree))
+        code += mips_text()
+        code += mips_load('$t0', '$sp')
+        code += mips_load('$t0', '$sp', offset=8)
+        code += mips_or('$t2', '$t0', '$t1')
+        code += mips_store('$t2', '$sp', offset=8)
+        code += add_stack(8)
+        self._types.pop()
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
+
     def eq(self, tree):
-        return 'eq'
+        code = ''.join(self.visit_children(tree))
+        type = self._types.pop()
+        if type == Type.double:  # and typ.dimension == 0: #todo - no clue what type dimension is!!!
+            label_number = str(self.new_label())
+            label = '__d_eq__' + label_number
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_li('$t0', 0)
+            code += 'c.eq.d $f0, $f2\n'  # special floating point coprocessor instruction, checks equality
+            code += 'bc1f ' + label + '\n'
+            # bc1f is a flag that stores equality operation result. if eq is false it jumps to label.
+            code += mips_li('$t0', 1)
+            code += label + ':\n'
+            code += add_stack(8)
+            code += mips_store('$t0', '$sp')
+        elif type == Type.string:  # and typ.dimension == 0: todo - we need to implement STRCMP
+            code += '.text\n'
+            code += '\tsw $t0, -8($sp)\n'
+            code += '\tsw $t1, -8($sp)\n'
+            code += '\tsw $a0, -12($sp)\n'
+            code += '\tsw $a1, -16($sp)\n'
+            code += '\tsw $v0, -20($sp)\n'
+            code += '\tsw $ra, -24($sp)\n'
+            code += '\tlw $a0, 0($sp)\n'
+            code += '\tlw $a1, 8($sp)\n'
+            code += '\tjal __strcmp__\n'
+            code += '\tsw $v0, 8($sp)\n'
+            code += '\tlw $t0, -4($sp)\n'
+            code += '\tlw $t1, -8($sp)\n'
+            code += '\tlw $a0, -12($sp)\n'
+            code += '\tlw $a1, -16($sp)\n'
+            code += '\tlw $v0, -20($sp)\n'
+            code += '\tlw $ra, -24($sp)\n'
+            code += '\taddi $sp, $sp, 8\n\n'
+        else: #int, bool    #done i think
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += 'seq $t2, $t1, $t0\n' # special equality checking operation - will set t2 = 1 if t1 == t0
+            code += add_stack(8)
+            code += mips_store('$t2', '$sp')
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
 
     def gt(self, tree):
-        return 'gt'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += 'sgt $t2, $t1, $t0\n'  # special data comparison instruction
+            code += add_stack(8)
+            code += mips_store('$t2', '$sp')
+        if operand_type == Type.double:
+            label_number = str(self.new_label())
+            label = '__d_gt__' + label_number
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_li('$t0', 0)
+            code += 'c.gt.d $f2, $f0\n'  # if gt is false, will jump to label
+            code += 'bc1f ' + label
+            code += mips_li('$t0', 1)  # will reach this code if gt is true
+            code += label + ':\n'
+            code += add_stack(8)
+            code += mips_store('$t0', '$sp')
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
 
     def ge(self, tree):
-        return 'ge'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += 'sge $t2, $t1, $t0\n'  # special data comparison instruction
+            code += add_stack(8)
+            code += mips_store('$t2', '$sp')
+        if operand_type == Type.double:
+            label_number = str(self.new_label())
+            label = '__d_ge__' + label_number
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_li('$t0', 0)
+            code += 'c.ge.d $f2, $f0\n'  # if ge is false, will jump to label
+            code += 'bc1f ' + label
+            code += mips_li('$t0', 1)  # will reach this code if ge is true
+            code += label + ':\n'
+            code += add_stack(8)
+            code += mips_store('$t0', '$sp')
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
 
     def lt(self, tree):
-        return 'lt'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += 'slt $t2, $t1, $t0\n'  # special data comparison instruction
+            code += add_stack(8)
+            code += mips_store('$t2', '$sp')
+        if operand_type == Type.double:
+            label_number = str(self.new_label())
+            label = '__d_lt__' + label_number
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_li('$t0', 0)
+            code += 'c.lt.d $f2, $f0\n'  # if lt is false, will jump to label
+            code += 'bc1f ' + label
+            code += mips_li('$t0', 1)  # will reach this code if lt is true
+            code += label + ':\n'
+            code += add_stack(8)
+            code += mips_store('$t0', '$sp')
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
 
     def le(self, tree):
-        return 'le'
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types.pop()
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            code += 'sle $t2, $t1, $t0\n'  # special data comparison instruction
+            code += add_stack(8)
+            code += mips_store('$t2', '$sp')
+        if operand_type == Type.double:
+            label_number = str(self.new_label())
+            label = '__d_le__' + label_number
+            code += mips_text()
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_li('$t0', 0)
+            code += 'c.le.d $f2, $f0\n'  # if le is false, will jump to label
+            code += 'bc1f ' + label
+            code += mips_li('$t0', 1)  # will reach this code if le is true
+            code += label + ':\n'
+            code += add_stack(8)
+            code += mips_store('$t0', '$sp')
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
 
     def neg(self, tree):
         return 'neg'
@@ -370,7 +536,7 @@ class Cgen(Interpreter):
     def subscript(self, tree):
         return 'subs_ '
 
-    def stmt(self, tree): #todo - very incomplete
+    def stmt(self, tree):  # todo - very incomplete
         code = ''
         print('#### start stmt')
         child = tree.children[0]
@@ -379,7 +545,7 @@ class Cgen(Interpreter):
         code += self.visit(child)
         return code
 
-    def if_stmt(self, tree): #todo - i have no clue
+    def if_stmt(self, tree):  # todo - i have no clue
         print('### start if_stmt')
         expr = tree.children[0]
         self.visit(expr)
@@ -396,7 +562,7 @@ class Cgen(Interpreter):
             None
         return None
 
-    def for_stmt(self, tree):#todo - i have no clue
+    def for_stmt(self, tree):  # todo - i have no clue
         print('### start for_stmt')
         for_label = tree._meta
         self.loop_labels.append(for_label)
@@ -410,7 +576,7 @@ class Cgen(Interpreter):
         self.loop_labels.pop()
         return None
 
-    def while_stmt(self, tree):#todo - i have no clue
+    def while_stmt(self, tree):  # todo - i have no clue
         print('### start while_stmt')
         while_label = tree._meta
         print(while_label)
@@ -456,8 +622,8 @@ int main() {
 
 shit_test_code = '''
 bool main(){
-string fuck;
-fuck = "gooo";
+int fuck;
+fuck = 5 + 5;
 }
 '''
 

@@ -71,6 +71,12 @@ def mips_div(v1, v2, v3):
 def mips_div_double(v1, v2, v3):
     return ("div.d " + v1 + ", " + v2 + ", " + v3 + '\n')
 
+def mips_or(v1, v2, v3):
+    return ("or " + v1 + ", " + v2 + ", " + v3 + '\n')
+
+def mips_and(v1, v2, v3):
+    return ("and " + v1 + ", " + v2 + ", " + v3 + '\n')
+
 def mips_move(dst, src):
     return ("move " + dst + ", " + src + '\n')
 
