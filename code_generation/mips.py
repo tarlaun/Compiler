@@ -59,23 +59,30 @@ def mips_sub(v1, v2, v3):
 def mips_sub_double(v1, v2, v3):
     return ("sub.d " + v1 + ", " + v2 + ", " + v3 + '\n')
 
+
 def mips_mul(v1, v2, v3):
     return ("mul " + v1 + ", " + v2 + ", " + v3 + '\n')
+
 
 def mips_mul_double(v1, v2, v3):
     return ("mul.d " + v1 + ", " + v2 + ", " + v3 + '\n')
 
+
 def mips_div(v1, v2, v3):
     return ("div " + v1 + ", " + v2 + ", " + v3 + '\n')
+
 
 def mips_div_double(v1, v2, v3):
     return ("div.d " + v1 + ", " + v2 + ", " + v3 + '\n')
 
+
 def mips_or(v1, v2, v3):
     return ("or " + v1 + ", " + v2 + ", " + v3 + '\n')
 
+
 def mips_and(v1, v2, v3):
     return ("and " + v1 + ", " + v2 + ", " + v3 + '\n')
+
 
 def mips_move(dst, src):
     return ("move " + dst + ", " + src + '\n')
@@ -123,6 +130,10 @@ def mips_li(dst, val):
 
 def mips_load_byte(dst, src, offset=0):
     return ("lb " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
+
+
+def mips_beq(v1, v2, v3):
+    return ("beq " + v1 + ", " + v2 + ", " + v3 + '\n')
 
 
 def mips_syscall():

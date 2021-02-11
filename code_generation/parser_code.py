@@ -73,7 +73,7 @@ print_stmt : "Print" "(" expr ("," expr)* ")" ";"
     | expr5 "%" expr6 -> mod 
     | expr6
     expr6 : "-" expr6 -> neg 
-    | "!" expr6 -> not_expr 
+    | "!" expr6 -> not_bool
     | expr7
     expr7 : constant 
     | "ReadInteger" "(" ")" -> read_integer 

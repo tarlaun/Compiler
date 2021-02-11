@@ -399,11 +399,11 @@ class Cgen(Interpreter):
             code += '\tlw $v0, -20($sp)\n'
             code += '\tlw $ra, -24($sp)\n'
             code += '\taddi $sp, $sp, 8\n\n'
-        else: #int, bool    #done i think
+        else:  # int, bool    #done i think
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
-            code += 'seq $t2, $t1, $t0\n' # special equality checking operation - will set t2 = 1 if t1 == t0
+            code += 'seq $t2, $t1, $t0\n'  # special equality checking operation - will set t2 = 1 if t1 == t0
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
         self._types.pop()
@@ -518,11 +518,36 @@ class Cgen(Interpreter):
         self._types.append(Type.bool)
         return code
 
-    def neg(self, tree):
-        return 'neg'
+    def not_bool(self, tree):  # operation for getting opposite of a bool value.
+        code = ''.join(self.visit_children(tree))
+        label_number = str(self.new_label())
+        label = '__not__' + label_number
+        code += mips_text()
+        code += mips_load('$t0', '$sp')
+        code += add_stack(8)
+        code += mips_li('$t1', 1)
+        code += mips_beq('$t0', '$zero', label)  # if t0 is 0, t0not is 1 so jumps to label.
+        code += mips_li('$t1', 0)  # reaches this code if t0 is 1 ---> t0not set to 0
+        code += label + ':\n'
+        code += sub_stack(8)
+        code += mips_store('$t1', '$sp')
+        self._types.pop()
+        self._types.append(Type.bool)
+        return code
 
-    def not_exprs(self, tree):
-        return 'NOT_EXPRS'
+    def neg(self, tree):
+        code = ''.join(self.visit_children(tree))
+        operand_type = self._types[-1]
+        if operand_type == Type.int:
+            code += mips_text()
+            code += mips_load('$t0', '$sp')
+            code += mips_sub('$t0', '$zero', '$t0')
+            code += mips_store('$t0', '$sp')
+        elif operand_type == Type.double:
+            code += mips_load_double('$f0', '$sp')
+            code += 'ng.d $f0, $f0\n'  # special FP instruction for negating double
+            code += mips_store('$f0', '$sp')
+        return code
 
     def actuals(self, tree):
         return 'actuals'
