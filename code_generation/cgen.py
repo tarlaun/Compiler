@@ -1,9 +1,9 @@
 import lark
 from lark.visitors import Interpreter
 from parser_code import get_parse_tree
-from symbol_table import SymbolTable, Scope, Symbol
+from symbol_table import SymbolTable
 from mips import *
-# from code_generation.mips import *
+from code_generation.mips import *
 
 
 # Typechecking... might move to a different file later.
@@ -48,46 +48,40 @@ class Cgen(Interpreter):
 
     def __init__(self):
         super().__init__()
+        self.current_scope = None
         self.loop_labels = []
         self._types = []
-        self.stack = SymbolTable()
+        self.symbol_table = SymbolTable()
 
     def start(self, tree):
         code = ''
         print('#### start the code generation')
 
-        root = Scope('root')
-        self.stack.push_scope(root)
+        self.symbol_table.visit(tree)
 
         code += ''.join(self.visit_children(tree))
         return code
 
     def declaration(self, tree):
-        print('### declaration')
         code = ''
         for decl in tree.children:
             code += self.visit(decl)
         return code
 
-    # todo - is incomplete (chera commentesh zard shod? cool!)
-    def function_declaration(self, tree):
+    def function_declaration(self, tree):  # todo - is incomplete (chera commentesh zard shod? cool!)
         code = ''
         function = tree._meta
-
+        self.symbol_table.push_scope(function.scope)
         if len(tree.children) == 4:
-            return_type = tree.children[0]
             ident = tree.children[1]
             formals = tree.children[2]
             stmt_block = tree.children[3]
         else:
-            return_type = None  # function is void
             ident = tree.children[0]
             formals = tree.children[1]
             stmt_block = tree.children[2]
-
-        function_scope = Scope(ident)
-        self.stack.push_scope(function_scope)
-
+        if ident == 'main' :
+            code += declare_global_static_funcs()
         code += self.visit(tree.children[0])
         code += self.visit(formals)
         code += self.visit(stmt_block)
@@ -95,8 +89,7 @@ class Cgen(Interpreter):
             code += 'main func'
         else:
             code += ' not main func '  # just for testing... its BS
-
-        self.stack.pop_scope()
+        self.symbol_table.pop_scope()
         return code
 
     def variable_declaration(self, tree):  # todo - is incomplete
@@ -104,29 +97,19 @@ class Cgen(Interpreter):
         code += ''.join(self.visit_children(tree))
         return code
 
-    def variable(self, tree):
-        varibale_type = self.visit(tree.children[0])
-        variable_name = tree.children[1]
-
-        symbol = Symbol(variable_name, varibale_type)
-        self.stack.push_symbol(symbol)
-
-        return 'variable'
-
-    def formals(self, tree):
-        self.visit_children(tree)  # formals will be pushed to stack
+    def formals(self, tree):  # todo
+        # push to stack
         return 'formals'
 
-    def type(self, tree):
-        print('### type')
-        return tree.children[0]
+    def type(self, tree):  # todo
+        return 'type'
 
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
         print('#### start stmt')
-        # child = tree.children[0]
-        # stmt_label = self.count_label()
-        # child._meta = stmt_label
+        child = tree.children[0]
+        stmt_label = self.count_label()
+        child._meta = stmt_label
         code += self.visit(tree.children[0])
         code += self.visit(tree.children[1])
         return code
@@ -169,11 +152,9 @@ class Cgen(Interpreter):
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
-            # sp+8 is stored in t0 -- why?
-            code += mips_load('$t0', '$sp', offset=8)
+            code += mips_load('$t0', '$sp', offset=8)  # sp+8 is stored in t0 -- why?
             code += mips_load_double('$f0', '$sp')
-            # f0 is stored in where t0 is pointing to -- why??
-            code += mips_store_double('$f0', '$t0')
+            code += mips_store_double('$f0', '$t0')  # f0 is stored in where t0 is pointing to -- why??
             code += mips_store_double('$f0', '$sp', offset=8)
             code += add_stack(8)
         else:  # int, bool
@@ -190,7 +171,7 @@ class Cgen(Interpreter):
         return 'class_inst'
 
     def var_addr(self, tree):  # todo
-        var_scope = self.stack.get_current_scope()
+        var_scope = self.current_scope
         var_name = tree.children[0].value
         return 'var_addr'
 
@@ -290,8 +271,7 @@ class Cgen(Interpreter):
             code += mips_mul('$t2', '$t1', '$t0')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -325,8 +305,7 @@ class Cgen(Interpreter):
             code += 'mflo $t2\n'
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -345,8 +324,7 @@ class Cgen(Interpreter):
             code += mips_add('$t2', '$t0', '$t1')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -365,8 +343,7 @@ class Cgen(Interpreter):
             code += mips_sub('$t2', '$t1', '$t0')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -411,8 +388,7 @@ class Cgen(Interpreter):
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
-            # special floating point coprocessor instruction, checks equality
-            code += 'c.eq.d $f0, $f2\n'
+            code += 'c.eq.d $f0, $f2\n'  # special floating point coprocessor instruction, checks equality
             code += 'bc1f ' + label + '\n'
             # bc1f is a flag that stores equality operation result. if eq is false it jumps to label.
             code += mips_li('$t0', 1)
@@ -442,8 +418,7 @@ class Cgen(Interpreter):
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
-            # special equality checking operation - will set t2 = 1 if t1 == t0
-            code += 'seq $t2, $t1, $t0\n'
+            code += 'seq $t2, $t1, $t0\n'  # special equality checking operation - will set t2 = 1 if t1 == t0
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
         self._types.pop()
@@ -558,8 +533,7 @@ class Cgen(Interpreter):
         self._types.append(Type.bool)
         return code
 
-    # operation for getting opposite of a bool value.
-    def not_bool(self, tree):
+    def not_bool(self, tree):  # operation for getting opposite of a bool value.
         code = ''.join(self.visit_children(tree))
         label_number = self.new_label()
         label = '__not__' + label_number
@@ -567,10 +541,8 @@ class Cgen(Interpreter):
         code += mips_load('$t0', '$sp')
         code += add_stack(8)
         code += mips_li('$t1', 1)
-        # if t0 is 0, t0not is 1 so jumps to label.
-        code += mips_beq('$t0', '$zero', label)
-        # reaches this code if t0 is 1 ---> t0not set to 0
-        code += mips_li('$t1', 0)
+        code += mips_beq('$t0', '$zero', label)  # if t0 is 0, t0not is 1 so jumps to label.
+        code += mips_li('$t1', 0)  # reaches this code if t0 is 1 ---> t0not set to 0
         code += label + ':\n'
         code += sub_stack(8)
         code += mips_store('$t1', '$sp')
@@ -657,6 +629,16 @@ class Cgen(Interpreter):
         self.loop_labels.pop()
         return None
 
+    def declare_global_static_funcs(self):
+        code = ''
+        code += mips_itod()
+        code += mips_itob()
+        code += mips_dtoi()
+        code += mips_btoi()
+        code += mips_str_cmp()
+        return code
+    
+
 
 if_test_code = """
 int main() {
@@ -688,12 +670,6 @@ int main() {
 }
 """
 
-function_test_code = '''
-int func(int a, int b){
-    return a;
-}
-'''
-
 shit_test_code = '''
 bool main(){
 int fuck;
@@ -702,13 +678,13 @@ fuck = 5 + 5;
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(function_test_code)
+    tree = get_parse_tree(shit_test_code)
     # print(tree)
     print(tree.pretty())
     code = ''
     code += str(Cgen().visit(tree))
-    # print("CODE:")
-    # print(code)
+    print("CODE:")
+    print(code)
 
 '''  def expr(self, tree):
         print('#### start expr')

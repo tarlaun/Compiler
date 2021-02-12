@@ -325,7 +325,6 @@ def mips_str_cmp():
 
 
 
-
 def mips_create_label(str):
     
     return(mips_get_label(str) +":\n")
