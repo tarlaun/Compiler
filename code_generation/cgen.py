@@ -1,11 +1,12 @@
 import lark
 from lark.visitors import Interpreter
-from parser_code import get_parse_tree
-from symbol_table import SymbolTable, Scope, Symbol, Function
-from mips import *
+from code_generation.parser_code import get_parse_tree
+from code_generation.symbol_table import SymbolTable, Scope, Symbol, Function
+from code_generation.mips import *
 
 
 # Typechecking... might move to a different file later.
+
 
 
 class Type:
@@ -92,7 +93,7 @@ class Cgen(Interpreter):
         # set function label
         # function_data.set_label(label)
 
-        if ident == 'main':
+        if ident == 'main': #????
             code += self.declare_global_static_funcs()
         code += self.visit(tree.children[0])
         code += self.visit(formals)
@@ -111,10 +112,10 @@ class Cgen(Interpreter):
         return code
 
     def variable(self, tree):
-        print('### variable')
-        varibale_type = self.visit(tree.children[0])
+        #print('### variable')
+        variable_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
-        symbol = Symbol(variable_name, varibale_type)
+        symbol = Symbol(variable_name, variable_type)
         self.symbol_table.push_symbol(symbol)
         return 'variable'
 
@@ -123,7 +124,7 @@ class Cgen(Interpreter):
         return 'formal'
 
     def type(self, tree):  # todo
-        return 'type'
+        return ' '
 
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
