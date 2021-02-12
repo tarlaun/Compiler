@@ -120,8 +120,8 @@ class Cgen(Interpreter):
         self.visit_children(tree)  # formals will be pushed to stack
         return 'formal'
 
-    def type(self, tree):  # todo
-        return ' '
+    def type(self, tree):
+        return tree.children[0]
 
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
