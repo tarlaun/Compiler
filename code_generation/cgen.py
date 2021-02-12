@@ -72,10 +72,7 @@ class Cgen(Interpreter):
     def function_declaration(self, tree):
         print('### function_declaration')
         code = ''
-        # function label should be tree._meta
-        # function = tree._meta
-        function = tree._meta
-        self.symbol_table.push_scope(function.scope)
+
         if len(tree.children) == 4:
             return_type = self.visit(tree.children[0])
             ident = tree.children[1]
@@ -96,7 +93,7 @@ class Cgen(Interpreter):
         # function_data.set_label(label)
 
         if ident == 'main':
-            code += declare_global_static_funcs()
+            code += self.declare_global_static_funcs()
         code += self.visit(tree.children[0])
         code += self.visit(formals)
         code += self.visit(stmt_block)
@@ -117,15 +114,13 @@ class Cgen(Interpreter):
         print('### variable')
         varibale_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
-        print(varibale_type)
-
         symbol = Symbol(variable_name, varibale_type)
         self.symbol_table.push_symbol(symbol)
-
         return 'variable'
 
     def formals(self, tree):
         self.visit_children(tree)  # formals will be pushed to stack
+        return 'formal'
 
     def type(self, tree):  # todo
         return 'type'
@@ -134,7 +129,7 @@ class Cgen(Interpreter):
         code = ''
         print('#### start stmt')
         child = tree.children[0]
-        stmt_label = self.count_label()
+        stmt_label = self.new_label()
         child._meta = stmt_label
         code += self.visit(tree.children[0])
         code += self.visit(tree.children[1])
