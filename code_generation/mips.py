@@ -139,6 +139,9 @@ def mips_load_byte(dst, src, offset=0):
 def mips_beq(v1, v2, v3):
     return ("beq " + v1 + ", " + v2 + ", " + v3 + '\n')
 
+def mips_beqz(register, label):
+    return ("beqz "+register + " , " + label)
+
 def mips_bne(v1 , v2 , v3):
     return ("bne " + v1 + ", " + v2 + ", " + v3 + '\n')
 
@@ -261,8 +264,8 @@ def mips_btoi():
     code = ""
     code += mips_text()
     code += mips_create_label('btoi')
-    code += ('lw $v0, 4($fp)\n')
-    code += ('jr $ra\n')
+    code += mips_load('$v0', '$fp', 4)
+    code += mips_jr('$ra')
     return code
 
 
@@ -270,11 +273,12 @@ def mips_itob():
     code = ""
     code += mips_text()
     code += mips_create_label('itob')
-    code += ('lw $s0, 4($fp)\n')
-    code += ('li $v0, 0\n')
-    code += ('beqz $s0, __itob__jump__\n')
-    code += ('li $v0, 1\n')
-    code += ('__itob__jump__: jr $ra\n')
+    code += mips_load('$s0' , '$fp' , 4)
+    code += mips_load_immidiate('$v0' , 0)
+    code += mips_beqz('$s0' , mips_get_label('itob jump'))
+    code += mips_load_immidiate('$v0' , 1)
+    code += mips_create_label('itob jump')
+    code += mips_jr('$ra')
     return code
 
 
@@ -285,7 +289,7 @@ def mips_dtoi():
     code += ('l.s $f0, 4($fp)\n')
     code += ('round.w.s $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
-    code += ('jr $ra\n')
+    code += mips_jr('$ra')
     return code
 
 
@@ -293,11 +297,11 @@ def mips_itod():
     code = ""
     code += mips_text()
     code += mips_create_label('itod')
-    code += ('lw $s0, 4($fp)\n')
+    code += mips_load('$s0' , '$fp' , 4)
     code += ('mtc1 $s0, $f0\n')
     code += ('cvt.s.w $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
-    code += ('jr $ra\n')
+    code += mips_jr('$ra')
     return code
 
 def mips_str_cmp():
