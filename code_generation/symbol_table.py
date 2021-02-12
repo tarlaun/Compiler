@@ -30,10 +30,17 @@ class SymbolTable(Interpreter):
                     return symbol.value
             cur_scope = cur_scope.parent_scope
         raise Exception(
-            'SymbolTable Error:symbol does not exist in symbolTable.')
+            'SymbolTable Error: symbol does not exist in symbolTable.')
 
-    # def push_function(self, function):
-    #     self.functions.append(function)
+    def push_function(self, function):
+        self.functions.append(function)
+
+    def lookup_function(self, name):
+        for f in self.functions:
+            if f.name == name:
+                return f
+        raise Exception(
+            'SymbolTable Error: function does not exist in symbolTable.')
 
     # def start(self, tree):
     #     root = Scope('root')
@@ -131,12 +138,14 @@ class Scope:
 
 
 class Function:
-    def __init__(self, scope, name, formals, stmt_block, return_type=None):
+    def __init__(self, scope, name, return_type=None):
         self.scope = scope
         self.name = name
-        self.formals = formals
-        self.stmt_block = stmt_block
         self.return_type = return_type
+        self.label = None
+
+    def set_label(self, label):
+        self.label = label
 
 
 if_test_code = """

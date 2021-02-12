@@ -1,7 +1,7 @@
 import lark
 from lark.visitors import Interpreter
 from parser_code import get_parse_tree
-from symbol_table import SymbolTable, Scope, Symbol
+from symbol_table import SymbolTable, Scope, Symbol, Function
 from mips import *
 # from code_generation.mips import *
 
@@ -50,14 +50,14 @@ class Cgen(Interpreter):
         super().__init__()
         self.loop_labels = []
         self._types = []
-        self.stack = SymbolTable()
+        self.symbol_table = SymbolTable()
 
     def start(self, tree):
         code = ''
         print('#### start the code generation')
 
         root = Scope('root')
-        self.stack.push_scope(root)
+        self.symbol_table.push_scope(root)
 
         code += ''.join(self.visit_children(tree))
         return code
@@ -69,13 +69,18 @@ class Cgen(Interpreter):
             code += self.visit(decl)
         return code
 
+    def class_declaration(self, tree):
+        print('### class_declaration')
     # todo - is incomplete (chera commentesh zard shod? cool!)
+
     def function_declaration(self, tree):
+        print('### function_declaration')
         code = ''
-        function = tree._meta
+        # function label should be tree._meta
+        # function = tree._meta
 
         if len(tree.children) == 4:
-            return_type = tree.children[0]
+            return_type = self.visit(tree.children[0])
             ident = tree.children[1]
             formals = tree.children[2]
             stmt_block = tree.children[3]
@@ -86,7 +91,12 @@ class Cgen(Interpreter):
             stmt_block = tree.children[2]
 
         function_scope = Scope(ident)
-        self.stack.push_scope(function_scope)
+        self.symbol_table.push_scope(function_scope)
+
+        function_data = Function(function_scope, ident, return_type)
+        self.symbol_table.push_function(function_data)
+        # set function label
+        # function_data.set_label(label)
 
         code += self.visit(tree.children[0])
         code += self.visit(formals)
@@ -96,7 +106,7 @@ class Cgen(Interpreter):
         else:
             code += ' not main func '  # just for testing... its BS
 
-        self.stack.pop_scope()
+        self.symbol_table.pop_scope()
         return code
 
     def variable_declaration(self, tree):  # todo - is incomplete
@@ -105,11 +115,13 @@ class Cgen(Interpreter):
         return code
 
     def variable(self, tree):
+        print('### variable')
         varibale_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
+        print(varibale_type)
 
         symbol = Symbol(variable_name, varibale_type)
-        self.stack.push_symbol(symbol)
+        self.symbol_table.push_symbol(symbol)
 
         return 'variable'
 
@@ -124,9 +136,9 @@ class Cgen(Interpreter):
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
         print('#### start stmt')
-        # child = tree.children[0]
-        # stmt_label = self.count_label()
-        # child._meta = stmt_label
+        child = tree.children[0]
+        stmt_label = self.count_label()
+        child._meta = stmt_label
         code += self.visit(tree.children[0])
         code += self.visit(tree.children[1])
         return code
@@ -190,7 +202,7 @@ class Cgen(Interpreter):
         return 'class_inst'
 
     def var_addr(self, tree):  # todo
-        var_scope = self.stack.get_current_scope()
+        var_scope = self.symbol_table.get_current_scope()
         var_name = tree.children[0].value
         return 'var_addr'
 
@@ -694,6 +706,24 @@ int func(int a, int b){
 }
 '''
 
+class_test_code = '''
+class test_class extends test_extends implements test_implement, test_implement2{
+    private int a;
+    protected int b;
+    public int c;
+
+    private int function1(bool a){
+
+    }
+    protected int function2(bool a){
+
+    }
+    public int function3(bool a){
+
+    }
+}
+'''
+
 shit_test_code = '''
 bool main(){
 int fuck;
@@ -702,7 +732,7 @@ fuck = 5 + 5;
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(function_test_code)
+    tree = get_parse_tree(shit_test_code)
     # print(tree)
     print(tree.pretty())
     code = ''

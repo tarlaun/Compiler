@@ -25,13 +25,12 @@ function_declaration: type IDENTIFIER "(" formals ")" stmt_block
     | "static void" IDENTIFIER "(" formals ")" stmt_block
 formals: variable ("," variable)*
     |
-class_declaration: "class" IDENTIFIER ("extends" IDENTIFIER)? ("implements" IDENTIFIER ("," IDENTIFIER)*)? "{" (field)* "}"
+class_declaration: "class" IDENTIFIER (extend)? (implement)? "{" (field)* "}"
+extend: "extends" IDENTIFIER
+implement: "implements" IDENTIFIER ("," IDENTIFIER)*
 field: access_mode variable_declaration
     |  access_mode function_declaration
-access_mode: "private" 
-    | "public"
-    | "protected"
-    |
+access_mode: ACCESS_MODE
 interface_declaration: "interface" IDENTIFIER "{" (prototype)* "}"
 prototype: type IDENTIFIER "(" formals ")" ";"
     | "void" IDENTIFIER "(" formals ")" ";"
@@ -96,7 +95,7 @@ print_stmt : "Print" "(" expr ("," expr)* ")" ";"
     | "null" -> null
 
 TYPE : "int" | "double" | "bool" | "string"
-
+ACCESS_MODE: "private" | "protected" | "public"
 BOOL: "true" | "false"
 INTEGER: /([-\+])?[0-9]+/
 DOUBLE: /([-\+])?([0-9])+\.([0-9])*((E|e)(\+|\-)?([0-9])+)?/
