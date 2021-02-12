@@ -1,9 +1,9 @@
 import lark
 from lark.visitors import Interpreter
+from lark import Token
 from parser_code import get_parse_tree
-from symbol_table import SymbolTable, Scope, Symbol, Function
+from symbol_table import SymbolTable, Scope, Symbol, Function, Class
 from mips import *
-
 
 # Typechecking... might move to a different file later.
 
@@ -71,9 +71,7 @@ class Cgen(Interpreter):
 
     # todo - is incomplete (chera commentesh zard shod? cool!) ==> i think it is ok now
     def function_declaration(self, tree):
-        print('### function_declaration')
         code = ''
-        ident = ''
         if len(tree.children) == 4:
             return_type = self.visit(tree.children[0])
             ident = tree.children[1]
@@ -85,7 +83,8 @@ class Cgen(Interpreter):
             formals = tree.children[1]
             stmt_block = tree.children[2]
 
-        function_scope = Scope(ident)
+        cur_scope = self.symbol_table.get_current_scope()
+        function_scope = Scope(ident, cur_scope)
         self.symbol_table.push_scope(function_scope)
 
         function_data = Function(function_scope, ident, return_type)
@@ -117,12 +116,14 @@ class Cgen(Interpreter):
         return code
 
     def variable(self, tree):
-        # print('### variable')
+        print('### variable')
+        code = ''
         variable_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
         symbol = Symbol(variable_name, variable_type)
         self.symbol_table.push_symbol(symbol)
-        return 'variable'
+        # mips code to push to stack
+        return code
 
     def formals(self, tree):
         code = ''
@@ -138,7 +139,7 @@ class Cgen(Interpreter):
         return code
 
     def type(self, tree):
-        return tree.children[0]
+        return tree.children[0].value
 
     def stmt_block(self, tree):  # todo - is incomplete
         return ''.join(self.visit_children(tree))
@@ -201,10 +202,12 @@ class Cgen(Interpreter):
     def class_inst(self, tree):  # todo
         return 'class_inst'
 
-    def var_addr(self, tree):  # todo
-        var_scope = self.symbol_table.get_current_scope()
+    def var_addr(self, tree):
+        code = ''
         var_name = tree.children[0].value
-        return 'var_addr'
+        var_value = self.symbol_table.lookup_symbol(var_name)
+        # mips code to assign
+        return code
 
     def var_access(self, tree):  # todo
         return 'var_access'
@@ -243,19 +246,17 @@ class Cgen(Interpreter):
         code += print_newline()
         return code
 
-    def new_array(self, tree): #todo - add the typechecking
+    def new_array(self, tree):  # todo - add the typechecking
         code = ''.join(self.visit_children(tree))
-        #TYPECHECKING: NEEDS TO BE CHANGED.
-        shamt = 2 #shift amount?!
+        # TYPECHECKING: NEEDS TO BE CHANGED.
+        shamt = 2  # shift amount?!
         tp = tree.children[1].children[0]
         if type(tp) == lark.lexer.Token:
             if tp.value == Type.double:
                 shamt = 3
         code += mips_new_array(shamt)
-        #add to self._types?
+        # add to self._types?
         return code
-
-
 
     def l_value(self, tree):
         return ''.join(self.visit_children(tree))
@@ -731,6 +732,9 @@ int func(int a, int b){
 '''
 
 class_test_code = '''
+class test_extends{
+
+}
 class test_class extends test_extends implements test_implement, test_implement2{
     private int a;
     protected int b;
@@ -752,6 +756,10 @@ shit_test_code = '''
 bool main(){
 int fuck;
 fuck = 5 + 5;
+}
+
+int add(){
+
 }
 '''
 

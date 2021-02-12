@@ -25,11 +25,14 @@ class SymbolTable():
 
     def lookup_symbol(self, name):
         cur_scope = self.stack[len(self.stack) - 1]
-        while cur_scope:
-            for symbol in cur_scope.symbols:
+        search_stack = [cur_scope]
+        while(len(search_stack) != 0):
+            scope = search_stack.pop()
+            for symbol in scope.symbols:
                 if symbol.name == name:
-                    return symbol.value
-            cur_scope = cur_scope.parent_scope
+                    return symbol
+            for parent in scope.parent_scopes:
+                search_stack.append(parent)
         raise Exception(
             'SymbolTable Error: symbol does not exist in symbolTable.')
 
@@ -74,19 +77,23 @@ class Symbol:
 class Scope:
     def __init__(self, name, parent_scope=None):
         self.name = name
-        self.parent_scope = parent_scope
+        self.parent_scopes = []
+        self.parent_scopes.append(parent_scope)
         self.symbols = []
 
     def add_symbol(self, symbol):
         self.symbols.append(symbol)
 
-    def get_id(self):
-        id = self.name
-        parent = self.parent_scope
-        while parent:
-            id += ('/' + parent.name)
-            parent = parent.parent_scope
-        return id
+    def add_parent_scope(self, parent):
+        self.parent_scopes.append(parent)
+
+    # def get_id(self):
+    #     id = self.name
+    #     parent = self.parent_scopes[0]
+    #     while parent:
+    #         id += ('/' + parent.name)
+    #         parent = parent.parent_scope
+    #     return id
 
     def __str__(self):
         return self.get_id()
@@ -94,7 +101,8 @@ class Scope:
 
 
 class Function:
-    def __init__(self, scope, name, return_type=None):
+    def __init__(self, label, scope, name, return_type=None):
+        self.label = label
         self.scope = scope
         self.name = name
         self.return_type = return_type
