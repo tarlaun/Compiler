@@ -3,7 +3,6 @@ from lark.visitors import Interpreter
 from parser_code import get_parse_tree
 from symbol_table import SymbolTable, Scope, Symbol, Function
 from mips import *
-from code_generation.mips import *
 
 
 # Typechecking... might move to a different file later.
