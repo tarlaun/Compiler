@@ -1,9 +1,9 @@
 import lark
 from lark.visitors import Interpreter
+from lark import Token
 from parser_code import get_parse_tree
-from symbol_table import SymbolTable, Scope, Symbol, Function
+from symbol_table import SymbolTable, Scope, Symbol, Function, Class
 from mips import *
-
 
 # Typechecking... might move to a different file later.
 
@@ -68,11 +68,42 @@ class Cgen(Interpreter):
             code += self.visit(decl)
         return code
 
+    def class_declaration(self, tree):
+        print('### class_declaration')
+        ident = tree.children[0]  # its an IDENTIFIEER
+
+        cur_scope = self.symbol_table.get_current_scope()
+        class_scope = Scope(ident, [cur_scope])
+        self.symbol_table.push_scope(class_scope)
+
+        class_obj = Class(class_scope, ident)
+        self.symbol_table.push_class(class_obj)
+
+        self.visit_children(tree)
+
+        self.symbol_table.pop_scope()
+
+        return 'class'
+
+    def extend(self, tree):
+        print('### extend')
+        cur_scope = self.symbol_table.get_current_scope()
+
+        base_scope_name = tree.children[0].value
+        base_scope = self.symbol_table.lookup_class(base_scope_name).scope
+
+        cur_scope.add_parent_scope(base_scope)
+        return None
+
+    def implement(self, tree):
+        print('### implement')  # for now we do not support interface
+        interfaces = []
+        for child in tree.children:
+            interfaces.append(child.value)
+
     # todo - is incomplete (chera commentesh zard shod? cool!)
     def function_declaration(self, tree):
-        print('### function_declaration')
         code = ''
-
         if len(tree.children) == 4:
             return_type = self.visit(tree.children[0])
             ident = tree.children[1]
@@ -84,23 +115,25 @@ class Cgen(Interpreter):
             formals = tree.children[1]
             stmt_block = tree.children[2]
 
-        function_scope = Scope(ident)
+        cur_scope = self.symbol_table.get_current_scope()
+        function_scope = Scope(ident, cur_scope)
         self.symbol_table.push_scope(function_scope)
 
-        function_data = Function(function_scope, ident, return_type)
-        self.symbol_table.push_function(function_data)
-        # set function label
-        # function_data.set_label(label)
+        function_label = 'function_' + self.new_label()
+
+        function_obj = Function(
+            function_label, function_scope, ident, return_type)
+        self.symbol_table.push_function(function_obj)
 
         if ident == 'main':  # ????
             code += self.declare_global_static_funcs()
-        code += self.visit(tree.children[0])
+            code += mips_label('main')
+        else:
+            code += mips_label(function_label)  # just for testing... its BS
+
+        # code += self.visit(tree.children[0])
         code += self.visit(formals)
         code += self.visit(stmt_block)
-        if ident == 'main':
-            code += 'main func'
-        else:
-            code += ' not main func '  # just for testing... its BS
 
         self.symbol_table.pop_scope()
         return code
@@ -111,28 +144,34 @@ class Cgen(Interpreter):
         return code
 
     def variable(self, tree):
-        # print('### variable')
+        print('### variable')
+        code = ''
         variable_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
         symbol = Symbol(variable_name, variable_type)
         self.symbol_table.push_symbol(symbol)
-        return 'variable'
+        # mips code to push to stack
+        return code
 
     def formals(self, tree):
-        self.visit_children(tree)  # formals will be pushed to stack
-        return 'formal'
+        code = ''
+        if tree.children:
+            # formals will be pushed to stack
+            code += self.visit_children(tree)
+        return code
 
     def type(self, tree):
-        return tree.children[0]
+        return tree.children[0].value
 
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
         print('#### start stmt')
-        child = tree.children[0]
-        stmt_label = self.new_label()
-        child._meta = stmt_label
-        code += self.visit(tree.children[0])
-        code += self.visit(tree.children[1])
+        if(len(tree.children) != 0):
+            child = tree.children[0]
+            stmt_label = self.new_label()
+            child._meta = stmt_label
+            code += self.visit(tree.children[0])
+            code += self.visit(tree.children[1])
         return code
 
     def expr(self, tree):
@@ -193,10 +232,12 @@ class Cgen(Interpreter):
     def class_inst(self, tree):  # todo
         return 'class_inst'
 
-    def var_addr(self, tree):  # todo
-        var_scope = self.symbol_table.get_current_scope()
+    def var_addr(self, tree):
+        code = ''
         var_name = tree.children[0].value
-        return 'var_addr'
+        var_value = self.symbol_table.lookup_symbol(var_name)
+        # mips code to assign
+        return code
 
     def var_access(self, tree):  # todo
         return 'var_access'
@@ -708,6 +749,9 @@ int func(int a, int b){
 '''
 
 class_test_code = '''
+class test_extends{
+
+}
 class test_class extends test_extends implements test_implement, test_implement2{
     private int a;
     protected int b;
@@ -730,11 +774,14 @@ bool main(){
 int fuck;
 fuck = 5 + 5;
 }
+
+int add(){
+
+}
 '''
 
 if __name__ == '__main__':
     tree = get_parse_tree(shit_test_code)
-    # print(tree)
     print(tree.pretty())
     code = ''
     code += str(Cgen().visit(tree))
