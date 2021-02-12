@@ -19,6 +19,7 @@ class SymbolTable(Interpreter):
 
     def push_symbol(self, symbol):
         cur_scope = self.stack[len(self.stack) - 1]
+        symbol.set_scope(cur_scope)
         cur_scope.symbols.append(symbol)
 
     def lookup_symbol(self, name):
@@ -95,10 +96,18 @@ class SymbolTable(Interpreter):
 
 
 class Symbol:
-    def __init__(self, name, type, value, scope):
+    def __init__(self, name, type, value=None, scope=None):
         self.name = name
         self.type = type
         self.value = value
+        self.scope = scope
+        if(scope):
+            scope.add_symbol(self)
+
+    def set_value(self, value):
+        self.value = value
+
+    def set_scope(self, scope):
         self.scope = scope
         scope.add_symbol(self)
 

@@ -1,9 +1,9 @@
 import lark
 from lark.visitors import Interpreter
 from parser_code import get_parse_tree
-from symbol_table import SymbolTable
+from symbol_table import SymbolTable, Scope, Symbol
 from mips import *
-from code_generation.mips import *
+# from code_generation.mips import *
 
 
 # Typechecking... might move to a different file later.
@@ -57,12 +57,16 @@ class Cgen(Interpreter):
         code = ''
         print('#### start the code generation')
 
+        root = Scope('root')
+        self.symbol_table.push_scope(root)
+
         self.symbol_table.visit(tree)
 
         code += ''.join(self.visit_children(tree))
         return code
 
     def declaration(self, tree):
+        print('### declaration')
         code = ''
         for decl in tree.children:
             code += self.visit(decl)
@@ -72,7 +76,7 @@ class Cgen(Interpreter):
     def function_declaration(self, tree):
         code = ''
         function = tree._meta
-        self.symbol_table.push_scope(function.scope)
+
         if len(tree.children) == 4:
             ident = tree.children[1]
             formals = tree.children[2]
@@ -81,6 +85,10 @@ class Cgen(Interpreter):
             ident = tree.children[0]
             formals = tree.children[1]
             stmt_block = tree.children[2]
+
+        function_scope = Scope(ident)
+        self.symbol_table.push_scope(function_scope)
+
         code += self.visit(tree.children[0])
         code += self.visit(formals)
         code += self.visit(stmt_block)
@@ -88,6 +96,7 @@ class Cgen(Interpreter):
             code += 'main func'
         else:
             code += ' not main func '  # just for testing... its BS
+
         self.symbol_table.pop_scope()
         return code
 
@@ -96,19 +105,29 @@ class Cgen(Interpreter):
         code += ''.join(self.visit_children(tree))
         return code
 
+    def variable(self, tree):
+        varibale_type = self.visit(tree.children[0])
+        variable_name = tree.children[1]
+
+        symbol = Symbol(variable_name, varibale_type)
+        self.symbol_table.push_symbol(symbol)
+
+        return 'variable'
+
     def formals(self, tree):  # todo
         # push to stack
         return 'formals'
 
-    def type(self, tree):  # todo
-        return 'type'
+    def type(self, tree):
+        print('### type')
+        return tree.children[0]
 
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
         print('#### start stmt')
-        child = tree.children[0]
-        stmt_label = self.count_label()
-        child._meta = stmt_label
+        # child = tree.children[0]
+        # stmt_label = self.count_label()
+        # child._meta = stmt_label
         code += self.visit(tree.children[0])
         code += self.visit(tree.children[1])
         return code
@@ -683,8 +702,8 @@ if __name__ == '__main__':
     print(tree.pretty())
     code = ''
     code += str(Cgen().visit(tree))
-    print("CODE:")
-    print(code)
+    # print("CODE:")
+    # print(code)
 
 '''  def expr(self, tree):
         print('#### start expr')
