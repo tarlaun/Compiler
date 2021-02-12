@@ -45,7 +45,7 @@ def mips_add(v1, v2, v3):
 
 
 def mips_addi(v1, v2, v3):
-    return ("addi " + v1 + ", " + v2 + ", " + v3 + '\n')
+    return ("addi " + v1 + ", " + v2 + ", " + str(v3) + '\n')
 
 
 def mips_add_double(v1, v2, v3):
@@ -91,6 +91,8 @@ def mips_move(dst, src):
 def mips_jump(label):
     return ("j " + label + '\n')
 
+def mips_jr(register):
+    return ("jr "+ register + "\n")
 
 def mips_jal(label):
     return ("jal " + label + '\n')
@@ -107,6 +109,8 @@ def mips_label(label):
 def mips_load_address(dst, label):
     return ('la ' + dst + ' , ' + label + '\n')
 
+def mips_load_immidiate(dst , value):
+    return ('li ' + dst + ' , ' + str(value) + '\n')
 
 def mips_load(dst, src, offset=0):
     return ("lw " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
@@ -135,6 +139,11 @@ def mips_load_byte(dst, src, offset=0):
 def mips_beq(v1, v2, v3):
     return ("beq " + v1 + ", " + v2 + ", " + v3 + '\n')
 
+def mips_beqz(register, label):
+    return ("beqz "+register + " , " + label)
+
+def mips_bne(v1 , v2 , v3):
+    return ("bne " + v1 + ", " + v2 + ", " + v3 + '\n')
 
 def mips_syscall():
     return ("syscall" + '\n')
@@ -244,7 +253,7 @@ def label_gen():  # generates labels for MIPS code. Works well until 26*26
 
 def mips_array_decl():
     code = ""
-    code += ('_array_decl:' + '\n')
+    code += ('__array__decl__:' + '\n')
     code += mips_load('$s0', '$fp', 4)
     code += mips_load('$v0', '$s0')
     code += ('jr $ra' + '\n')
@@ -253,43 +262,80 @@ def mips_array_decl():
 
 def mips_btoi():
     code = ""
-    code += ('_btoi:\n')
-    code += ('lw $v0, 4($fp)\n')
-    code += ('jr $ra\n')
+    code += mips_text()
+    code += mips_create_label('btoi')
+    code += mips_load('$v0', '$fp', 4)
+    code += mips_jr('$ra')
     return code
 
 
 def mips_itob():
     code = ""
-    code += ('_itob:\n')
-    code += ('lw $s0, 4($fp)\n')
-    code += ('li $v0, 0\n')
-    code += ('beqz $s0, ___itob_jump\n')
-    code += ('li $v0, 1\n')
-    code += ('___itob_jump: jr $ra\n')
+    code += mips_text()
+    code += mips_create_label('itob')
+    code += mips_load('$s0' , '$fp' , 4)
+    code += mips_load_immidiate('$v0' , 0)
+    code += mips_beqz('$s0' , mips_get_label('itob jump'))
+    code += mips_load_immidiate('$v0' , 1)
+    code += mips_create_label('itob jump')
+    code += mips_jr('$ra')
     return code
 
 
 def mips_dtoi():
     code = ""
-    code += ('___dtoi:\n')
+    code += mips_text()
+    code += mips_create_label('dtoi')
     code += ('l.s $f0, 4($fp)\n')
     code += ('round.w.s $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
-    code += ('jr $ra\n')
+    code += mips_jr('$ra')
     return code
 
 
 def mips_itod():
     code = ""
-    code += ('___itod:\n')
-    code += ('lw $s0, 4($fp)\n')
+    code += mips_text()
+    code += mips_create_label('itod')
+    code += mips_load('$s0' , '$fp' , 4)
     code += ('mtc1 $s0, $f0\n')
     code += ('cvt.s.w $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
-    code += ('jr $ra\n')
+    code += mips_jr('$ra')
     return code
 
+def mips_str_cmp():
+        code = ""
+        code += mips_text()
+        code += mips_create_label('str cmp')
+        code += mips_load_byte('$t0' , '$a0' , 0)
+        code += mips_load_byte("$t1" , "$a1" , 0)
+        code += mips_bne('$t0' , '$t1' , mips_get_label('not eq str'))
+        code += mips_bne('$t0' , '$zero',  mips_get_label('stat cont'))
+        code += mips_load_immidiate('$v0' , 1)
+        code += mips_jr("$ra")
+        code += mips_create_label('stat cont')
+        code += mips_addi('$a0' , '$a0' , 1)
+        code += mips_addi('$a1' , '$a1' , 1)
+        code += mips_jump(mips_get_label('str cmp'))
+        code += mips_create_label('not eq str')
+        code += mips_load_immidiate('$v0' , 0)
+        return code
+
+
+
+
+def mips_create_label(str):
+    
+    return(mips_get_label(str) +":\n")
+
+def mips_get_label(str):
+    code = ""
+    strings = str.split(" ")
+    for i in range(len(strings)):
+        code += "__"
+        code += strings[i]
+    return(code + "__")
 
 semantic_error = '''
 .text
@@ -317,4 +363,4 @@ text += mips_btoi()
 print(text)
 for i in range(100):
     print(label_gen())'''
-print(print_bool(56))
+# print(print_bool(56))

@@ -2,7 +2,7 @@ from lark.visitors import Interpreter
 from parser_code import get_parse_tree
 
 
-class SymbolTable(Interpreter):
+class SymbolTable():
     def __init__(self):
         super().__init__()
         self.stack = []

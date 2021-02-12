@@ -3,7 +3,7 @@ from lark.visitors import Interpreter
 from parser_code import get_parse_tree
 from symbol_table import SymbolTable, Scope, Symbol, Function
 from mips import *
-# from code_generation.mips import *
+from code_generation.mips import *
 
 
 # Typechecking... might move to a different file later.
@@ -48,6 +48,7 @@ class Cgen(Interpreter):
 
     def __init__(self):
         super().__init__()
+        self.current_scope = None
         self.loop_labels = []
         self._types = []
         self.symbol_table = SymbolTable()
@@ -63,22 +64,19 @@ class Cgen(Interpreter):
         return code
 
     def declaration(self, tree):
-        print('### declaration')
         code = ''
         for decl in tree.children:
             code += self.visit(decl)
         return code
 
-    def class_declaration(self, tree):
-        print('### class_declaration')
     # todo - is incomplete (chera commentesh zard shod? cool!)
-
     def function_declaration(self, tree):
         print('### function_declaration')
         code = ''
         # function label should be tree._meta
         # function = tree._meta
-
+        function = tree._meta
+        self.symbol_table.push_scope(function.scope)
         if len(tree.children) == 4:
             return_type = self.visit(tree.children[0])
             ident = tree.children[1]
@@ -98,6 +96,8 @@ class Cgen(Interpreter):
         # set function label
         # function_data.set_label(label)
 
+        if ident == 'main':
+            code += declare_global_static_funcs()
         code += self.visit(tree.children[0])
         code += self.visit(formals)
         code += self.visit(stmt_block)
@@ -127,11 +127,9 @@ class Cgen(Interpreter):
 
     def formals(self, tree):
         self.visit_children(tree)  # formals will be pushed to stack
-        return 'formals'
 
-    def type(self, tree):
-        print('### type')
-        return tree.children[0]
+    def type(self, tree):  # todo
+        return 'type'
 
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
@@ -669,6 +667,15 @@ class Cgen(Interpreter):
         self.loop_labels.pop()
         return None
 
+    def declare_global_static_funcs(self):
+        code = ''
+        code += mips_itod()
+        code += mips_itob()
+        code += mips_dtoi()
+        code += mips_btoi()
+        code += mips_str_cmp()
+        return code
+
 
 if_test_code = """
 int main() {
@@ -737,8 +744,8 @@ if __name__ == '__main__':
     print(tree.pretty())
     code = ''
     code += str(Cgen().visit(tree))
-    # print("CODE:")
-    # print(code)
+    print("CODE:")
+    print(code)
 
 '''  def expr(self, tree):
         print('#### start expr')
