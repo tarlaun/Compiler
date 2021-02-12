@@ -305,22 +305,22 @@ def mips_itod():
     return code
 
 def mips_str_cmp():
-        code = ""
-        code += mips_text()
-        code += mips_create_label('str cmp')
-        code += mips_load_byte('$t0' , '$a0' , 0)
-        code += mips_load_byte("$t1" , "$a1" , 0)
-        code += mips_bne('$t0' , '$t1' , mips_get_label('not eq str'))
-        code += mips_bne('$t0' , '$zero',  mips_get_label('stat cont'))
-        code += mips_load_immidiate('$v0' , 1)
-        code += mips_jr("$ra")
-        code += mips_create_label('stat cont')
-        code += mips_addi('$a0' , '$a0' , 1)
-        code += mips_addi('$a1' , '$a1' , 1)
-        code += mips_jump(mips_get_label('str cmp'))
-        code += mips_create_label('not eq str')
-        code += mips_load_immidiate('$v0' , 0)
-        return code
+    code = ""
+    code += mips_text()
+    code += mips_create_label('str cmp')
+    code += mips_load_byte('$t0' , '$a0' , 0)
+    code += mips_load_byte("$t1" , "$a1" , 0)
+    code += mips_bne('$t0' , '$t1' , mips_get_label('not eq str'))
+    code += mips_bne('$t0' , '$zero',  mips_get_label('stat cont'))
+    code += mips_load_immidiate('$v0' , 1)
+    code += mips_jr("$ra")
+    code += mips_create_label('stat cont')
+    code += mips_addi('$a0' , '$a0' , 1)
+    code += mips_addi('$a1' , '$a1' , 1)
+    code += mips_jump(mips_get_label('str cmp'))
+    code += mips_create_label('not eq str')
+    code += mips_load_immidiate('$v0' , 0)
+    return code
 
 
 
