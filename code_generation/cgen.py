@@ -1,12 +1,11 @@
 import lark
 from lark.visitors import Interpreter
-from code_generation.parser_code import get_parse_tree
-from code_generation.symbol_table import SymbolTable, Scope, Symbol, Function
-from code_generation.mips import *
+from parser_code import get_parse_tree
+from symbol_table import SymbolTable, Scope, Symbol, Function
+from mips import *
 
 
 # Typechecking... might move to a different file later.
-
 
 
 class Type:
@@ -54,14 +53,12 @@ class Cgen(Interpreter):
         self.symbol_table = SymbolTable()
 
     def start(self, tree):
-        code = ''
         print('#### start the code generation')
 
         root = Scope('root')
         self.symbol_table.push_scope(root)
 
-        code += ''.join(self.visit_children(tree))
-        return code
+        return ''.join(self.visit_children(tree))
 
     def declaration(self, tree):
         code = ''
@@ -93,7 +90,7 @@ class Cgen(Interpreter):
         # set function label
         # function_data.set_label(label)
 
-        if ident == 'main': #????
+        if ident == 'main':  # ????
             code += self.declare_global_static_funcs()
         code += self.visit(tree.children[0])
         code += self.visit(formals)
@@ -112,7 +109,7 @@ class Cgen(Interpreter):
         return code
 
     def variable(self, tree):
-        #print('### variable')
+        # print('### variable')
         variable_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
         symbol = Symbol(variable_name, variable_type)
@@ -128,7 +125,7 @@ class Cgen(Interpreter):
 
     def stmt_block(self, tree):  # todo - is incomplete
         code = ''
-        print('#### start stmt')
+        # print('#### start stmt')
         child = tree.children[0]
         stmt_label = self.new_label()
         child._meta = stmt_label
@@ -236,6 +233,20 @@ class Cgen(Interpreter):
         code += print_newline()
         return code
 
+    def new_array(self, tree): #todo - add the typechecking
+        code = ''.join(self.visit_children(tree))
+        #TYPECHECKING: NEEDS TO BE CHANGED.
+        shamt = 2 #shift amount?!
+        tp = tree.children[1].children[0]
+        if type(tp) == lark.lexer.Token:
+            if tp.value == Type.double:
+                shamt = 3
+        code += mips_new_array(shamt)
+        #add to self._types?
+        return code
+
+
+
     def l_value(self, tree):
         return ''.join(self.visit_children(tree))
 
@@ -267,7 +278,7 @@ class Cgen(Interpreter):
         code += mips_align(2)
         str_val = tree.children[0].value
         string_num = self.new_string_label()
-        string_name = '__string__'+string_num
+        string_name = '__string__' + string_num
         code += string_name + ':'
         code += mips_asciiz(str_val)
         code += mips_text()

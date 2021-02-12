@@ -359,11 +359,89 @@ def mips_semantic_error():
     return semantic_error
 
 
+def read_line(label):  # ino kamel motmaen nistam ke chera intorie. Age residam dobare check mikonam.
+    # felan copy kardam. (DELETE THIS COMMENT LATER PLEASE).
+    return """
+        .text
+            li $a0, 256         #Max string length = 256
+            li $v0, 9           #allocate memory
+            syscall             #$v0 contains address of allocated memory
+            sub $sp, $sp, 8
+            sw $v0, 0($sp)      #(sp+0) <- v0
+            move $a0, $v0       #a0 <- v0 (address for storing string)
+            li $a1, 256         # max string len
+            li $v0, 8           #read string
+            syscall            
+            
+            lw $a0, 0($sp)      # a0 <- (sp+0)
+            lb $t1, __newLine
+            
+            __read_{label_num}:
+                lb $t0, 0($a0)    # t0 <- (a0+0) = (sp+0) = address of allocated memory
+                beq $t0, 0, __end_read_{label_num}
+                bne $t0, 10, __read1_{label_num}  # 10 = \\n 
+                li $t2, 0
+                sb $t2, 0($a0)
+                __read1_{label_num}:
+                
+                bne $t0, 13, __read2_{label_num}    # 13 = \\r
+                li $t2, 0
+                sb $t2, 0($a0)
+                __read2_{label_num}:
+                
+                
+                addi $a0, $a0, 1
+                j __read_{label_num}
+            __end_read_{label_num}:
+        """.format(label_num=label_number)
+
+
+def read_int():
+    return '''
+    addi $sp, $sp, -8
+    sw   $ra, 0($sp)
+    jal __read_int__
+    lw   $t8, 0($sp)
+    addi $sp, $sp, 8
+    lw   $ra, 0($sp)
+    addi $sp, $sp, 8
+
+    addi $sp, $sp, -8
+    sw   $t8, 0($sp)'''
+
+
+def read_char():
+    code = mips_text()
+    code += mips_li('$v0', 12)  # read char, returns character in $v0
+    code += mips_syscall()
+    code += sub_stack(8)
+    code += mips_store('$v0', '$sp')
+    return code
+
+
+def mips_new_array(shift):
+    return """
+        .text
+        lw $a0, 0($sp)
+        addi $sp, $sp, 8
+        addi $t7, $a0, 0    # t7 = array len
+        sll $a0, $a0, {shift}
+        addi $a0, $a0, 8    # store array len
+        li $v0, 9           #allocate memory
+        syscall
+        sw $t7, 0($v0)
+        addi $v0, $v0, 8
+        sub $sp, $sp, 8
+        sw $v0, 0($sp)
+        """.format(shift=shift)
+
+
 '''
 text = ""
 text += mips_add("$t1", "$t1", "$t2")
 text += mips_btoi()
 print(text)
 for i in range(100):
-    print(label_gen())'''
-# print(print_bool(56))
+    print(label_gen())
+'''
+print(print_bool(56))
