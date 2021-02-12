@@ -48,19 +48,16 @@ class Cgen(Interpreter):
 
     def __init__(self):
         super().__init__()
-        self.current_scope = None
         self.loop_labels = []
         self._types = []
-        self.symbol_table = SymbolTable()
+        self.stack = SymbolTable()
 
     def start(self, tree):
         code = ''
         print('#### start the code generation')
 
         root = Scope('root')
-        self.symbol_table.push_scope(root)
-
-        self.symbol_table.visit(tree)
+        self.stack.push_scope(root)
 
         code += ''.join(self.visit_children(tree))
         return code
@@ -78,16 +75,18 @@ class Cgen(Interpreter):
         function = tree._meta
 
         if len(tree.children) == 4:
+            return_type = tree.children[0]
             ident = tree.children[1]
             formals = tree.children[2]
             stmt_block = tree.children[3]
         else:
+            return_type = None  # function is void
             ident = tree.children[0]
             formals = tree.children[1]
             stmt_block = tree.children[2]
 
         function_scope = Scope(ident)
-        self.symbol_table.push_scope(function_scope)
+        self.stack.push_scope(function_scope)
 
         code += self.visit(tree.children[0])
         code += self.visit(formals)
@@ -97,7 +96,7 @@ class Cgen(Interpreter):
         else:
             code += ' not main func '  # just for testing... its BS
 
-        self.symbol_table.pop_scope()
+        self.stack.pop_scope()
         return code
 
     def variable_declaration(self, tree):  # todo - is incomplete
@@ -110,12 +109,12 @@ class Cgen(Interpreter):
         variable_name = tree.children[1]
 
         symbol = Symbol(variable_name, varibale_type)
-        self.symbol_table.push_symbol(symbol)
+        self.stack.push_symbol(symbol)
 
         return 'variable'
 
-    def formals(self, tree):  # todo
-        # push to stack
+    def formals(self, tree):
+        self.visit_children(tree)  # formals will be pushed to stack
         return 'formals'
 
     def type(self, tree):
@@ -191,7 +190,7 @@ class Cgen(Interpreter):
         return 'class_inst'
 
     def var_addr(self, tree):  # todo
-        var_scope = self.current_scope
+        var_scope = self.stack.get_current_scope()
         var_name = tree.children[0].value
         return 'var_addr'
 
@@ -689,6 +688,12 @@ int main() {
 }
 """
 
+function_test_code = '''
+int func(int a, int b){
+    return a;
+}
+'''
+
 shit_test_code = '''
 bool main(){
 int fuck;
@@ -697,7 +702,7 @@ fuck = 5 + 5;
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(shit_test_code)
+    tree = get_parse_tree(function_test_code)
     # print(tree)
     print(tree.pretty())
     code = ''
