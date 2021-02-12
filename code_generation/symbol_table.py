@@ -88,6 +88,10 @@ class Scope:
             parent = parent.parent_scope
         return id
 
+    def __str__(self):
+        return self.get_id()
+    
+
 
 class Function:
     def __init__(self, scope, name, return_type=None):

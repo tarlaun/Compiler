@@ -322,12 +322,13 @@ def mips_str_cmp():
     code += mips_load_immidiate('$v0' , 0)
     return code
 
-def end_programm():
+def mips_end_programm():
     code = ''
     code += mips_text()
     code += mips_create_label('end')
     code += mips_load_immidiate('$v0' , 10)
     code += 'syscall\n'
+    return code
 
 
 

@@ -9,6 +9,9 @@ from mips import *
 
 
 class Type:
+    def __init__(self , name , dimension = 0):
+        self.name = name
+        dimension = dimension
     double = "double"
     int = "int"
     bool = "bool"
@@ -66,11 +69,11 @@ class Cgen(Interpreter):
             code += self.visit(decl)
         return code
 
-    # todo - is incomplete (chera commentesh zard shod? cool!)
+    # todo - is incomplete (chera commentesh zard shod? cool!) ==> i think it is ok now
     def function_declaration(self, tree):
         print('### function_declaration')
         code = ''
-
+        ident = ''
         if len(tree.children) == 4:
             return_type = self.visit(tree.children[0])
             ident = tree.children[1]
@@ -87,20 +90,25 @@ class Cgen(Interpreter):
 
         function_data = Function(function_scope, ident, return_type)
         self.symbol_table.push_function(function_data)
+        
         # set function label
         # function_data.set_label(label)
 
         if ident == 'main':  # ????
             code += self.declare_global_static_funcs()
-        code += self.visit(tree.children[0])
+            code += mips_text()
+            code += ('main:\n')
+        else:
+            code += mips_text()
+            code += mips_create_label(str(function_scope))
+
+        # code += self.visit(ident)        
         code += self.visit(formals)
         code += self.visit(stmt_block)
-        if ident == 'main':
-            code += 'main func'
-        else:
-            code += ' not main func '  # just for testing... its BS
-
+        
         self.symbol_table.pop_scope()
+
+        code += mips_jal(mips_get_label('end'))
         return code
 
     def variable_declaration(self, tree):  # todo - is incomplete
@@ -117,21 +125,23 @@ class Cgen(Interpreter):
         return 'variable'
 
     def formals(self, tree):
-        self.visit_children(tree)  # formals will be pushed to stack
-        return 'formal'
+        code = ''
+        for variable in tree.children:
+            formal_name = variable.children[1].value
+            formal_type = Type(variable.children[0] ) # must be checked for classes i think
+            code += '.data\n'
+            code += '.align 2\n'
+            if formal_type.name == 'double' and formal_type.dimension == 0:
+                code += '{}: .space 8\n'.format((str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+            else:
+                code += '{}: .space 4\n'.format((str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+        return code
 
     def type(self, tree):
         return tree.children[0]
 
     def stmt_block(self, tree):  # todo - is incomplete
-        code = ''
-        # print('#### start stmt')
-        child = tree.children[0]
-        stmt_label = self.new_label()
-        child._meta = stmt_label
-        code += self.visit(tree.children[0])
-        code += self.visit(tree.children[1])
-        return code
+        return ''.join(self.visit_children(tree))
 
     def expr(self, tree):
         print("#### EXPR")
@@ -680,6 +690,7 @@ class Cgen(Interpreter):
         code += mips_dtoi()
         code += mips_btoi()
         code += mips_str_cmp()
+        code += mips_end_programm()
         return code
 
 
@@ -744,8 +755,17 @@ fuck = 5 + 5;
 }
 '''
 
+test1 = '''
+
+int main(int a , int b){
+
+}
+
+
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(shit_test_code)
+    tree = get_parse_tree(test1)
     # print(tree)
     print(tree.pretty())
     code = ''
