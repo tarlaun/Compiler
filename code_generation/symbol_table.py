@@ -2,11 +2,12 @@ from lark.visitors import Interpreter
 from parser_code import get_parse_tree
 
 
-class SymbolTable(Interpreter):
+class SymbolTable():
     def __init__(self):
         super().__init__()
         self.stack = []
         self.functions = []
+        self.classes = []
 
     def push_scope(self, scope):
         self.stack.append(scope)
@@ -30,69 +31,27 @@ class SymbolTable(Interpreter):
                     return symbol.value
             cur_scope = cur_scope.parent_scope
         raise Exception(
-            'SymbolTable Error:symbol does not exist in symbolTable.')
+            'SymbolTable Error: symbol does not exist in symbolTable.')
 
-    # def push_function(self, function):
-    #     self.functions.append(function)
+    def push_function(self, function):
+        self.functions.append(function)
 
-    # def start(self, tree):
-    #     root = Scope('root')
-    #     self.push_scope(root)
-    #     self.visit_children(tree)
+    def lookup_function(self, name):
+        for f in self.functions:
+            if f.name == name:
+                return f
+        raise Exception(
+            'SymbolTable Error: function does not exist in symbolTable.')
 
-    # def declaration(self, tree):
-    #     for node in tree.children:
-    #         if node.data in ['variable_declaration', 'function_declaration', 'class_declaration', 'interface_declaration']:
-    #             self.visit(node)
+    def push_class(self, class_obj):
+        self.classes.append(class_obj)
 
-    # def variable_declaration(self, tree):
-    #     variable = tree.children[0]
-    #     self.visit(variable)
-
-    # def variable(self, tree):
-    #     print('SymbolTable: variable')
-    #     current_scope = self.get_current_scope()
-    #     type = tree.children[0]
-    #     name = tree.children[1].value
-    #     variable = Symbol(name=name, type=type, value=None,
-    #                       scope=current_scope)
-    #     tree._meta = variable
-    #     self.visit(type)
-
-    # def function_declaration(self, tree):
-    #     print('SymbolTable: function_declaration')
-
-    #     isVoid = len(tree.children) == 3
-    #     if isVoid:
-    #         name, formals, stmt_block = tree.children[0:3]
-    #         return_type = None
-    #     else:
-    #         return_type, name, formals, stmt_block = tree.children[0:4]
-    #         # it needs to check return type
-
-    #     function_scope = Scope(name, self.get_current_scope())
-    #     self.push_scope(function_scope)
-    #     function_obj = Function(function_scope, name,
-    #                             formals, stmt_block, return_type)
-    #     tree._meta = function_obj
-    #     self.pop_scope()
-
-    #     self.visit_children(tree)
-
-    # def formals(self, tree):
-    #     print('SymbolTable: formals')
-    #     self.visit_children(tree)
-
-    # def stmt_block(self, tree):
-    #     self.visit_children(tree)
-    #     print('SymbolTable: stmt_block')
-
-    # def class_declaration(self, tree):
-    #     print('SymbolTable: class_declaration')
-    #     self.visit_children(tree)
-
-    # def interface_declaration(self, tree):
-        print('SymbolTable: interface_declaration')
+    def lookup_class(self, name):
+        for c in self.classes:
+            if c.name == name:
+                return c
+        raise Exception(
+            'SymbolTable Error: class does not exist in symbolTable.')
 
 
 class Symbol:
@@ -131,12 +90,20 @@ class Scope:
 
 
 class Function:
-    def __init__(self, scope, name, formals, stmt_block, return_type=None):
+    def __init__(self, scope, name, return_type=None):
         self.scope = scope
         self.name = name
-        self.formals = formals
-        self.stmt_block = stmt_block
         self.return_type = return_type
+        self.label = None
+
+    def set_label(self, label):
+        self.label = label
+
+
+class Class:
+    def __init__(self, scope, name):
+        self.scope = scope
+        self.name = name
 
 
 if_test_code = """
