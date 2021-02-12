@@ -30,7 +30,7 @@ class SymbolTable():
             scope = search_stack.pop()
             for symbol in scope.symbols:
                 if symbol.name == name:
-                    return symbol.value
+                    return symbol
             for parent in scope.parent_scopes:
                 search_stack.append(parent)
         raise Exception(
