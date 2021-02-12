@@ -68,7 +68,8 @@ class Cgen(Interpreter):
             code += self.visit(decl)
         return code
 
-    def function_declaration(self, tree):  # todo - is incomplete (chera commentesh zard shod? cool!)
+    # todo - is incomplete (chera commentesh zard shod? cool!)
+    def function_declaration(self, tree):
         code = ''
         function = tree._meta
         self.symbol_table.push_scope(function.scope)
@@ -150,9 +151,11 @@ class Cgen(Interpreter):
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
-            code += mips_load('$t0', '$sp', offset=8)  # sp+8 is stored in t0 -- why?
+            # sp+8 is stored in t0 -- why?
+            code += mips_load('$t0', '$sp', offset=8)
             code += mips_load_double('$f0', '$sp')
-            code += mips_store_double('$f0', '$t0')  # f0 is stored in where t0 is pointing to -- why??
+            # f0 is stored in where t0 is pointing to -- why??
+            code += mips_store_double('$f0', '$t0')
             code += mips_store_double('$f0', '$sp', offset=8)
             code += add_stack(8)
         else:  # int, bool
@@ -269,7 +272,8 @@ class Cgen(Interpreter):
             code += mips_mul('$t2', '$t1', '$t0')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        elif operand_type == Type.double:
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -303,7 +307,8 @@ class Cgen(Interpreter):
             code += 'mflo $t2\n'
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        elif operand_type == Type.double:
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -322,7 +327,8 @@ class Cgen(Interpreter):
             code += mips_add('$t2', '$t0', '$t1')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        elif operand_type == Type.double:
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -341,7 +347,8 @@ class Cgen(Interpreter):
             code += mips_sub('$t2', '$t1', '$t0')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-        elif operand_type == Type.double:  # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
+        elif operand_type == Type.double:
             code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
@@ -386,7 +393,8 @@ class Cgen(Interpreter):
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
-            code += 'c.eq.d $f0, $f2\n'  # special floating point coprocessor instruction, checks equality
+            # special floating point coprocessor instruction, checks equality
+            code += 'c.eq.d $f0, $f2\n'
             code += 'bc1f ' + label + '\n'
             # bc1f is a flag that stores equality operation result. if eq is false it jumps to label.
             code += mips_li('$t0', 1)
@@ -416,7 +424,8 @@ class Cgen(Interpreter):
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
-            code += 'seq $t2, $t1, $t0\n'  # special equality checking operation - will set t2 = 1 if t1 == t0
+            # special equality checking operation - will set t2 = 1 if t1 == t0
+            code += 'seq $t2, $t1, $t0\n'
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
         self._types.pop()
@@ -531,7 +540,8 @@ class Cgen(Interpreter):
         self._types.append(Type.bool)
         return code
 
-    def not_bool(self, tree):  # operation for getting opposite of a bool value.
+    # operation for getting opposite of a bool value.
+    def not_bool(self, tree):
         code = ''.join(self.visit_children(tree))
         label_number = self.new_label()
         label = '__not__' + label_number
@@ -539,8 +549,10 @@ class Cgen(Interpreter):
         code += mips_load('$t0', '$sp')
         code += add_stack(8)
         code += mips_li('$t1', 1)
-        code += mips_beq('$t0', '$zero', label)  # if t0 is 0, t0not is 1 so jumps to label.
-        code += mips_li('$t1', 0)  # reaches this code if t0 is 1 ---> t0not set to 0
+        # if t0 is 0, t0not is 1 so jumps to label.
+        code += mips_beq('$t0', '$zero', label)
+        # reaches this code if t0 is 1 ---> t0not set to 0
+        code += mips_li('$t1', 0)
         code += label + ':\n'
         code += sub_stack(8)
         code += mips_store('$t1', '$sp')
