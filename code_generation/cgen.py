@@ -50,7 +50,6 @@ class Cgen(Interpreter):
 
     def __init__(self):
         super().__init__()
-        self.current_scope = None
         self.loop_labels = []
         self._types = []
         self.symbol_table = SymbolTable()
@@ -106,8 +105,8 @@ class Cgen(Interpreter):
         code += self.visit(stmt_block)
         
         self.symbol_table.pop_scope()
-
-        code += mips_jal(mips_get_label('end'))
+        if ident == 'main':
+            code += mips_jal(mips_get_label('end'))
         return code
 
     def variable_declaration(self, tree):  # todo - is incomplete
@@ -122,7 +121,7 @@ class Cgen(Interpreter):
         variable_name = tree.children[1]
         symbol = Symbol(variable_name, variable_type)
         self.symbol_table.push_symbol(symbol)
-        # mips code to push to stack
+        # mips code to push to stack ==> probably not
         return code
 
     def formals(self, tree):
@@ -177,8 +176,8 @@ class Cgen(Interpreter):
         return ''.join(more_code)
 
     def assignment(self, tree):  # todo - figure out how to do the type checking(WHAT is dimension?)
-        print("#### ASS")
         code = ''.join(self.visit_children(tree))
+
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
@@ -773,7 +772,7 @@ int main(int a , int b){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test1)
+    tree = get_parse_tree(shit_test_code)
     # print(tree)
     print(tree.pretty())
     code = ''

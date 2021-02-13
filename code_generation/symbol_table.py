@@ -87,13 +87,13 @@ class Scope:
     def add_parent_scope(self, parent):
         self.parent_scopes.append(parent)
 
-    # def get_id(self):
-    #     id = self.name
-    #     parent = self.parent_scopes[0]
-    #     while parent:
-    #         id += ('/' + parent.name)
-    #         parent = parent.parent_scope
-    #     return id
+    def get_id(self):
+        id = self.name
+        parent = self.parent_scopes[0]
+        while parent:
+            id += ('/' + parent.name)
+            parent = parent.parent_scopes[0]
+        return id
 
     def __str__(self):
         return self.get_id()
