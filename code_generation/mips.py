@@ -150,22 +150,6 @@ def mips_syscall():
     return ("syscall" + '\n')
 
 
-def print_bool(label_num):
-    return """
-            lw $a0, 0($sp)
-            addi $sp, $sp, 8
-            beq $a0, 0, _false_print_{label}
-            li $v0, 4
-            la $a0, true
-            syscall
-            j _printbool_end_{label}
-            _false_print_{label}:
-            li $v0, 4
-            la $a0, false
-            syscall 
-            _printbool_end_{label}:
-                        """.format(label=label_num)
-
 
 def print_newline():
     return """
@@ -175,32 +159,6 @@ def print_newline():
             """
 
 
-def print_int():
-    return """
-            li $v0, 1
-            lw $a0, 0($sp)
-            addi $sp, $sp, 8
-            syscall   
-        """
-
-
-def print_string():
-    return """
-        li $v0, 4
-        lw $a0, 0($sp)
-        addi $sp, $sp, 8
-        syscall
-        """
-
-
-def print_double():
-    return """
-            l.d $f12, 0($sp)
-            addi $sp, $sp, 8
-            cvt.s.d $f12, $f12
-            li $v0, 2
-            syscall
-        """
 
 
 data_section = '''.data
@@ -333,8 +291,8 @@ def mips_end_programm():
 
 def read_char():
     code = ''
-    code += mips_create_label('read char')
     code += mips_text()
+    code += mips_create_label('read char')
     code += mips_load_immidiate('$v0' , 12)
     code += mips_syscall()
     code += sub_stack(8)
@@ -343,8 +301,8 @@ def read_char():
 
 def read_integer():
     code = ''
-    code += mips_create_label('read integer')
     code += mips_text()
+    code += mips_create_label('read integer')
     code += mips_load_immidiate('$v0' , 5)
     code += mips_syscall()
     code += sub_stack(8)
@@ -353,8 +311,8 @@ def read_integer():
 
 def read_line():
     code = ''
-    code += mips_create_label('read line')
     code += mips_text()
+    code += mips_create_label('read line')
     code += mips_load_immidiate('$v0' , 9)
     code += mips_syscall()
     code += mips_move('$a0' , '$v0')
@@ -363,6 +321,55 @@ def read_line():
     code += mips_load_immidiate('$a1' , 256)
     code += mips_load_immidiate('$v0' , 8)
     code += mips_syscall()
+
+    return code
+
+def print_string():
+    code = ''
+    code += mips_text()
+    code += mips_create_label('print string')
+    code += mips_load('$a0' , '$sp' , 0)
+    code += add_stack(8)
+    code += mips_load_immidiate('$v0' , 4)
+    code += mips_syscall()
+    return code
+     
+def print_integer():
+    code = ''
+    code += mips_text()
+    code += mips_create_label('print integer')
+    code += mips_load('$a0' , '$sp' , 0)
+    code += add_stack(8)
+    code += mips_load_immidiate('$v0' , 1)
+    code += mips_syscall()
+    return code
+
+def print_bool():
+    code = ''
+    code += mips_text()
+    code += mips_create_label('print bool')
+    code += mips_jump(mips_get_label('print bool cont'))
+    code += mips_data()
+    code += mips_align(2)
+    code += 'true: '
+    code += mips_asciiz('true')
+    code += 'false: '
+    code += mips_asciiz('false')
+
+    code += mips_text()
+    code += mips_create_label('print bool cont')
+    code += mips_load('$a0' , '$sp' , 0)
+    code += add_stack(8)
+    code += mips_beqz('$a0' , 'print bool cont 2')
+    code += mips_load_immidiate('$v0' , 4)
+    code += mips_load_address('$a0' , 'true')
+    code += mips_syscall()
+    code += mips_jump(mips_get_label('print bool end'))
+    code += mips_create_label('print bool cont 2')
+    code += mips_load_immidiate('$v0' , 4)
+    code += mips_load_address('$a0' , 'false')
+    code += mips_syscall()
+    code += mips_create_label('print bool end')
 
     return code
 

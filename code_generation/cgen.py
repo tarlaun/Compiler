@@ -733,6 +733,12 @@ class Cgen(Interpreter):
         code += mips_dtoi()
         code += mips_btoi()
         code += mips_str_cmp()
+        code += print_bool()
+        code += print_integer()
+        code += print_string()
+        code += read_char()
+        code += read_integer()
+        code += read_line()
         code += mips_end_programm()
         return code
 
