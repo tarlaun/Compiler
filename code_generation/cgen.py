@@ -218,11 +218,17 @@ class Cgen(Interpreter):
     def class_inst(self, tree):  # todo
         return 'class_inst'
 
-    def var_addr(self, tree):
+    def var_addr(self, tree): #finds variable label and push it to stack
         code = ''
         var_name = tree.children[0].value
-        var_value = self.symbol_table.lookup_symbol(var_name)
-        # mips code to assign
+        symbol = self.symbol_table.lookup_symbol(var_name)
+        label = symbol.get_label()
+
+        code = mips_text()
+        code += mips_load_address('$t0' , label = label)
+        code += sub_stack(8)
+        code += mips_store('$t0' , '$sp' )
+        self._types.append(symbol.type)
         return code
 
     def var_access(self, tree):  # todo
