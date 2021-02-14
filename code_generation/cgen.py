@@ -44,19 +44,19 @@ class Cgen(Interpreter):
 
     def new_variable_label(self):
         self.varible_label_counter += 1
-        return 'var'+str(self.varible_label_counter)
+        return 'var_'+str(self.varible_label_counter)
 
     def new_stmt_block_label(self):
         self.stmt_block_counter += 1
-        return 'stmt_block'+str(self.stmt_block_counter)
+        return 'stmt_block_'+str(self.stmt_block_counter)
 
     def new_label(self):
         self.label_counter += 1
-        return str(self.label_counter)
+        return 'll_'+str(self.label_counter)
 
     def new_string_label(self):
         self.string_label += 1
-        return str(self.string_label)
+        return 'str_'+str(self.string_label)
 
     def __init__(self):
         super().__init__()
@@ -137,13 +137,16 @@ class Cgen(Interpreter):
 
     def formals(self, tree):
         code = ''
-        
+        parent_scope = self.symbol_table.get_current_scope()
+        current_scope = Scope('formals' , parent_scope)
+        # self.symbol_table.push_scope(current_scope)
+
         for variable in tree.children:
             formal_name = variable.children[1].value
-            formal_type = Type(variable.children[0] ) # must be checked for classes i think
+            formal_type = Type(variable.children[0] ) 
             code += '.data\n'
             code += '.align 2\n'
-            if formal_type.name == 'double' and formal_type.dimension == 0:
+            if formal_type.name == Type.double and formal_type.dimension == 0:
                 code += '{}: .space 8\n'.format((str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
             else:
                 code += '{}: .space 4\n'.format((str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
@@ -234,14 +237,14 @@ class Cgen(Interpreter):
     def var_access(self, tree):  # todo
         return 'var_access'
 
-    def val(self, tree):  # todo - dimension chie namoosan
+    def val(self, tree):  # todo = dimension
         print("#### val code gen")
         print(len(tree.children))
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
-            code += mips_load('$t0', '$sp')
+            code += mips_load('$t0', '$sp') 
             code += mips_load_double('$f0', '$t0')
             code += mips_store_double('$f0', '$sp')
         else:  # bool, int
@@ -256,13 +259,13 @@ class Cgen(Interpreter):
         for child in tree.children[0].children:
             code += self.visit(child)
             operand_type = self._types.pop()
-            if operand_type == Type.double:
+            if operand_type.name == Type.double:
                 code += print_double()
-            elif operand_type == Type.int:
+            elif operand_type.name == Type.int:
                 code += print_int()
-            elif operand_type == Type.string:
+            elif operand_type.name == Type.string:
                 code += print_string()
-            elif operand_type == Type.bool:  # and t.dimension == 0:
+            elif operand_type.name == Type.bool:  # and t.dimension == 0:
                 label_num = self.new_label()
                 code += print_bool(label_num)
         code += print_newline()
@@ -290,7 +293,7 @@ class Cgen(Interpreter):
         code += mips_li('$t0', const_val)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
-        self._types.append(Type.int)
+        self._types.append(Type(Type.int))
         return code
 
     def const_bool(self, tree):
@@ -302,14 +305,14 @@ class Cgen(Interpreter):
         code += mips_li('$t0', numerical_val)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def const_string(self, tree):
         code = ''
         code += mips_data()
         code += mips_align(2)
-        str_val = tree.children[0].value
+        str_val= tree.children[0].value
         string_num = self.new_string_label()
         string_name = '__string__' + string_num
         code += string_name + ':'
@@ -318,21 +321,20 @@ class Cgen(Interpreter):
         code += mips_load_address('$t0', string_name)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
-        self._types.append(Type.string)
+        self._types.append(Type(Type.string))
         return code
 
     def null(self, tree):
         code = mips_text()
         code += sub_stack(8)
         code += mips_store('$zero', '$sp')
-        code += mips_store('$zero', '$sp')
-        self._types.append(Type.null)
+        self._types.append(Type(Type.null))
         return code
 
     def mul(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
-        if operand_type == Type.int:
+        if operand_type.name == Type.int:
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
@@ -653,7 +655,7 @@ class Cgen(Interpreter):
     def subscript(self, tree):
         return 'subs_ '
 
-    def stmt(self, tree):  # todo - very incomplete
+    def stmt(self, tree): 
         code = ''
         print('#### start stmt')
         child = tree.children[0]
@@ -662,22 +664,32 @@ class Cgen(Interpreter):
         code += self.visit(child)
         return code
 
-    def if_stmt(self, tree):  # todo - i have no clue
+    def if_stmt(self, tree): 
         print('### start if_stmt')
-        expr = tree.children[0]
-        self.visit(expr)
-        stmt = tree.children[1]
-        self.visit(stmt)
+        condition = self.visit(tree.children[0])
+        then_code = self.visit(tree.children[1])
         hasElse = len(tree.children) != 2
-        if not hasElse:
-            # generate if(expr){stmt;} code
-            None
-        else:
-            else_stmt = tree.children[2]
-            self.visit(else_stmt)
-            # generate if(expr){stmt;}else{stmt;} code
-            None
-        return None
+        then_label = self.new_label()
+        else_label = self.new_label()
+        end_label = self.new_laebl()
+
+        code = mips_text()
+        code += mips_load('$a0' , '$sp' , 0)
+        code += add_stack(8)
+        code += mips_beq('$a0' , 0 , end_label)
+        code += mips_jump(then_label)
+
+        code += mips_text()
+        code += '{}:\n'.format(then_label)
+        code += then_code
+        code += mips_jump(end_label)
+        if hasElse:
+            else_code = self.visit(tree.children[2])        
+            code += mips_text
+            code += '{}:\n'.format(else_label)
+            code += else_code
+    
+        return code
 
     def for_stmt(self, tree):  # todo - i have no clue
         print('### start for_stmt')
