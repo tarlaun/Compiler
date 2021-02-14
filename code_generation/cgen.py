@@ -693,30 +693,39 @@ class Cgen(Interpreter):
 
     def for_stmt(self, tree):  # todo - i have no clue
         print('### start for_stmt')
-        for_label = tree._meta
-        self.loop_labels.append(for_label)
-        expr1 = tree.children[0]
-        self.visit(expr1)
-        expr2 = tree.children[1]
-        self.visit(expr2)
-        expr3 = tree.children[2]
-        self.visit(expr3)
+        if len(tree.children == 2):
+            check_code =  self.visit(tree.children[0])
+            stmt_code = self.visit(tree.children[1])
+        if len(tree.children == 3):
+            pass
         # generate for(expr;expr;expr){stmt;} code
         self.loop_labels.pop()
         return None
 
-    def while_stmt(self, tree):  # todo - i have no clue
+    def while_stmt(self, tree): 
         print('### start while_stmt')
-        while_label = tree._meta
-        print(while_label)
-        self.loop_labels.append(while_label)
-        expr = tree.children[0]
-        self.visit(expr)
-        stmt = tree.children[1]
-        self.visit(stmt)
-        # generate for(expr;expr;expr){stmt;} code
-        self.loop_labels.pop()
-        return None
+        check_code = self.visit(tree.children[0])
+        stmt_code = self.visit(tree.children[1])
+
+        check_label = self.new_label()
+        continue_label = self.new_label()
+        end_label = self.new_label()
+        
+        code = mips_text()
+        code += '{}:\n'.format(check_label)
+        code += check_code
+
+        code += mips_load('$a0' , '$sp' , 0)
+        code += add_stack(8)
+        code += mips_beqz('$a0' , end_label)
+        code += mips_jump(continue_label)
+
+        code += mips_text()
+        code += '{}:\n'.format(continue_label)
+        code += stmt_code
+        code += mips_text()
+        code += '{}:\n'.format(end_label)        
+        return code
 
     def declare_global_static_funcs(self):
         code = ''
