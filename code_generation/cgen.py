@@ -39,6 +39,16 @@ def convertible(type1, type2):  # type1 (Derived), type2 (Base)
 class Cgen(Interpreter):
     label_counter = 0
     string_label = 0
+    stmt_block_counter = 0
+    varible_label_counter = 0
+
+    def new_variable_label(self):
+        self.varible_label_counter += 1
+        return 'var'+str(self.varible_label_counter)
+
+    def new_stmt_block_label(self):
+        self.stmt_block_counter += 1
+        return 'stmt_block'+str(self.stmt_block_counter)
 
     def new_label(self):
         self.label_counter += 1
@@ -119,6 +129,7 @@ class Cgen(Interpreter):
         code = ''
         variable_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
+        label = ()
         symbol = Symbol(variable_name, variable_type)
         self.symbol_table.push_symbol(symbol)
         # mips code to push to stack ==> probably not
@@ -126,6 +137,7 @@ class Cgen(Interpreter):
 
     def formals(self, tree):
         code = ''
+        
         for variable in tree.children:
             formal_name = variable.children[1].value
             formal_type = Type(variable.children[0] ) # must be checked for classes i think
@@ -140,8 +152,15 @@ class Cgen(Interpreter):
     def type(self, tree):
         return tree.children[0].value
 
-    def stmt_block(self, tree):  # todo - is incomplete
-        return ''.join(self.visit_children(tree))
+    def stmt_block(self, tree):  # todo - is incomplete ==> i think nothing need to be added
+        parent_scope = self.symbol_table.get_current_scope()
+        label = self.new_stmt_block_label()
+        current_scope = Scope(label , parent_scope)
+        self.stmt_block_counter += 1
+        self.symbol_table.push_scope(current_scope)
+        code = ''.join(self.visit_children(tree))
+        self.symbol_table.pop_scope()
+        return code
 
     def expr(self, tree):
         print("#### EXPR")
@@ -175,18 +194,16 @@ class Cgen(Interpreter):
             return code
         return ''.join(more_code)
 
-    def assignment(self, tree):  # todo - figure out how to do the type checking(WHAT is dimension?)
+    def assignment(self, tree):  # todo - type checking - array
         code = ''.join(self.visit_children(tree))
 
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
-            # sp+8 is stored in t0 -- why?
-            code += mips_load('$t0', '$sp', offset=8)
-            code += mips_load_double('$f0', '$sp')
-            # f0 is stored in where t0 is pointing to -- why??
-            code += mips_store_double('$f0', '$t0')
-            code += mips_store_double('$f0', '$sp', offset=8)
+            code += mips_load('$t0', '$sp', offset=8) #label address
+            code += mips_load_double('$f0', '$sp') #value to be assigned
+            code += mips_store_double('$f0', '$t0') #save value in the label
+            code += mips_store_double('$f0', '$sp', offset=8) # save value in the top of stack
             code += add_stack(8)
         else:  # int, bool
             code += mips_text()
