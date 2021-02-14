@@ -328,14 +328,48 @@ def mips_end_programm():
     code += mips_text()
     code += mips_create_label('end')
     code += mips_load_immidiate('$v0' , 10)
-    code += 'syscall\n'
+    code += mips_syscall()
+    return code
+
+def read_char():
+    code = ''
+    code += mips_create_label('read char')
+    code += mips_text()
+    code += mips_load_immidiate('$v0' , 12)
+    code += mips_syscall()
+    code += sub_stack(8)
+    code += mips_store('$v0' , '$sp' , 0)
+    return code 
+
+def read_integer():
+    code = ''
+    code += mips_create_label('read integer')
+    code += mips_text()
+    code += mips_load_immidiate('$v0' , 5)
+    code += mips_syscall()
+    code += sub_stack(8)
+    code += mips_store('$v0' , '$sp' , 0)
+    return code
+
+def read_line():
+    code = ''
+    code += mips_create_label('read line')
+    code += mips_text()
+    code += mips_load_immidiate('$v0' , 9)
+    code += mips_syscall()
+    code += mips_move('$a0' , '$v0')
+    code += sub_stack(8)
+    code += mips_store('$a0' , '$sp' , 0)
+    code += mips_load_immidiate('$a1' , 256)
+    code += mips_load_immidiate('$v0' , 8)
+    code += mips_syscall()
+
     return code
 
 
 
 
 def mips_create_label(str):
-    
     return(mips_get_label(str) +":\n")
 
 def mips_get_label(str):

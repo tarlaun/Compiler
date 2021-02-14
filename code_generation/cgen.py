@@ -78,7 +78,6 @@ class Cgen(Interpreter):
             code += self.visit(decl)
         return code
 
-    # todo - is incomplete (chera commentesh zard shod? cool!) ==> i think it is ok now
     def function_declaration(self, tree):
         code = ''
         if len(tree.children) == 4:
@@ -119,7 +118,7 @@ class Cgen(Interpreter):
             code += mips_jal(mips_get_label('end'))
         return code
 
-    def variable_declaration(self, tree):  # todo - is incomplete
+    def variable_declaration(self, tree): 
         code = ''
         code += ''.join(self.visit_children(tree))
         return code
@@ -155,7 +154,7 @@ class Cgen(Interpreter):
     def type(self, tree):
         return tree.children[0].value
 
-    def stmt_block(self, tree):  # todo - is incomplete ==> i think nothing need to be added
+    def stmt_block(self, tree): 
         parent_scope = self.symbol_table.get_current_scope()
         label = self.new_stmt_block_label()
         current_scope = Scope(label , parent_scope)
@@ -200,8 +199,8 @@ class Cgen(Interpreter):
     def assignment(self, tree):  # todo - type checking - array
         code = ''.join(self.visit_children(tree))
 
-        operand_type = self._types[-1]
-        if operand_type == Type.double:  # and typ.dimension == 0:
+        variable_type = self._types[-1]
+        if variable_type.name == Type.double:  # and typ.dimension == 0:
             code += mips_text()
             code += mips_load('$t0', '$sp', offset=8) #label address
             code += mips_load_double('$f0', '$sp') #value to be assigned
@@ -736,6 +735,10 @@ class Cgen(Interpreter):
         code += mips_str_cmp()
         code += mips_end_programm()
         return code
+
+    
+    
+
 
 
 if_test_code = """
