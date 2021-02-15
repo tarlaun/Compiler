@@ -384,9 +384,9 @@ def print_bool():
     code += mips_data()
     code += mips_align(2)
     code += 'true: '
-    code += mips_asciiz('true')
+    code += mips_asciiz('\"true\"')
     code += 'false: '
-    code += mips_asciiz('false')
+    code += mips_asciiz('\"false\"')
 
     code += mips_text()
     code += mips_create_label('print bool cont')
