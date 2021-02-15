@@ -4,6 +4,7 @@ from lark import Token
 from parser_code import get_parse_tree
 from symbol_table import SymbolTable, Scope, Symbol, Function, Class
 from mips import *
+from Error import *
 
 # Typechecking... might move to a different file later.
 
@@ -20,8 +21,8 @@ class Type:
     null = "null"
 
 
-def is_primitive(type):
-    return type in [Type.double, Type.string, Type.int, Type.bool]
+    def is_primitive(self):
+        return self.name in [Type.double, Type.string, Type.int, Type.bool]
 
 
 def is_array(type):
@@ -29,7 +30,7 @@ def is_array(type):
 
 
 def convertible(type1, type2):  # type1 (Derived), type2 (Base)
-    if is_primitive(type1) or is_primitive(type2):
+    if type1.is_primitive() or type2.is_primitive():
         return type1 == type2
 
     if is_array(type1) or is_array(type2):
@@ -42,6 +43,7 @@ class Cgen(Interpreter):
     stmt_block_counter = 0
     varible_label_counter = 0
     loop_counter = 0
+    array_last_type = None
 
     def new_variable_label(self):
         self.varible_label_counter += 1
@@ -157,7 +159,12 @@ class Cgen(Interpreter):
         return code
 
     def type(self, tree):
-        return tree.children[0].value
+        if type(tree.children[0]) == lark.lexer.Token:
+            self.array_last_type = Type(tree.children[0])
+        else:
+            self.visit(tree.children[0])
+            self.array_last_type.dimension += 1
+        return ''
 
     def stmt_block(self, tree): 
         parent_scope = self.symbol_table.get_current_scope()
@@ -276,14 +283,20 @@ class Cgen(Interpreter):
 
     def new_array(self, tree):  # todo - add the typechecking
         code = ''.join(self.visit_children(tree))
-        # TYPECHECKING: NEEDS TO BE CHANGED.
-        shamt = 2  # shift amount?!
-        tp = tree.children[1].children[0]
-        if type(tp) == lark.lexer.Token:
-            if tp.value == Type.double:
+        shamt = 2  
+        tp = self.array_last_type
+        if tp.is_primitive and tp.dimension == 0:
+            if tp.name == Type.double:
                 shamt = 3
-        code += mips_new_array(shamt)
-        # add to self._types?
+        length_type = self._types.pop()
+        if length_type.name != 'int' or length_type.dimension != 0:
+            raise(TypeError('Invalid length type for NewArray()'))
+        code += mips_text()
+        code += sub_stack(8)
+        code += mips_load_immidiate('$a0' , shamt)
+        code += mips_store('$a0' , '$sp' , 0)
+        code += mips_jal(mips_get_label('new array'))
+        self._types.append(Type(self.array_last_type.name , self.array_last_type.dimension+1))
         return code
 
     def l_value(self, tree):
@@ -743,6 +756,7 @@ class Cgen(Interpreter):
 
     def declare_global_static_funcs(self):
         code = ''
+        code += mips_new_array()
         code += mips_itod()
         code += mips_itob()
         code += mips_dtoi()

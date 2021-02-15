@@ -149,7 +149,8 @@ def mips_bne(v1 , v2 , v3):
 def mips_syscall():
     return ("syscall" + '\n')
 
-
+def mips_shift_left(v1 , v2 , shmt):
+    return ("sll " + v1 + " , " + v2 + " , " + shmt + "\n")
 
 def print_newline():
     code = ''
@@ -167,6 +168,23 @@ def print_newline():
     code += mips_syscall()
     return code
 
+def mips_new_array():
+    code = ''
+    code += mips_text()
+    code += mips_create_label('new array')
+    code += mips_load('$a0' , '$sp' , 8)
+    code += mips_load('$a1' , '$sp' )
+    code += add_stack(16)
+    code += mips_addi('$t6' , '$a0' , 0)
+    code += mips_shift_left('$a0' , '$a0' , '$a1')
+    code += mips_addi('$a0' , '$a0' , 8)
+    code += mips_li('$v0' , 9)
+    code += mips_syscall()
+    code += mips_store('$t6' , '$v0' , 0) #length of the array is saved at the begining of the array
+    code += mips_addi('$v0' , '$v0' , 8)
+    code += sub_stack(8)
+    code += mips_store('$v0' , '$sp' , 0)
+    return code
 
 
 
