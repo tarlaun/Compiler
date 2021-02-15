@@ -1,3 +1,7 @@
+
+data_section = ".data \n"
+
+
 def mips(stmt):
     return stmt + '\n'
 
@@ -161,12 +165,13 @@ def mips_shift_left(v1, v2, shmt):
 
 
 def print_newline():
+    global data_section
     codeData = mips_align(2)
     codeData += 'nw: \n'
     codeData += mips_asciiz("\"\\n\"")
     data_section += codeData
     code = ''
-    code += mips_create_label('print new line')    
+    code += mips_create_label('print new line')
     code += mips_load_immidiate('$v0', 4)
     code += mips_load_address('$a0', 'nw')
     code += mips_syscall()
@@ -190,21 +195,6 @@ def mips_new_array():
     code += sub_stack(8)
     code += mips_store('$v0', '$sp', 0)
     return code
-
-
-data_section = '''.data \n
-'''
-
-
-
-def add_data(label, input):
-    global data_section
-    data_section += label + ':\n' + '    ' + input + '\n'
-
-
-def print_data_section():
-    global data_section
-    print(data_section)
 
 
 label_number = 0
@@ -365,6 +355,7 @@ def print_integer():
 
 
 def print_bool():
+    global data_section
     codeData = mips_align(2)
     codeData += 'true: '
     codeData += mips_asciiz('\"true\"')
