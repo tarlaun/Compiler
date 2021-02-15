@@ -40,7 +40,6 @@ def add_stack(disp):
     return ("addi $sp, $sp, " + str(disp) + '\n')
 
 
-
 def mips_add(v1, v2, v3):
     return ("add " + v1 + ", " + v2 + ", " + v3 + '\n')
 
@@ -92,8 +91,10 @@ def mips_move(dst, src):
 def mips_jump(label):
     return ("j " + label + '\n')
 
+
 def mips_jr(register):
-    return ("jr "+ register + "\n")
+    return ("jr " + register + "\n")
+
 
 def mips_jal(label):
     return ("jal " + label + '\n')
@@ -110,8 +111,10 @@ def mips_label(label):
 def mips_load_address(dst, label):
     return ('la ' + dst + ' , ' + label + '\n')
 
-def mips_load_immidiate(dst , value):
+
+def mips_load_immidiate(dst, value):
     return ('li ' + dst + ' , ' + str(value) + '\n')
+
 
 def mips_load(dst, src, offset=0):
     return ("lw " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
@@ -140,17 +143,22 @@ def mips_load_byte(dst, src, offset=0):
 def mips_beq(v1, v2, v3):
     return ("beq " + v1 + ", " + v2 + ", " + v3 + '\n')
 
-def mips_beqz(register, label):
-    return ("beqz "+register + " , " + label)
 
-def mips_bne(v1 , v2 , v3):
+def mips_beqz(register, label):
+    return ("beqz "+register + " , " + label + '\n')
+
+
+def mips_bne(v1, v2, v3):
     return ("bne " + v1 + ", " + v2 + ", " + v3 + '\n')
+
 
 def mips_syscall():
     return ("syscall" + '\n')
 
-def mips_shift_left(v1 , v2 , shmt):
+
+def mips_shift_left(v1, v2, shmt):
     return ("sll " + v1 + " , " + v2 + " , " + shmt + "\n")
+
 
 def print_newline():
     code = ''
@@ -163,29 +171,30 @@ def print_newline():
     code += mips_asciiz("\\n")
     code += mips_text()
     code += mips_create_label('new line')
-    code += mips_load_immidiate('$v0' , 4)
-    code += mips_load_address('$a0' , 'nw' )
+    code += mips_load_immidiate('$v0', 4)
+    code += mips_load_address('$a0', 'nw')
     code += mips_syscall()
     return code
+
 
 def mips_new_array():
     code = ''
     code += mips_text()
     code += mips_create_label('new array')
-    code += mips_load('$a0' , '$sp' , 8)
-    code += mips_load('$a1' , '$sp' )
+    code += mips_load('$a0', '$sp', 8)
+    code += mips_load('$a1', '$sp')
     code += add_stack(16)
-    code += mips_addi('$t6' , '$a0' , 0)
-    code += mips_shift_left('$a0' , '$a0' , '$a1')
-    code += mips_addi('$a0' , '$a0' , 8)
-    code += mips_li('$v0' , 9)
+    code += mips_addi('$t6', '$a0', 0)
+    code += mips_shift_left('$a0', '$a0', '$a1')
+    code += mips_addi('$a0', '$a0', 8)
+    code += mips_li('$v0', 9)
     code += mips_syscall()
-    code += mips_store('$t6' , '$v0' , 0) #length of the array is saved at the begining of the array
-    code += mips_addi('$v0' , '$v0' , 8)
+    # length of the array is saved at the begining of the array
+    code += mips_store('$t6', '$v0', 0)
+    code += mips_addi('$v0', '$v0', 8)
     code += sub_stack(8)
-    code += mips_store('$v0' , '$sp' , 0)
+    code += mips_store('$v0', '$sp', 0)
     return code
-
 
 
 data_section = '''.data
@@ -259,10 +268,10 @@ def mips_itob():
     code = ""
     code += mips_text()
     code += mips_create_label('itob')
-    code += mips_load('$s0' , '$fp' , 4)
-    code += mips_load_immidiate('$v0' , 0)
-    code += mips_beqz('$s0' , mips_get_label('itob jump'))
-    code += mips_load_immidiate('$v0' , 1)
+    code += mips_load('$s0', '$fp', 4)
+    code += mips_load_immidiate('$v0', 0)
+    code += mips_beqz('$s0', mips_get_label('itob jump'))
+    code += mips_load_immidiate('$v0', 1)
     code += mips_create_label('itob jump')
     code += mips_jr('$ra')
     return code
@@ -283,98 +292,106 @@ def mips_itod():
     code = ""
     code += mips_text()
     code += mips_create_label('itod')
-    code += mips_load('$s0' , '$fp' , 4)
+    code += mips_load('$s0', '$fp', 4)
     code += ('mtc1 $s0, $f0\n')
     code += ('cvt.s.w $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
     code += mips_jr('$ra')
     return code
 
+
 def mips_str_cmp():
     code = ""
     code += mips_text()
     code += mips_create_label('str cmp 1')
-    code += mips_load('$a0' , '$sp' , 0)
-    code += mips_load('$a1' , '$sp' , 8)
+    code += mips_load('$a0', '$sp', 0)
+    code += mips_load('$a1', '$sp', 8)
     code += add_stack(16)
     code += mips_create_label('str cmp')
-    code += mips_load_byte('$t0' , '$a0' , 0)
-    code += mips_load_byte("$t1" , "$a1" , 0)
-    code += mips_bne('$t0' , '$t1' , mips_get_label('not eq str'))
-    code += mips_bne('$t0' , '$zero',  mips_get_label('stat cont'))
-    code += mips_load_immidiate('$v0' , 1)
+    code += mips_load_byte('$t0', '$a0', 0)
+    code += mips_load_byte("$t1", "$a1", 0)
+    code += mips_bne('$t0', '$t1', mips_get_label('not eq str'))
+    code += mips_bne('$t0', '$zero',  mips_get_label('stat cont'))
+    code += mips_load_immidiate('$v0', 1)
     code += mips_jr("$ra")
     code += mips_create_label('stat cont')
-    code += mips_addi('$a0' , '$a0' , 1)
-    code += mips_addi('$a1' , '$a1' , 1)
+    code += mips_addi('$a0', '$a0', 1)
+    code += mips_addi('$a1', '$a1', 1)
     code += mips_jump(mips_get_label('str cmp'))
     code += mips_create_label('not eq str')
-    code += mips_load_immidiate('$v0' , 0)
+    code += mips_load_immidiate('$v0', 0)
     code += mips_jr('$ra')
     return code
+
 
 def mips_end_programm():
     code = ''
     code += mips_text()
     code += mips_create_label('end')
-    code += mips_load_immidiate('$v0' , 10)
+    code += mips_load_immidiate('$v0', 10)
     code += mips_syscall()
     return code
+
 
 def read_char():
     code = ''
     code += mips_text()
     code += mips_create_label('read char')
-    code += mips_load_immidiate('$v0' , 12)
+    code += mips_load_immidiate('$v0', 12)
     code += mips_syscall()
     code += sub_stack(8)
-    code += mips_store('$v0' , '$sp' , 0)
-    return code 
+    code += mips_store('$v0', '$sp', 0)
+    return code
+
 
 def read_integer():
     code = ''
     code += mips_text()
     code += mips_create_label('read integer')
-    code += mips_load_immidiate('$v0' , 5)
+    code += mips_load_immidiate('$v0', 5)
     code += mips_syscall()
     code += sub_stack(8)
-    code += mips_store('$v0' , '$sp' , 0)
+    code += mips_store('$v0', '$sp', 0)
     return code
+
 
 def read_line():
     code = ''
     code += mips_text()
     code += mips_create_label('read line')
-    code += mips_load_immidiate('$v0' , 9)
+    code += mips_load_immidiate('$v0', 9)
     code += mips_syscall()
-    code += mips_move('$a0' , '$v0')
+    code += mips_move('$a0', '$v0')
     code += sub_stack(8)
-    code += mips_store('$a0' , '$sp' , 0)
-    code += mips_load_immidiate('$a1' , 256)
-    code += mips_load_immidiate('$v0' , 8)
+    code += mips_store('$a0', '$sp', 0)
+    code += mips_load_immidiate('$a1', 256)
+    code += mips_load_immidiate('$v0', 8)
     code += mips_syscall()
 
     return code
+
 
 def print_string():
     code = ''
     code += mips_text()
     code += mips_create_label('print string')
-    code += mips_load('$a0' , '$sp' , 0)
+    code += mips_load('$a0', '$sp', 0)
     code += add_stack(8)
-    code += mips_load_immidiate('$v0' , 4)
+    code += mips_load_immidiate('$v0', 4)
     code += mips_syscall()
     return code
-     
+
+
 def print_integer():
     code = ''
     code += mips_text()
     code += mips_create_label('print integer')
-    code += mips_load('$a0' , '$sp' , 0)
+    code += mips_load('$a0', '$sp', 0)
     code += add_stack(8)
-    code += mips_load_immidiate('$v0' , 1)
+    code += mips_load_immidiate('$v0', 1)
     code += mips_syscall()
     return code
+
 
 def print_bool():
     code = ''
@@ -390,36 +407,37 @@ def print_bool():
 
     code += mips_text()
     code += mips_create_label('print bool cont')
-    code += mips_load('$a0' , '$sp' , 0)
+    code += mips_load('$a0', '$sp', 0)
     code += add_stack(8)
-    code += mips_beqz('$a0' , 'print bool cont 2')
-    code += mips_load_immidiate('$v0' , 4)
-    code += mips_load_address('$a0' , 'true')
+    code += mips_beqz('$a0', 'print bool cont 2')
+    code += mips_load_immidiate('$v0', 4)
+    code += mips_load_address('$a0', 'true')
     code += mips_syscall()
     code += mips_jump(mips_get_label('print bool end'))
     code += mips_create_label('print bool cont 2')
-    code += mips_load_immidiate('$v0' , 4)
-    code += mips_load_address('$a0' , 'false')
+    code += mips_load_immidiate('$v0', 4)
+    code += mips_load_address('$a0', 'false')
     code += mips_syscall()
     code += mips_create_label('print bool end')
 
     return code
 
+
 def print_double():
     code = ''
     code += mips_text()
     code += mips_create_label('print double')
-    code += mips_load_double('$f12' , '$sp' , 0)
+    code += mips_load_double('$f12', '$sp', 0)
     code += add_stack(8)
     code += 'cvt.s.d $f12 , $f12\n'
-    code += mips_load_immidiate('$v0' , 2)
+    code += mips_load_immidiate('$v0', 2)
     code += mips_syscall()
     return code
 
 
-
 def mips_create_label(str):
-    return(mips_get_label(str) +":\n")
+    return(mips_get_label(str) + ":\n")
+
 
 def mips_get_label(str):
     code = ""
@@ -428,6 +446,7 @@ def mips_get_label(str):
         code += "__"
         code += strings[i]
     return(code + "__")
+
 
 semantic_error = '''
 .text
