@@ -264,7 +264,7 @@ class Cgen(Interpreter):
 
     def print_stmt(self, tree):  # todo - not sure about the type checking
         print('### print_stmt')
-        code = mips_text()
+        code = ''
         for child in tree.children[0].children:
             code += self.visit(child)
             operand_type = self._types.pop()
@@ -300,13 +300,13 @@ class Cgen(Interpreter):
         return code
 
     def ReadLine(self, tree):
-        code = mips_text()
+        code = ''
         code += mips_jal(mips_get_label('read line'))
         self._types.append(Type(Type.string, 0))
         return code
 
     def ReadInteger(self, tree):
-        code = mips_text()
+        code = ''
         code += mips_jal(mips_get_label('read integer'))
         self._type.append(Type(Type.int, 0))
         return code
