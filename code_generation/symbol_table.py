@@ -58,7 +58,7 @@ class SymbolTable():
 
 
 class Symbol:
-    def __init__(self, name, type, value=None, scope=None ,label=None):
+    def __init__(self, name, type, value=None, scope=None, label=None):
         self.name = name
         self.type = type
         self.value = value
@@ -73,8 +73,8 @@ class Symbol:
     def set_scope(self, scope):
         self.scope = scope
         scope.add_symbol(self)
-    
-    def set_label(self , label):
+
+    def set_label(self, label):
         self.label = label
 
 
@@ -101,7 +101,6 @@ class Scope:
 
     def __str__(self):
         return self.get_id()
-    
 
 
 class Function:
@@ -117,12 +116,12 @@ class Function:
 
 
 class Class:
-    def __init__(self, scope, name , label = None):
+    def __init__(self, scope, name, label=None):
         self.scope = scope
         self.name = name
         self.label = label
 
-    def set_label(self , label):
+    def set_label(self, label):
         self.label = label
 
 
