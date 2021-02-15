@@ -708,16 +708,23 @@ class Cgen(Interpreter):
 
     def while_stmt(self, tree): 
         print('### start while_stmt')
-        parent_scope = self.symbol_table.get_current_scope()
-        loop_label = 
-        current_scope = Scope(parent_scope ,'1' )
+        check_label = self.new_loop_label()
+        continue_label = '_cont_'+check_label
+        end_label = '_end_'+check_label
+          
+        parent_scope = self.symbol_table.get_current_scope()        
+        current_scope = Scope(parent_scope , check_label )
+        self.symbol_table.push_scope(current_scope)
+        symbol = Symbol('loop' , 'loop' , value = None , scope = current_scope , label = check_label)
+        self.symbol_table.push_symbol(symbol)
+        self.loop_labels.append(check_label)
+
         check_code = self.visit(tree.children[0])
         stmt_code = self.visit(tree.children[1])
 
-        check_label = self.new_label()
-        continue_label = self.new_label()
-        end_label = self.new_label()
-        
+        self.symbol_table.pop_scope()       
+        self.loop_labels.pop()
+
         code = mips_text()
         code += '{}:\n'.format(check_label)
         code += check_code
@@ -732,6 +739,22 @@ class Cgen(Interpreter):
         code += stmt_code
         code += mips_text()
         code += '{}:\n'.format(end_label)        
+        return code
+
+    def break_stmt(self , tree):
+        code = ''
+        code += mips_text()
+        code += mips_jump('_end_'+ self.loop_labels[-1])
+        return code
+
+    def return_stmt(self , tree):
+        code = ''
+        code = mips_text()
+        if len(tree.children) == 1:
+            self.visit(tree.children[0])
+            code += mips_load('$v0' , '$sp' , 0)
+            code += add_stack(8)
+        code += mips_jump('$ra')
         return code
 
     def declare_global_static_funcs(self):
