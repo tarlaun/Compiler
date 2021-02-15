@@ -845,7 +845,8 @@ if __name__ == '__main__':
     tree = get_parse_tree(shit_test_code)
     # print(tree)
     print(tree.pretty())
-    code = ''
+    code = mips_text()
+    code += '.globl main'
     code += str(Cgen().visit(tree))
     print("CODE:")
     print(code)
