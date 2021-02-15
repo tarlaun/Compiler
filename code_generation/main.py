@@ -2,6 +2,7 @@ import sys
 import getopt
 from parser_code import get_parse_tree
 from cgen import Cgen
+from mips import *
 
 
 def main(argv):
@@ -27,7 +28,11 @@ def main(argv):
 
     with open("out/" + outputfile, "w") as output_file:
         sys.stdout = output_file
-        output_code = Cgen().visit(parse_tree)
+        output_code = mips_text()
+        output_code += mips_jump('main')
+        output_code += '.globl main\n'
+        output_code += Cgen().visit(parse_tree)
+        output_code += data_section
         output_file.write(output_code)
         sys.stdout.close()
 

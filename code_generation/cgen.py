@@ -130,10 +130,12 @@ class Cgen(Interpreter):
 
     def variable(self, tree):
         print('### variable')
+        global data_section
         code = ''
         variable_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
-        label = self.new_variable_label()
+        label = self.new_variable_label()  # make it a function
+        data_section += label + '\n'
         symbol = Symbol(variable_name, variable_type,
                         scope=self.symbol_table.get_current_scope(), label=label)
         self.symbol_table.push_symbol(symbol)
@@ -290,7 +292,7 @@ class Cgen(Interpreter):
         length_type = self._types.pop()
         if length_type.name != 'int' or length_type.dimension != 0:
             raise(TypeError('Invalid length type for NewArray()'))
-        
+
         code += sub_stack(8)
         code += mips_load_immidiate('$a0', shamt)
         code += mips_store('$a0', '$sp', 0)
@@ -321,7 +323,7 @@ class Cgen(Interpreter):
         code += mips_li('$t0', const_val)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
-        self._types.append(Type(Type.int , dimension= 0))
+        self._types.append(Type(Type.int, dimension=0))
         return code
 
     def const_bool(self, tree):
@@ -341,7 +343,7 @@ class Cgen(Interpreter):
         codeData = mips_align(2)
         str_val = tree.children[0].value
         string_label = self.new_string_label()
-        
+
         codeData += string_label + ':'
         codeData += mips_asciiz(str_val)
         data_section += codeData
@@ -840,9 +842,16 @@ int main(){
 }
 '''
 
+test_in = '''
+int main(){
+    int a;
+    a = ReadInteger();
+    Print(a);
+}
+'''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_in_out)
+    tree = get_parse_tree(test_in)
     # print(tree)
     print(tree.pretty())
     code = mips_text()
