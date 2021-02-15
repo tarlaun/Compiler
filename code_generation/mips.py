@@ -177,6 +177,7 @@ def print_newline(data_obj):
     code += mips_load_immidiate('$v0', 4)
     code += mips_load_address('$a0', 'nw')
     code += mips_syscall()
+    code += mips_jr('$ra')
     return code
 
 
@@ -196,6 +197,7 @@ def mips_new_array():
     code += mips_addi('$v0', '$v0', 8)
     code += sub_stack(8)
     code += mips_store('$v0', '$sp', 0)
+    code += mips_jr('$ra')
     return code
 
 
@@ -298,6 +300,7 @@ def mips_end_programm():
     code += mips_create_label('end')
     code += mips_load_immidiate('$v0', 10)
     code += mips_syscall()
+    code += mips_jr('$ra')
     return code
 
 
@@ -308,6 +311,7 @@ def read_char():
     code += mips_syscall()
     code += sub_stack(8)
     code += mips_store('$v0', '$sp', 0)
+    code += mips_jr('$ra')
     return code
 
 
@@ -318,6 +322,7 @@ def read_integer():
     code += mips_syscall()
     code += sub_stack(8)
     code += mips_store('$v0', '$sp', 0)
+    code += mips_jr('$ra')
     return code
 
 
@@ -332,6 +337,7 @@ def read_line():
     code += mips_load_immidiate('$a1', 256)
     code += mips_load_immidiate('$v0', 8)
     code += mips_syscall()
+    code += mips_jr('$ra')
 
     return code
 
@@ -343,6 +349,7 @@ def print_string():
     code += add_stack(8)
     code += mips_load_immidiate('$v0', 4)
     code += mips_syscall()
+    code += mips_jr('$ra')
     return code
 
 
@@ -353,6 +360,7 @@ def print_integer():
     code += add_stack(8)
     code += mips_load_immidiate('$v0', 1)
     code += mips_syscall()
+    code += mips_jr('$ra')
     return code
 
 
@@ -376,7 +384,7 @@ def print_bool(data_obj):
     code += mips_load_address('$a0', 'false')
     code += mips_syscall()
     code += mips_create_label('print bool end')
-
+    code += mips_jr('$ra')
     return code
 
 
@@ -388,6 +396,7 @@ def print_double():
     code += 'cvt.s.d $f12 , $f12\n'
     code += mips_load_immidiate('$v0', 2)
     code += mips_syscall()
+    code += mips_jr('$ra')
     return code
 
 
