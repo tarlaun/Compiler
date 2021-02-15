@@ -31,8 +31,10 @@ def main(argv):
         output_code = mips_text()
         output_code += mips_jump('main')
         output_code += '.globl main\n'
-        output_code += Cgen().visit(parse_tree)
-        output_code += data_section
+        cgen = Cgen()
+        output_code += cgen.visit(parse_tree)
+        # print('######', cgen.data.data)
+        output_code += cgen.data.data
         output_file.write(output_code)
         sys.stdout.close()
 

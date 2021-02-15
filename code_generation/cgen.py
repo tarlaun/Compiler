@@ -46,6 +46,7 @@ class Cgen(Interpreter):
 
     def new_variable_label(self):
         self.varible_label_counter += 1
+        # fix this
         return 'var_'+str(self.varible_label_counter)
 
     def new_stmt_block_label(self):
@@ -69,6 +70,7 @@ class Cgen(Interpreter):
         self.loop_labels = []
         self._types = []
         self.symbol_table = SymbolTable()
+        self.data = DataSection()
 
     def start(self, tree):
         print('#### start the code generation')
@@ -131,9 +133,10 @@ class Cgen(Interpreter):
     def variable(self, tree):
         print('### variable')
         code = ''
-        variable_type = self.visit(tree.children[0])
+        variable_type = Type(self.visit(tree.children[0]), 0)
         variable_name = tree.children[1]
         label = self.new_variable_label()
+        self.data.add_data(label + ':\n'+'.space 4')
         symbol = Symbol(variable_name, variable_type,
                         scope=self.symbol_table.get_current_scope(), label=label)
         self.symbol_table.push_symbol(symbol)
@@ -249,7 +252,6 @@ class Cgen(Interpreter):
 
     def val(self, tree):  # todo = dimension
         print("#### val code gen")
-        print(len(tree.children))
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
@@ -268,7 +270,7 @@ class Cgen(Interpreter):
         for child in tree.children[0].children:
             code += self.visit(child)
             operand_type = self._types.pop()
-            print('#type:', operand_type.name)
+            print('#type:', operand_type)
             if operand_type.name == Type.double:
                 code += mips_jal(mips_get_label('print double'))
             elif operand_type.name == Type.int:
@@ -290,7 +292,7 @@ class Cgen(Interpreter):
         length_type = self._types.pop()
         if length_type.name != 'int' or length_type.dimension != 0:
             raise(TypeError('Invalid length type for NewArray()'))
-        
+
         code += sub_stack(8)
         code += mips_load_immidiate('$a0', shamt)
         code += mips_store('$a0', '$sp', 0)
@@ -299,16 +301,16 @@ class Cgen(Interpreter):
                                 self.array_last_type.dimension+1))
         return code
 
-    def ReadLine(self, tree):
+    def read_line(self, tree):
         code = ''.join(self.visit_children(tree))
         code += mips_jal(mips_get_label('read line'))
         self._types.append(Type(Type.string, 0))
         return code
 
-    def ReadInteger(self, tree):
+    def read_integer(self, tree):
         code = ''.join(self.visit_children(tree))
         code += mips_jal(mips_get_label('read integer'))
-        self._type.append(Type(Type.int, 0))
+        self._types.append(Type(Type.int, 0))
         return code
 
     def l_value(self, tree):
@@ -321,7 +323,7 @@ class Cgen(Interpreter):
         code += mips_li('$t0', const_val)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
-        self._types.append(Type(Type.int , dimension= 0))
+        self._types.append(Type(Type.int, dimension=0))
         return code
 
     def const_bool(self, tree):
@@ -338,13 +340,12 @@ class Cgen(Interpreter):
 
     def const_string(self, tree):
         code = ''
-        codeData = mips_align(2)
         str_val = tree.children[0].value
         string_label = self.new_string_label()
-        
-        codeData += string_label + ':'
+
+        codeData = string_label + ':'
         codeData += mips_asciiz(str_val)
-        data_section += codeData
+        self.data.add_data(codeData)
         code += mips_load_address('$t0', string_label)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
@@ -736,7 +737,6 @@ class Cgen(Interpreter):
         code += mips_jump('$ra')
         return code
 
-
     def declare_global_static_funcs(self):
         code = ''
         code += mips_new_array()
@@ -746,10 +746,10 @@ class Cgen(Interpreter):
         code += mips_btoi()
         code += mips_str_cmp()
         code += print_double()
-        code += print_bool()
+        code += print_bool(self.data)
         code += print_integer()
         code += print_string()
-        code += print_newline()
+        code += print_newline(self.data)
         code += read_char()
         code += read_integer()
         code += read_line()
@@ -838,6 +838,7 @@ test_in_out = '''
 int main(){
     int a;
     a = ReadInteger();
+    Print(a);
 }
 '''
 
@@ -849,8 +850,9 @@ if __name__ == '__main__':
     code = mips_text()
     code += mips_jump('main')
     code += '.globl main'
-    code += str(Cgen().visit(tree))
-    code += data_section
+    cgen = Cgen()
+    code += str(cgen.visit(tree))
+    code += cgen.data.data
     print("CODE:")
     print(code)
 

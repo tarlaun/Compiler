@@ -1,5 +1,9 @@
+class DataSection:
+    def __init__(self):
+        self.data = "\n.data \n"
 
-data_section = ".data \n"
+    def add_data(self, str):
+        self.data += str
 
 
 def mips(stmt):
@@ -164,12 +168,10 @@ def mips_shift_left(v1, v2, shmt):
     return ("sll " + v1 + " , " + v2 + " , " + shmt + "\n")
 
 
-def print_newline():
-    global data_section
-    codeData = mips_align(2)
-    codeData += 'nw: \n'
+def print_newline(data_obj):
+    codeData = 'nw: \n'
     codeData += mips_asciiz("\"\\n\"")
-    data_section += codeData
+    data_obj.add_data(codeData)
     code = ''
     code += mips_create_label('print new line')
     code += mips_load_immidiate('$v0', 4)
@@ -354,14 +356,12 @@ def print_integer():
     return code
 
 
-def print_bool():
-    global data_section
-    codeData = mips_align(2)
-    codeData += 'true: '
+def print_bool(data_obj):
+    codeData = 'true: \n'
     codeData += mips_asciiz('\"true\"')
-    codeData += 'false: '
+    codeData += 'false: \n'
     codeData += mips_asciiz('\"false\"')
-    data_section += codeData
+    data_obj.add_data(codeData)
     code = ''
     code += mips_create_label('print bool')
     code += mips_load('$a0', '$sp', 0)
