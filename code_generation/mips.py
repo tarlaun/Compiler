@@ -1,9 +1,9 @@
 class DataSection:
     def __init__(self):
-        self.data = "\n.data \n"
+        self.data = "\n.data\n"
 
     def add_data(self, str):
-        self.data += str
+        self.data += (str)
 
 
 def mips(stmt):
@@ -165,11 +165,12 @@ def mips_syscall():
 
 
 def mips_shift_left(v1, v2, shmt):
-    return ("sll " + v1 + " , " + v2 + " , " + shmt + "\n")
+    return ("sllv " + v1 + " , " + v2 + " , " + shmt + "\n")
 
 
 def print_newline(data_obj):
     codeData = 'nw: \n'
+    codeData += mips_align(2)
     codeData += mips_asciiz("\"\\n\"")
     data_obj.add_data(codeData)
     code = ''
@@ -366,8 +367,10 @@ def print_integer():
 
 def print_bool(data_obj):
     codeData = 'true: \n'
+    codeData += mips_align(2)
     codeData += mips_asciiz('\"true\"')
     codeData += 'false: \n'
+    codeData += mips_align(2)
     codeData += mips_asciiz('\"false\"')
     data_obj.add_data(codeData)
     code = ''

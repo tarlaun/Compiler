@@ -136,7 +136,7 @@ class Cgen(Interpreter):
         variable_type = Type(self.visit(tree.children[0]), 0)
         variable_name = tree.children[1]
         label = self.new_variable_label()
-        self.data.add_data(label + ':\n'+'.space 4')
+        self.data.add_data(label + ':\n' + mips_align(2) + '.space 4')
         symbol = Symbol(variable_name, variable_type,
                         scope=self.symbol_table.get_current_scope(), label=label)
         self.symbol_table.push_symbol(symbol)
