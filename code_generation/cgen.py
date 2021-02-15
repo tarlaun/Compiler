@@ -301,6 +301,18 @@ class Cgen(Interpreter):
                                 self.array_last_type.dimension+1))
         return code
 
+    def ReadLine(self , tree):
+        code = mips_text()
+        code += mips_jal(mips_get_label('read line'))
+        self._types.append(Type(Type.string , 0))
+        return code
+
+    def ReadInteger(self , tree):
+        code = mips_text()
+        code += mips_jal(mips_get_label('read integer'))
+        self._type.append(Type(Type.int , 0))
+        return code
+
     def l_value(self, tree):
         return ''.join(self.visit_children(tree))
 
