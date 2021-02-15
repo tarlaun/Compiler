@@ -97,6 +97,8 @@ class Cgen(Interpreter):
             formals = tree.children[1]
             stmt_block = tree.children[2]
 
+        code += self.visit(formals)
+
         cur_scope = self.symbol_table.get_current_scope()
         function_scope = Scope(ident, cur_scope)
         self.symbol_table.push_scope(function_scope)
@@ -114,7 +116,6 @@ class Cgen(Interpreter):
             code += mips_create_label(str(function_scope))
 
         # code += self.visit(ident)
-        code += self.visit(formals)
         code += self.visit(stmt_block)
 
         self.symbol_table.pop_scope()
@@ -143,7 +144,7 @@ class Cgen(Interpreter):
         code = ''
         parent_scope = self.symbol_table.get_current_scope()
         current_scope = Scope('formals', parent_scope)
-        # self.symbol_table.push_scope(current_scope)
+        self.symbol_table.push_scope(current_scope)
 
         for variable in tree.children:
             formal_name = variable.children[1].value
@@ -262,18 +263,20 @@ class Cgen(Interpreter):
         return code
 
     def print_stmt(self, tree):  # todo - not sure about the type checking
-        code = ''
+        print('### print_stmt')
+        code = mips_text()
         for child in tree.children[0].children:
             code += self.visit(child)
             operand_type = self._types.pop()
+            print('#type:', operand_type.name)
             if operand_type.name == Type.double:
-                mips_jal(mips_get_label('print double'))
+                code += mips_jal(mips_get_label('print double'))
             elif operand_type.name == Type.int:
-                mips_jal(mips_get_label('print int'))
+                code += mips_jal(mips_get_label('print integer'))
             elif operand_type.name == Type.string:
-                mips_jal(mips_get_label('print string'))
+                code += mips_jal(mips_get_label('print string'))
             elif operand_type.name == Type.bool:  # and t.dimension == 0:
-                mips_jal(mips_get_label('print bool'))
+                code += mips_jal(mips_get_label('print bool'))
         code += mips_jal(mips_get_label('print new line'))
         return code
 
@@ -296,22 +299,23 @@ class Cgen(Interpreter):
                                 self.array_last_type.dimension+1))
         return code
 
-    def ReadLine(self , tree):
-        code = ''
+    def ReadLine(self, tree):
+        code = mips_text()
         code += mips_jal(mips_get_label('read line'))
-        self._types.append(Type(Type.string , 0))
+        self._types.append(Type(Type.string, 0))
         return code
 
-    def ReadInteger(self , tree):
-        code = ''
+    def ReadInteger(self, tree):
+        code = mips_text()
         code += mips_jal(mips_get_label('read integer'))
-        self._type.append(Type(Type.int , 0))
+        self._type.append(Type(Type.int, 0))
         return code
 
     def l_value(self, tree):
         return ''.join(self.visit_children(tree))
 
     def const_int(self, tree):
+        print('#### const_int')
         code = ''
         const_val = tree.children[0].value.lower()
         code += mips_li('$t0', const_val)
