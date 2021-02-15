@@ -152,11 +152,20 @@ def mips_syscall():
 
 
 def print_newline():
-    return """
-                li $v0, 4
-                la $a0, __newLine
-                syscall
-            """
+    code = ''
+    code += mips_text()
+    code += mips_create_label('print new line')
+    code += mips_jump(mips_get_label('new line'))
+    code += mips_data()
+    code += mips_align(2)
+    code += 'nw: \n'
+    code += mips_asciiz("\\n")
+    code += mips_text()
+    code += mips_create_label('new line')
+    code += mips_load_immidiate('$v0' , 4)
+    code += mips_load_address('$a0' , 'nw' )
+    code += mips_syscall()
+    return code
 
 
 
@@ -266,6 +275,10 @@ def mips_itod():
 def mips_str_cmp():
     code = ""
     code += mips_text()
+    code += mips_create_label('str cmp 1')
+    code += mips_load('$a0' , '$sp' , 0)
+    code += mips_load('$a1' , '$sp' , 8)
+    code += add_stack(16)
     code += mips_create_label('str cmp')
     code += mips_load_byte('$t0' , '$a0' , 0)
     code += mips_load_byte("$t1" , "$a1" , 0)
@@ -279,6 +292,7 @@ def mips_str_cmp():
     code += mips_jump(mips_get_label('str cmp'))
     code += mips_create_label('not eq str')
     code += mips_load_immidiate('$v0' , 0)
+    code += mips_jr('$ra')
     return code
 
 def mips_end_programm():
@@ -373,6 +387,16 @@ def print_bool():
 
     return code
 
+def print_double():
+    code = ''
+    code += mips_text()
+    code += mips_create_label('print double')
+    code += mips_load_double('$f12' , '$sp' , 0)
+    code += add_stack(8)
+    code += 'cvt.s.d $f12 , $f12\n'
+    code += mips_load_immidiate('$v0' , 2)
+    code += mips_syscall()
+    return code
 
 
 

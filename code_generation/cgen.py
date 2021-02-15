@@ -264,15 +264,14 @@ class Cgen(Interpreter):
             code += self.visit(child)
             operand_type = self._types.pop()
             if operand_type.name == Type.double:
-                code += print_double()
+                mips_jal(mips_get_label('print double'))
             elif operand_type.name == Type.int:
-                code += print_int()
+                mips_jal(mips_get_label('print int'))
             elif operand_type.name == Type.string:
-                code += print_string()
+                mips_jal(mips_get_label('print string'))
             elif operand_type.name == Type.bool:  # and t.dimension == 0:
-                label_num = self.new_label()
-                code += print_bool(label_num)
-        code += print_newline()
+                mips_jal(mips_get_label('print bool'))
+        code += mips_jal(mips_get_label('print new line'))
         return code
 
     def new_array(self, tree):  # todo - add the typechecking
@@ -458,8 +457,8 @@ class Cgen(Interpreter):
 
     def eq(self, tree):
         code = ''.join(self.visit_children(tree))
-        type = self._types.pop()
-        if type == Type.double:  # and typ.dimension == 0: #todo - no clue what type dimension is!!!
+        operand_type = self._types.pop()
+        if operand_type.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
             label_number = self.new_label()
             label = '__d_eq__' + label_number
             code += mips_text()
@@ -474,25 +473,10 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        elif type == Type.string:  # and typ.dimension == 0: todo - we need to implement STRCMP
+        elif operand_type.name == Type.string:  # and typ.dimension == 0: 
             code += '.text\n'
-            code += '\tsw $t0, -8($sp)\n'
-            code += '\tsw $t1, -8($sp)\n'
-            code += '\tsw $a0, -12($sp)\n'
-            code += '\tsw $a1, -16($sp)\n'
-            code += '\tsw $v0, -20($sp)\n'
-            code += '\tsw $ra, -24($sp)\n'
-            code += '\tlw $a0, 0($sp)\n'
-            code += '\tlw $a1, 8($sp)\n'
-            code += '\tjal __strcmp__\n'
-            code += '\tsw $v0, 8($sp)\n'
-            code += '\tlw $t0, -4($sp)\n'
-            code += '\tlw $t1, -8($sp)\n'
-            code += '\tlw $a0, -12($sp)\n'
-            code += '\tlw $a1, -16($sp)\n'
-            code += '\tlw $v0, -20($sp)\n'
-            code += '\tlw $ra, -24($sp)\n'
-            code += '\taddi $sp, $sp, 8\n\n'
+            code += mips_jump(mips_get_label('str cmp 1'))
+            code += mips_store('$v0' , '$sp' , 0)
         else:  # int, bool    #done i think
             code += mips_text()
             code += mips_load('$t0', '$sp')
@@ -508,14 +492,14 @@ class Cgen(Interpreter):
     def gt(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
-        if operand_type == Type.int:
+        if operand_type.name == Type.int:
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sgt $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type == Type.double:
+        if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_gt__' + label_number
             code += mips_text()
@@ -535,14 +519,14 @@ class Cgen(Interpreter):
     def ge(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
-        if operand_type == Type.int:
+        if operand_type.name == Type.int:
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sge $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type == Type.double:
+        if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_ge__' + label_number
             code += mips_text()
@@ -562,14 +546,14 @@ class Cgen(Interpreter):
     def lt(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
-        if operand_type == Type.int:
+        if operand_type.name == Type.int:
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'slt $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type == Type.double:
+        if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_lt__' + label_number
             code += mips_text()
@@ -589,14 +573,14 @@ class Cgen(Interpreter):
     def le(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
-        if operand_type == Type.int:
+        if operand_type.name == Type.int:
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sle $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type == Type.double:
+        if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_le__' + label_number
             code += mips_text()
@@ -636,12 +620,12 @@ class Cgen(Interpreter):
     def neg(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
-        if operand_type == Type.int:
+        if operand_type.name == Type.int:
             code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_sub('$t0', '$zero', '$t0')
             code += mips_store('$t0', '$sp')
-        elif operand_type == Type.double:
+        elif operand_type.name == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += 'ng.d $f0, $f0\n'  # special FP instruction for negating double
             code += mips_store('$f0', '$sp')
@@ -764,9 +748,11 @@ class Cgen(Interpreter):
         code += mips_dtoi()
         code += mips_btoi()
         code += mips_str_cmp()
+        code += print_double()
         code += print_bool()
         code += print_integer()
         code += print_string()
+        code += print_newline()
         code += read_char()
         code += read_integer()
         code += read_line()
