@@ -134,8 +134,8 @@ class Cgen(Interpreter):
         code = ''
         variable_type = self.visit(tree.children[0])
         variable_name = tree.children[1]
-        label = ()
-        symbol = Symbol(variable_name, variable_type)
+        label = self.new_variable_label()
+        symbol = Symbol(variable_name, variable_type ,scope = self.symbol_table.get_current_scope ,label = label)
         self.symbol_table.push_symbol(symbol)
         # mips code to push to stack ==> probably not
         return code
