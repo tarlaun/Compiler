@@ -41,6 +41,7 @@ class Cgen(Interpreter):
     string_label = 0
     stmt_block_counter = 0
     varible_label_counter = 0
+    loop_counter = 0
 
     def new_variable_label(self):
         self.varible_label_counter += 1
@@ -53,6 +54,10 @@ class Cgen(Interpreter):
     def new_label(self):
         self.label_counter += 1
         return 'll_'+str(self.label_counter)
+
+    def new_loop_label(self):
+        self.loop_counter += 1
+        return 'loop_label_' + str(self.loop_counter)
 
     def new_string_label(self):
         self.string_label += 1
@@ -703,6 +708,9 @@ class Cgen(Interpreter):
 
     def while_stmt(self, tree): 
         print('### start while_stmt')
+        parent_scope = self.symbol_table.get_current_scope()
+        loop_label = 
+        current_scope = Scope(parent_scope ,'1' )
         check_code = self.visit(tree.children[0])
         stmt_code = self.visit(tree.children[1])
 
