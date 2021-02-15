@@ -409,7 +409,7 @@ def print_bool():
     code += mips_create_label('print bool cont')
     code += mips_load('$a0', '$sp', 0)
     code += add_stack(8)
-    code += mips_beqz('$a0', 'print bool cont 2')
+    code += mips_beqz('$a0', mips_get_label('print bool cont 2'))
     code += mips_load_immidiate('$v0', 4)
     code += mips_load_address('$a0', 'true')
     code += mips_syscall()
