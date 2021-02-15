@@ -1,14 +1,8 @@
 from lark import Lark
 
 
-def remove_white_space(code):
-    # not sure if we want it
-    return code
-
-
 def get_parse_tree(code):
-    code_without_whitespace = remove_white_space(code)
-    return decaf_parser.parse(code_without_whitespace)
+    return decaf_parser.parse(code)
 
 
 decaf_grammar = r"""
