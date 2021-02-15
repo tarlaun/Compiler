@@ -10,7 +10,7 @@ from Error import *
 
 
 class Type:
-    def __init__(self , name , dimension = 0):
+    def __init__(self, name, dimension=0):
         self.name = name
         dimension = dimension
     double = "double"
@@ -19,7 +19,6 @@ class Type:
     string = "string"
     array = "array"
     null = "null"
-
 
     def is_primitive(self):
         return self.name in [Type.double, Type.string, Type.int, Type.bool]
@@ -104,7 +103,7 @@ class Cgen(Interpreter):
 
         function_data = Function(function_scope, ident, return_type)
         self.symbol_table.push_function(function_data)
-        
+
         # set function label
         # function_data.set_label(label)
 
@@ -116,16 +115,16 @@ class Cgen(Interpreter):
             code += mips_text()
             code += mips_create_label(str(function_scope))
 
-        # code += self.visit(ident)        
+        # code += self.visit(ident)
         code += self.visit(formals)
         code += self.visit(stmt_block)
-        
+
         self.symbol_table.pop_scope()
         if ident == 'main':
             code += mips_jal(mips_get_label('end'))
         return code
 
-    def variable_declaration(self, tree): 
+    def variable_declaration(self, tree):
         code = ''
         code += ''.join(self.visit_children(tree))
         return code
@@ -144,18 +143,20 @@ class Cgen(Interpreter):
     def formals(self, tree):
         code = ''
         parent_scope = self.symbol_table.get_current_scope()
-        current_scope = Scope('formals' , parent_scope)
+        current_scope = Scope('formals', parent_scope)
         # self.symbol_table.push_scope(current_scope)
 
         for variable in tree.children:
             formal_name = variable.children[1].value
-            formal_type = Type(variable.children[0] ) 
+            formal_type = Type(variable.children[0])
             code += '.data\n'
             code += '.align 2\n'
             if formal_type.name == Type.double and formal_type.dimension == 0:
-                code += '{}: .space 8\n'.format((str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+                code += '{}: .space 8\n'.format(
+                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
             else:
-                code += '{}: .space 4\n'.format((str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+                code += '{}: .space 4\n'.format(
+                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
         return code
 
     def type(self, tree):
@@ -166,10 +167,10 @@ class Cgen(Interpreter):
             self.array_last_type.dimension += 1
         return ''
 
-    def stmt_block(self, tree): 
+    def stmt_block(self, tree):
         parent_scope = self.symbol_table.get_current_scope()
         label = self.new_stmt_block_label()
-        current_scope = Scope(label , parent_scope)
+        current_scope = Scope(label, parent_scope)
         self.stmt_block_counter += 1
         self.symbol_table.push_scope(current_scope)
         code = ''.join(self.visit_children(tree))
@@ -214,10 +215,11 @@ class Cgen(Interpreter):
         variable_type = self._types[-1]
         if variable_type.name == Type.double:  # and typ.dimension == 0:
             code += mips_text()
-            code += mips_load('$t0', '$sp', offset=8) #label address
-            code += mips_load_double('$f0', '$sp') #value to be assigned
-            code += mips_store_double('$f0', '$t0') #save value in the label
-            code += mips_store_double('$f0', '$sp', offset=8) # save value in the top of stack
+            code += mips_load('$t0', '$sp', offset=8)  # label address
+            code += mips_load_double('$f0', '$sp')  # value to be assigned
+            code += mips_store_double('$f0', '$t0')  # save value in the label
+            # save value in the top of stack
+            code += mips_store_double('$f0', '$sp', offset=8)
             code += add_stack(8)
         else:  # int, bool
             code += mips_text()
@@ -232,16 +234,15 @@ class Cgen(Interpreter):
     def class_inst(self, tree):  # todo
         return 'class_inst'
 
-    def var_addr(self, tree): #finds variable label and push it to stack
+    def var_addr(self, tree):  # finds variable label and push it to stack
         code = ''
         var_name = tree.children[0].value
         symbol = self.symbol_table.lookup_symbol(var_name)
-        label = symbol.get_label()
-
+        label = symbol.label
         code = mips_text()
-        code += mips_load_address('$t0' , label = label)
+        code += mips_load_address('$t0', label=label)
         code += sub_stack(8)
-        code += mips_store('$t0' , '$sp' )
+        code += mips_store('$t0', '$sp')
         self._types.append(symbol.type)
         return code
 
@@ -255,7 +256,7 @@ class Cgen(Interpreter):
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
             code += mips_text()
-            code += mips_load('$t0', '$sp') 
+            code += mips_load('$t0', '$sp')
             code += mips_load_double('$f0', '$t0')
             code += mips_store_double('$f0', '$sp')
         else:  # bool, int
@@ -283,7 +284,7 @@ class Cgen(Interpreter):
 
     def new_array(self, tree):  # todo - add the typechecking
         code = ''.join(self.visit_children(tree))
-        shamt = 2  
+        shamt = 2
         tp = self.array_last_type
         if tp.is_primitive and tp.dimension == 0:
             if tp.name == Type.double:
@@ -293,10 +294,11 @@ class Cgen(Interpreter):
             raise(TypeError('Invalid length type for NewArray()'))
         code += mips_text()
         code += sub_stack(8)
-        code += mips_load_immidiate('$a0' , shamt)
-        code += mips_store('$a0' , '$sp' , 0)
+        code += mips_load_immidiate('$a0', shamt)
+        code += mips_store('$a0', '$sp', 0)
         code += mips_jal(mips_get_label('new array'))
-        self._types.append(Type(self.array_last_type.name , self.array_last_type.dimension+1))
+        self._types.append(Type(self.array_last_type.name,
+                                self.array_last_type.dimension+1))
         return code
 
     def l_value(self, tree):
@@ -328,7 +330,7 @@ class Cgen(Interpreter):
         code = ''
         code += mips_data()
         code += mips_align(2)
-        str_val= tree.children[0].value
+        str_val = tree.children[0].value
         string_num = self.new_string_label()
         string_name = '__string__' + string_num
         code += string_name + ':'
@@ -486,10 +488,10 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        elif operand_type.name == Type.string:  # and typ.dimension == 0: 
+        elif operand_type.name == Type.string:  # and typ.dimension == 0:
             code += '.text\n'
             code += mips_jump(mips_get_label('str cmp 1'))
-            code += mips_store('$v0' , '$sp' , 0)
+            code += mips_store('$v0', '$sp', 0)
         else:  # int, bool    #done i think
             code += mips_text()
             code += mips_load('$t0', '$sp')
@@ -656,7 +658,7 @@ class Cgen(Interpreter):
     def subscript(self, tree):
         return 'subs_ '
 
-    def stmt(self, tree): 
+    def stmt(self, tree):
         code = ''
         print('#### start stmt')
         child = tree.children[0]
@@ -665,7 +667,7 @@ class Cgen(Interpreter):
         code += self.visit(child)
         return code
 
-    def if_stmt(self, tree): 
+    def if_stmt(self, tree):
         print('### start if_stmt')
         condition = self.visit(tree.children[0])
         then_code = self.visit(tree.children[1])
@@ -675,9 +677,9 @@ class Cgen(Interpreter):
         end_label = self.new_laebl()
 
         code = mips_text()
-        code += mips_load('$a0' , '$sp' , 0)
+        code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
-        code += mips_beq('$a0' , 0 , end_label)
+        code += mips_beq('$a0', 0, end_label)
         code += mips_jump(then_label)
 
         code += mips_text()
@@ -685,17 +687,17 @@ class Cgen(Interpreter):
         code += then_code
         code += mips_jump(end_label)
         if hasElse:
-            else_code = self.visit(tree.children[2])        
+            else_code = self.visit(tree.children[2])
             code += mips_text
             code += '{}:\n'.format(else_label)
             code += else_code
-    
+
         return code
 
     def for_stmt(self, tree):  # todo - i have no clue
         print('### start for_stmt')
         if len(tree.children == 2):
-            check_code =  self.visit(tree.children[0])
+            check_code = self.visit(tree.children[0])
             stmt_code = self.visit(tree.children[1])
         if len(tree.children == 3):
             pass
@@ -703,53 +705,54 @@ class Cgen(Interpreter):
         self.loop_labels.pop()
         return None
 
-    def while_stmt(self, tree): 
+    def while_stmt(self, tree):
         print('### start while_stmt')
         check_label = self.new_loop_label()
         continue_label = '_cont_'+check_label
         end_label = '_end_'+check_label
-          
-        parent_scope = self.symbol_table.get_current_scope()        
-        current_scope = Scope(parent_scope , check_label )
+
+        parent_scope = self.symbol_table.get_current_scope()
+        current_scope = Scope(parent_scope, check_label)
         self.symbol_table.push_scope(current_scope)
-        symbol = Symbol('loop' , 'loop' , value = None , scope = current_scope , label = check_label)
+        symbol = Symbol('loop', 'loop', value=None,
+                        scope=current_scope, label=check_label)
         self.symbol_table.push_symbol(symbol)
         self.loop_labels.append(check_label)
 
         check_code = self.visit(tree.children[0])
         stmt_code = self.visit(tree.children[1])
 
-        self.symbol_table.pop_scope()       
+        self.symbol_table.pop_scope()
         self.loop_labels.pop()
 
         code = mips_text()
         code += '{}:\n'.format(check_label)
         code += check_code
 
-        code += mips_load('$a0' , '$sp' , 0)
+        code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
-        code += mips_beqz('$a0' , end_label)
+        code += mips_beqz('$a0', end_label)
         code += mips_jump(continue_label)
 
         code += mips_text()
         code += '{}:\n'.format(continue_label)
         code += stmt_code
         code += mips_text()
-        code += '{}:\n'.format(end_label)        
+        code += '{}:\n'.format(end_label)
         return code
 
-    def break_stmt(self , tree):
+    def break_stmt(self, tree):
         code = ''
         code += mips_text()
-        code += mips_jump('_end_'+ self.loop_labels[-1])
+        code += mips_jump('_end_' + self.loop_labels[-1])
         return code
 
-    def return_stmt(self , tree):
+    def return_stmt(self, tree):
         code = ''
         code = mips_text()
         if len(tree.children) == 1:
             self.visit(tree.children[0])
-            code += mips_load('$v0' , '$sp' , 0)
+            code += mips_load('$v0', '$sp', 0)
             code += add_stack(8)
         code += mips_jump('$ra')
         return code
@@ -772,10 +775,6 @@ class Cgen(Interpreter):
         code += read_line()
         code += mips_end_programm()
         return code
-
-    
-    
-
 
 
 if_test_code = """
@@ -855,8 +854,16 @@ int main(int a , int b){
 
 '''
 
+test_in_out = '''
+int main(){
+    int a;
+    a = ReadInteger();
+}
+'''
+
+
 if __name__ == '__main__':
-    tree = get_parse_tree(shit_test_code)
+    tree = get_parse_tree(test_in_out)
     # print(tree)
     print(tree.pretty())
     code = mips_text()
