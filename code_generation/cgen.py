@@ -109,10 +109,8 @@ class Cgen(Interpreter):
 
         if ident == 'main':  # ????
             code += self.declare_global_static_funcs()
-            code += mips_text()
             code += ('main:\n')
         else:
-            code += mips_text()
             code += mips_create_label(str(function_scope))
 
         # code += self.visit(ident)
@@ -215,7 +213,6 @@ class Cgen(Interpreter):
 
         variable_type = self._types[-1]
         if variable_type.name == Type.double:  # and typ.dimension == 0:
-            code += mips_text()
             code += mips_load('$t0', '$sp', offset=8)  # label address
             code += mips_load_double('$f0', '$sp')  # value to be assigned
             code += mips_store_double('$f0', '$t0')  # save value in the label
@@ -223,7 +220,6 @@ class Cgen(Interpreter):
             code += mips_store_double('$f0', '$sp', offset=8)
             code += add_stack(8)
         else:  # int, bool
-            code += mips_text()
             code += mips_load('$t0', '$sp', offset=8)
             code += mips_load('$t1', '$sp')
             code += mips_store('$t1', '$t0')
@@ -240,7 +236,7 @@ class Cgen(Interpreter):
         var_name = tree.children[0].value
         symbol = self.symbol_table.lookup_symbol(var_name)
         label = symbol.label
-        code = mips_text()
+        code = ''
         code += mips_load_address('$t0', label=label)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
@@ -256,19 +252,17 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
         if operand_type == Type.double:  # and typ.dimension == 0:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load_double('$f0', '$t0')
             code += mips_store_double('$f0', '$sp')
         else:  # bool, int
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$t0')
             code += mips_store('$t1', '$sp')
         return code
 
     def print_stmt(self, tree):  # todo - not sure about the type checking
-        code = mips_text()
+        code = ''
         for child in tree.children[0].children:
             code += self.visit(child)
             operand_type = self._types.pop()
@@ -293,7 +287,7 @@ class Cgen(Interpreter):
         length_type = self._types.pop()
         if length_type.name != 'int' or length_type.dimension != 0:
             raise(TypeError('Invalid length type for NewArray()'))
-        code += mips_text()
+        
         code += sub_stack(8)
         code += mips_load_immidiate('$a0', shamt)
         code += mips_store('$a0', '$sp', 0)
@@ -303,13 +297,13 @@ class Cgen(Interpreter):
         return code
 
     def ReadLine(self , tree):
-        code = mips_text()
+        code = ''
         code += mips_jal(mips_get_label('read line'))
         self._types.append(Type(Type.string , 0))
         return code
 
     def ReadInteger(self , tree):
-        code = mips_text()
+        code = ''
         code += mips_jal(mips_get_label('read integer'))
         self._type.append(Type(Type.int , 0))
         return code
@@ -319,16 +313,15 @@ class Cgen(Interpreter):
 
     def const_int(self, tree):
         code = ''
-        code += mips_text()
         const_val = tree.children[0].value.lower()
         code += mips_li('$t0', const_val)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
-        self._types.append(Type(Type.int))
+        self._types.append(Type(Type.int , dimension= 0))
         return code
 
     def const_bool(self, tree):
-        code = mips_text()
+        code = ''
         const_val = tree.children[0].value.lower()
         numerical_val = 0
         if const_val == 'true':
@@ -341,22 +334,21 @@ class Cgen(Interpreter):
 
     def const_string(self, tree):
         code = ''
-        code += mips_data()
-        code += mips_align(2)
+        codeData = mips_align(2)
         str_val = tree.children[0].value
-        string_num = self.new_string_label()
-        string_name = '__string__' + string_num
-        code += string_name + ':'
-        code += mips_asciiz(str_val)
-        code += mips_text()
-        code += mips_load_address('$t0', string_name)
+        string_label = self.new_string_label()
+        
+        codeData += string_label + ':'
+        codeData += mips_asciiz(str_val)
+        data_section += codeData
+        code += mips_load_address('$t0', string_label)
         code += sub_stack(8)
         code += mips_store('$t0', '$sp')
         self._types.append(Type(Type.string))
         return code
 
     def null(self, tree):
-        code = mips_text()
+        code = ''
         code += sub_stack(8)
         code += mips_store('$zero', '$sp')
         self._types.append(Type(Type.null))
@@ -366,7 +358,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type.name == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_mul('$t2', '$t1', '$t0')
@@ -374,7 +365,6 @@ class Cgen(Interpreter):
             code += add_stack(8)
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
         elif operand_type == Type.double:
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_mul_double('$f4', '$f2', '$f0')
@@ -386,7 +376,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_div('$t2', '$t1', '$t0')
@@ -400,7 +389,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_div('$t2', '$t1', '$t0')
@@ -409,7 +397,6 @@ class Cgen(Interpreter):
             code += add_stack(8)
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
         elif operand_type == Type.double:
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_div_double('$f4', '$f2', '$f0')
@@ -421,7 +408,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_add('$t2', '$t0', '$t1')
@@ -429,7 +415,6 @@ class Cgen(Interpreter):
             code += add_stack(8)
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
         elif operand_type == Type.double:
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_add_double('$f4', '$f0', '$f2')
@@ -441,7 +426,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_sub('$t2', '$t1', '$t0')
@@ -449,7 +433,6 @@ class Cgen(Interpreter):
             code += add_stack(8)
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
         elif operand_type == Type.double:
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_sub_double('$f4', '$f2', '$f0')
@@ -459,7 +442,6 @@ class Cgen(Interpreter):
 
     def and_bool(self, tree):
         code = ''.join(self.visit_children(tree))
-        code += mips_text()
         code += mips_load('$t0', '$sp')
         code += mips_load('$t0', '$sp', offset=8)
         code += mips_and('$t2', '$t0', '$t1')
@@ -472,7 +454,6 @@ class Cgen(Interpreter):
 
     def or_bool(self, tree):
         code = ''.join(self.visit_children(tree))
-        code += mips_text()
         code += mips_load('$t0', '$sp')
         code += mips_load('$t0', '$sp', offset=8)
         code += mips_or('$t2', '$t0', '$t1')
@@ -489,7 +470,6 @@ class Cgen(Interpreter):
         if operand_type.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
             label_number = self.new_label()
             label = '__d_eq__' + label_number
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
@@ -506,7 +486,6 @@ class Cgen(Interpreter):
             code += mips_jump(mips_get_label('str cmp 1'))
             code += mips_store('$v0', '$sp', 0)
         else:  # int, bool    #done i think
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             # special equality checking operation - will set t2 = 1 if t1 == t0
@@ -521,7 +500,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type.name == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sgt $t2, $t1, $t0\n'  # special data comparison instruction
@@ -530,7 +508,6 @@ class Cgen(Interpreter):
         if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_gt__' + label_number
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
@@ -548,7 +525,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type.name == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sge $t2, $t1, $t0\n'  # special data comparison instruction
@@ -557,7 +533,6 @@ class Cgen(Interpreter):
         if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_ge__' + label_number
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
@@ -575,7 +550,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type.name == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'slt $t2, $t1, $t0\n'  # special data comparison instruction
@@ -584,7 +558,6 @@ class Cgen(Interpreter):
         if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_lt__' + label_number
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
@@ -602,7 +575,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
         if operand_type.name == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sle $t2, $t1, $t0\n'  # special data comparison instruction
@@ -611,7 +583,6 @@ class Cgen(Interpreter):
         if operand_type.name == Type.double:
             label_number = self.new_label()
             label = '__d_le__' + label_number
-            code += mips_text()
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
@@ -630,7 +601,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         label_number = self.new_label()
         label = '__not__' + label_number
-        code += mips_text()
         code += mips_load('$t0', '$sp')
         code += add_stack(8)
         code += mips_li('$t1', 1)
@@ -649,7 +619,6 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
         if operand_type.name == Type.int:
-            code += mips_text()
             code += mips_load('$t0', '$sp')
             code += mips_sub('$t0', '$zero', '$t0')
             code += mips_store('$t0', '$sp')
@@ -689,19 +658,16 @@ class Cgen(Interpreter):
         else_label = self.new_label()
         end_label = self.new_laebl()
 
-        code = mips_text()
         code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
         code += mips_beq('$a0', 0, end_label)
         code += mips_jump(then_label)
 
-        code += mips_text()
         code += '{}:\n'.format(then_label)
         code += then_code
         code += mips_jump(end_label)
         if hasElse:
             else_code = self.visit(tree.children[2])
-            code += mips_text
             code += '{}:\n'.format(else_label)
             code += else_code
 
@@ -738,7 +704,7 @@ class Cgen(Interpreter):
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
 
-        code = mips_text()
+        code = ''
         code += '{}:\n'.format(check_label)
         code += check_code
 
@@ -747,22 +713,18 @@ class Cgen(Interpreter):
         code += mips_beqz('$a0', end_label)
         code += mips_jump(continue_label)
 
-        code += mips_text()
         code += '{}:\n'.format(continue_label)
         code += stmt_code
-        code += mips_text()
         code += '{}:\n'.format(end_label)
         return code
 
     def break_stmt(self, tree):
         code = ''
-        code += mips_text()
         code += mips_jump('_end_' + self.loop_labels[-1])
         return code
 
     def return_stmt(self, tree):
         code = ''
-        code = mips_text()
         if len(tree.children) == 1:
             self.visit(tree.children[0])
             code += mips_load('$v0', '$sp', 0)
@@ -880,8 +842,10 @@ if __name__ == '__main__':
     # print(tree)
     print(tree.pretty())
     code = mips_text()
+    code += mips_jump('main')
     code += '.globl main'
     code += str(Cgen().visit(tree))
+    code += data_section
     print("CODE:")
     print(code)
 

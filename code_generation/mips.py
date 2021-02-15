@@ -161,16 +161,12 @@ def mips_shift_left(v1, v2, shmt):
 
 
 def print_newline():
+    codeData = mips_align(2)
+    codeData += 'nw: \n'
+    codeData += mips_asciiz("\"\\n\"")
+    data_section += codeData
     code = ''
-    code += mips_text()
-    code += mips_create_label('print new line')
-    code += mips_jump(mips_get_label('new line'))
-    code += mips_data()
-    code += mips_align(2)
-    code += 'nw: \n'
-    code += mips_asciiz("\"\\n\"")
-    code += mips_text()
-    code += mips_create_label('new line')
+    code += mips_create_label('print new line')    
     code += mips_load_immidiate('$v0', 4)
     code += mips_load_address('$a0', 'nw')
     code += mips_syscall()
@@ -179,7 +175,6 @@ def print_newline():
 
 def mips_new_array():
     code = ''
-    code += mips_text()
     code += mips_create_label('new array')
     code += mips_load('$a0', '$sp', 8)
     code += mips_load('$a1', '$sp')
@@ -197,22 +192,9 @@ def mips_new_array():
     return code
 
 
-data_section = '''.data
-__read:
-    .space 400
-__newLine:
-    .asciiz "\\n"
-__space:
-    .asciiz " "
- __true:
-    .asciiz "true"
-__false:
-    .asciiz "false"
-__null:
-    .word 0
-__chert:
-    .word 0
+data_section = '''.data \n
 '''
+
 
 
 def add_data(label, input):
@@ -257,7 +239,6 @@ def mips_array_decl():
 
 def mips_btoi():
     code = ""
-    code += mips_text()
     code += mips_create_label('btoi')
     code += mips_load('$v0', '$fp', 4)
     code += mips_jr('$ra')
@@ -266,7 +247,6 @@ def mips_btoi():
 
 def mips_itob():
     code = ""
-    code += mips_text()
     code += mips_create_label('itob')
     code += mips_load('$s0', '$fp', 4)
     code += mips_load_immidiate('$v0', 0)
@@ -279,7 +259,6 @@ def mips_itob():
 
 def mips_dtoi():
     code = ""
-    code += mips_text()
     code += mips_create_label('dtoi')
     code += ('l.s $f0, 4($fp)\n')
     code += ('round.w.s $f0, $f0\n')
@@ -290,7 +269,6 @@ def mips_dtoi():
 
 def mips_itod():
     code = ""
-    code += mips_text()
     code += mips_create_label('itod')
     code += mips_load('$s0', '$fp', 4)
     code += ('mtc1 $s0, $f0\n')
@@ -302,7 +280,6 @@ def mips_itod():
 
 def mips_str_cmp():
     code = ""
-    code += mips_text()
     code += mips_create_label('str cmp 1')
     code += mips_load('$a0', '$sp', 0)
     code += mips_load('$a1', '$sp', 8)
@@ -326,7 +303,6 @@ def mips_str_cmp():
 
 def mips_end_programm():
     code = ''
-    code += mips_text()
     code += mips_create_label('end')
     code += mips_load_immidiate('$v0', 10)
     code += mips_syscall()
@@ -335,7 +311,6 @@ def mips_end_programm():
 
 def read_char():
     code = ''
-    code += mips_text()
     code += mips_create_label('read char')
     code += mips_load_immidiate('$v0', 12)
     code += mips_syscall()
@@ -346,7 +321,6 @@ def read_char():
 
 def read_integer():
     code = ''
-    code += mips_text()
     code += mips_create_label('read integer')
     code += mips_load_immidiate('$v0', 5)
     code += mips_syscall()
@@ -357,7 +331,6 @@ def read_integer():
 
 def read_line():
     code = ''
-    code += mips_text()
     code += mips_create_label('read line')
     code += mips_load_immidiate('$v0', 9)
     code += mips_syscall()
@@ -373,7 +346,6 @@ def read_line():
 
 def print_string():
     code = ''
-    code += mips_text()
     code += mips_create_label('print string')
     code += mips_load('$a0', '$sp', 0)
     code += add_stack(8)
@@ -384,7 +356,6 @@ def print_string():
 
 def print_integer():
     code = ''
-    code += mips_text()
     code += mips_create_label('print integer')
     code += mips_load('$a0', '$sp', 0)
     code += add_stack(8)
@@ -394,19 +365,14 @@ def print_integer():
 
 
 def print_bool():
+    codeData = mips_align(2)
+    codeData += 'true: '
+    codeData += mips_asciiz('\"true\"')
+    codeData += 'false: '
+    codeData += mips_asciiz('\"false\"')
+    data_section += codeData
     code = ''
-    code += mips_text()
     code += mips_create_label('print bool')
-    code += mips_jump(mips_get_label('print bool cont'))
-    code += mips_data()
-    code += mips_align(2)
-    code += 'true: '
-    code += mips_asciiz('\"true\"')
-    code += 'false: '
-    code += mips_asciiz('\"false\"')
-
-    code += mips_text()
-    code += mips_create_label('print bool cont')
     code += mips_load('$a0', '$sp', 0)
     code += add_stack(8)
     code += mips_beqz('$a0', mips_get_label('print bool cont 2'))
@@ -425,7 +391,6 @@ def print_bool():
 
 def print_double():
     code = ''
-    code += mips_text()
     code += mips_create_label('print double')
     code += mips_load_double('$f12', '$sp', 0)
     code += add_stack(8)
