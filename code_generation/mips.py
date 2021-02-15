@@ -167,7 +167,7 @@ def print_newline():
     code += mips_jump(mips_get_label('new line'))
     code += mips_data()
     code += mips_align(2)
-    code += 'nw: \n'
+    code += 'nw: \"\n\"'
     code += mips_asciiz("\\n")
     code += mips_text()
     code += mips_create_label('new line')
