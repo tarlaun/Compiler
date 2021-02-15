@@ -1,11 +1,13 @@
 #### start the code generation
 ### variable
 #### start stmt
+### symbol int
 #### EXPR
 #### start stmt
 ### print_stmt
 #### val code gen
-#type: <cgen.Type object at 0x10e84f280>
+### symbol int
+#type: int
 .text
 j main
 .globl main
@@ -142,6 +144,7 @@ sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
+jal __print__integer__
 jal __print__new__line__
 jal __end__
 

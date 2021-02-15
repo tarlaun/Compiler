@@ -2,7 +2,7 @@
 #### start stmt
 ### print_stmt
 #### const_int
-#type: <cgen.Type object at 0x1034a7610>
+#type: int
 .text
 j main
 .globl main

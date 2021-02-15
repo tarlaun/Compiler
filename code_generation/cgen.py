@@ -168,7 +168,7 @@ class Cgen(Interpreter):
         else:
             self.visit(tree.children[0])
             self.array_last_type.dimension += 1
-        return ''
+        return tree.children[0].value
 
     def stmt_block(self, tree):
         parent_scope = self.symbol_table.get_current_scope()
@@ -239,6 +239,7 @@ class Cgen(Interpreter):
         code = ''
         var_name = tree.children[0].value
         symbol = self.symbol_table.lookup_symbol(var_name)
+        print('### symbol', str(symbol.type.name))
         label = symbol.label
         code = ''
         code += mips_load_address('$t0', label=label)
@@ -270,7 +271,7 @@ class Cgen(Interpreter):
         for child in tree.children[0].children:
             code += self.visit(child)
             operand_type = self._types.pop()
-            print('#type:', operand_type)
+            print('#type:', operand_type.name)
             if operand_type.name == Type.double:
                 code += mips_jal(mips_get_label('print double'))
             elif operand_type.name == Type.int:
