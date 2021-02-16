@@ -3,75 +3,45 @@
 ### variable
 ### variable
 #### start stmt
-### symbol int
+### symbol bool
 #### EXPR
-#### const_int
 #### start stmt
-### symbol int
+### symbol bool
 #### EXPR
-#### const_int
 #### start stmt
-### symbol int
+### symbol bool
 #### EXPR
 #### val code gen
-### symbol int
+### symbol bool
 #### val code gen
-### symbol int
+### symbol bool
 #### start stmt
 ### print_stmt
 #### val code gen
-### symbol int
-#type: int
+### symbol bool
+#type: bool
 #### start stmt
-### symbol int
+### symbol bool
 #### EXPR
 #### val code gen
-### symbol int
+### symbol bool
 #### val code gen
-### symbol int
+### symbol bool
 #### start stmt
 ### print_stmt
 #### val code gen
-### symbol int
-#type: int
+### symbol bool
+#type: bool
 #### start stmt
-### symbol int
+### symbol bool
 #### EXPR
 #### val code gen
-### symbol int
-#### val code gen
-### symbol int
+### symbol bool
 #### start stmt
 ### print_stmt
 #### val code gen
-### symbol int
-#type: int
-#### start stmt
-### symbol int
-#### EXPR
-#### val code gen
-### symbol int
-#### val code gen
-### symbol int
-#########im in integer div
-#### start stmt
-### print_stmt
-#### val code gen
-### symbol int
-#type: int
-#### start stmt
-### symbol int
-#### EXPR
-#### val code gen
-### symbol int
-#### val code gen
-### symbol int
-#########im in integer div
-#### start stmt
-### print_stmt
-#### val code gen
-### symbol int
-#type: int
+### symbol bool
+#type: bool
 .text
 .globl main
 main:
@@ -80,7 +50,7 @@ sw $ra, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-li $t0, 5
+li $t0, 0
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 8($sp)
@@ -92,7 +62,7 @@ addi $sp, $sp, 8
 la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-li $t0, 10
+li $t0, 1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 8($sp)
@@ -117,8 +87,8 @@ lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 8($sp)
-add $t2, $t0, $t1
+lw $t0, 8($sp)
+and $t2, $t0, $t1
 sw $t2, 8($sp)
 addi $sp, $sp, 8
 lw $t0, 8($sp)
@@ -133,41 +103,7 @@ sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-la $t0 , var_3
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-la $t0 , var_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-sub $t2, $t1, $t0
-sw $t2, 8($sp)
-addi $sp, $sp, 8
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
-la $t0 , var_3
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
+jal __print__bool__
 jal __print__new__line__
 la $t0 , var_3
 sub $sp, $sp, 8
@@ -185,8 +121,8 @@ lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 8($sp)
-mul $t2, $t1, $t0
+lw $t0, 8($sp)
+or $t2, $t0, $t1
 sw $t2, 8($sp)
 addi $sp, $sp, 8
 lw $t0, 8($sp)
@@ -201,42 +137,7 @@ sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-la $t0 , var_3
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-la $t0 , var_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-div $t2, $t1, $t0
-mflo $t2
-sw $t2, 8($sp)
-addi $sp, $sp, 8
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
-la $t0 , var_3
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
+jal __print__bool__
 jal __print__new__line__
 la $t0 , var_3
 sub $sp, $sp, 8
@@ -247,18 +148,14 @@ sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
-la $t0 , var_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-div $t2, $t1, $t0
-mflo $t2
-sw $t2, 8($sp)
 addi $sp, $sp, 8
+li $t1, 1
+beq $t0, $zero, __not__ll_8
+li $t1, 0
+__not__ll_8:
+sub $sp, $sp, 8
+sw $t1, 0($sp)
 lw $t0, 8($sp)
 lw $t1, 0($sp)
 sw $t1, 0($t0)
@@ -271,7 +168,7 @@ sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
-jal __print__integer__
+jal __print__bool__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8

@@ -1,22 +1,25 @@
 #### start the code generation
 ### variable
 ### variable
+### variable
 #### start stmt
-### symbol int
+### symbol double
 #### EXPR
+#### start stmt
+### symbol double
+#### EXPR
+#### start stmt
+### symbol double
+#### EXPR
+#### val code gen
+### symbol double
+#### val code gen
+### symbol double
 #### start stmt
 ### print_stmt
 #### val code gen
-### symbol int
-#type: int
-#### start stmt
-### symbol int
-#### EXPR
-#### start stmt
-### print_stmt
-#### val code gen
-### symbol int
-#type: int
+### symbol double
+#type: double
 .text
 .globl main
 main:
@@ -25,38 +28,60 @@ sw $ra, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __read__integer__
+li $t0, 1.5
+sub $sp, $sp, 8
+sw $t0, 0($sp)
 lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
+l.d $f0, 0($sp)
+s.d $f0, 0($t0)
+s.d $f0, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 3.4
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+l.d $f0, 0($sp)
+s.d $f0, 0($t0)
+s.d $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-la $t0 , var_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __read__integer__
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
+l.d $f0, 0($t0)
+s.d $f0, 0($sp)
 la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
+l.d $f0, 0($t0)
+s.d $f0, 0($sp)
+l.d $f0, 0($sp)
+l.d $f2, 8($sp)
+add.d $f4, $f0, $f2
+s.d $f4, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+l.d $f0, 0($sp)
+s.d $f0, 0($t0)
+s.d $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.d $f0, 0($t0)
+s.d $f0, 0($sp)
+jal __print__double__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
@@ -185,6 +210,9 @@ var_1:
 .align 2
 .space 4
 var_2:
+.align 2
+.space 4
+var_3:
 .align 2
 .space 4
 true: 

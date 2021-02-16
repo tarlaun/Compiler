@@ -75,7 +75,7 @@ mfc1 $v0, $f0
 addi $sp, $sp, 8
 jr $ra
 __itob__:
-lw $s0, 4($fp)
+lw $s0, 0($sp)
 li $v0 , 0
 beqz $s0 , __itob__jump__
 li $v0 , 1
