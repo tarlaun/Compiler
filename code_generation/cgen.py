@@ -1,6 +1,6 @@
-import lark
+import lark 
 from lark.visitors import Interpreter
-from lark import Token
+from lark import Token , Lark
 from parser_code import get_parse_tree
 from symbol_table import SymbolTable, Scope, Symbol, Function, Class
 from mips import *
@@ -87,6 +87,7 @@ class Cgen(Interpreter):
         self.class_func_counter = 0
         self.class_functions = []
         self.class_variables = []
+        self.in_formal = False
 
     def filter_lists(self, object1):
         if isinstance(object1, list):
@@ -97,7 +98,6 @@ class Cgen(Interpreter):
         return object
 
     def start(self, tree):
-        print('#### start the code generation')
 
         root = Scope('root')
         self.symbol_table.push_scope(root)
@@ -107,9 +107,23 @@ class Cgen(Interpreter):
         return code
 
     def declaration(self, tree):
+        declarations = []
         code = ''
         for decl in tree.children:
-            code += self.visit(decl)
+            declarations.append(decl)
+        index = 0
+        cannot_be_generated = False
+        while(len(declarations) != 0):
+            if cannot_be_generated:
+                raise ClassError('code cannont be generated')
+            try:
+                code += self.visit(declarations[index])
+                declarations.pop(index)
+                index = 0
+            except:
+                index += 1
+                if index == len(declarations):
+                    cannot_be_generated = True
         return code
     
     def class_declaration(self, tree):
@@ -129,7 +143,7 @@ class Cgen(Interpreter):
             parent_scope = self.symbol_table.get_current_scope()
             current_scope = Scope('__class__'+class_name , parent_scope)
             self.symbol_table.push_scope(current_scope)
-            class_object = Class(current_scope , class_name , class_label)
+            class_object = Class(parent_scope , class_name , class_label)
             self.symbol_table.push_class(class_object)  
             code = ''
             if len(tree.children) > 1:
@@ -167,7 +181,8 @@ class Cgen(Interpreter):
     def function_declaration(self, tree):
         code = ''
         if len(tree.children) == 4:
-            return_type = Type(self.visit(tree.children[0]))
+            self.visit(tree.children[0])
+            return_type = self.array_last_type
             ident = tree.children[1]
             formals = tree.children[2]
             stmt_block = tree.children[3]
@@ -184,7 +199,7 @@ class Cgen(Interpreter):
         self.symbol_table.push_scope(function_scope)
 
         function_data = Function(scope=function_scope,
-                                 name=ident, label='', return_type=return_type , funnc_formals= self.func_formals)
+                                 name=ident, label='', return_type=return_type , func_formals= self.func_formals)
         function_data.label = '__' + function_data.scope.get_id() + '__'
         self.class_functions.append(function_data)
         self.symbol_table.push_function(function_data)
@@ -215,42 +230,33 @@ class Cgen(Interpreter):
         return code
 
     def variable(self, tree):
-        print('### variable')
         code = ''
-        variable_type = Type(self.visit(tree.children[0]), 0)
+        self.visit(tree.children[0])
+        
+        variable_type =  self.array_last_type #Type(self.visit(tree.children[0]), 0)
         variable_name = tree.children[1]
         label = self.new_variable_label()
-        self.data.add_data(label + ':\n' + mips_align(2) + '.space 4\n')
+        size = 4
+        if variable_type.name == Type.double and variable_type.dimension == 0:
+            size = 8
+        self.data.add_data(label + ':\n' + mips_align(2) + '.space {}\n'.format(size))
         symbol = Symbol(variable_name, variable_type,
                         scope=self.symbol_table.get_current_scope(), label=label)
         self.class_variables.append(symbol)
         self.symbol_table.push_symbol(symbol)
-        # mips code to push to stack ==> probably not
+        if self.in_formal:
+            self.func_formals.append(symbol)
         return code
 
     def formals(self, tree):
+        self.in_formal = True
         self.func_formals = []
         parent_scope = self.symbol_table.get_current_scope()
         current_scope = Scope('formals', parent_scope)
         self.symbol_table.push_scope(current_scope)
 
-        for variable in tree.children:
-            formal_name = variable.children[1].value
-            formal_type = Type(variable.children[0].children[0].value)
-            if formal_type.name == Type.double and formal_type.dimension == 0:
-                label = (str(self.symbol_table.get_current_scope()
-                             ) + "/" + formal_name).replace("/", "_")
-                self.data.add_data('{}: .space 8\n'.format(
-                    label) + mips_align(2))
-            else:
-                label = (str(self.symbol_table.get_current_scope()
-                             ) + "/" + formal_name).replace("/", "_")
-                self.data.add_data('{}: .space 4\n'.format(
-                    label) + mips_align(2))
-            symbol = Symbol(formal_name, formal_type,
-                            scope=self.symbol_table.get_current_scope(), label=label)
-            self.symbol_table.push_symbol(symbol)
-            self.func_formals.append(symbol)
+        self.visit_children(tree)
+        self.in_formal = False
         return ''
 
     def type(self, tree):
@@ -259,10 +265,9 @@ class Cgen(Interpreter):
         else:
             self.visit(tree.children[0])
             self.array_last_type.dimension += 1
-        return tree.children[0].value
+        return '' #hope it doesn't ruin anything
 
     def stmt_block(self, tree):
-        print('####### stmt_block')
         parent_scope = self.symbol_table.get_current_scope()
         label = self.new_stmt_block_label()
         current_scope = Scope(label, parent_scope)
@@ -273,7 +278,6 @@ class Cgen(Interpreter):
         return code
 
     def expr(self, tree):
-        print("#### EXPR")
         return ''.join(self.visit_children(tree))
 
     def expr0(self, tree):
@@ -311,7 +315,7 @@ class Cgen(Interpreter):
         tp2 = self._types.pop()
         if not convertible(tp1, tp2):
             raise TypeError('Invalid assignment type')
-        if tp2.name == Type.double:  # and typ.dimension == 0:
+        if tp2.name == Type.double and tp2.dimension == 0:
             code += mips_load('$t0', '$sp', offset=8)  # label address
             code += mips_load_double('$f0', '$sp')  # value to be assigned
             code += mips_store_double('$f0', '$t0')  # save value in the label
@@ -352,9 +356,7 @@ class Cgen(Interpreter):
     def var_addr(self, tree):  # finds variable label and push it to stack
         code = ''
         var_name = tree.children[0].value
-        print('#### var name', var_name)
         symbol = self.symbol_table.lookup_symbol(var_name)
-        print('### symbol', str(symbol.type.name))
         label = symbol.label
         code = ''
         code += mips_load_address('$t0', label=label)
@@ -391,20 +393,27 @@ class Cgen(Interpreter):
             code += mips_store('$v0' , '$sp' , 0)
         return code
 
-    def method(self, tree):
+    def class_call(self, tree):
         function_name = tree.children[1].value
         code = ''
         code += self.visit(tree.children[0])
         code += mips_load('$t0' , '$sp')
         code += mips_move('$t3' , '$t0')
         code += add_stack(8)
-        class_type = self._types.pop()
-        class_object = self.symbol_table.lookup_class(class_type.name)
+        tp = self._types.pop()
+        if tp.dimension > 0:
+            if function_name != 'length':
+                raise FunctionError('Invalid function for array')
+            code += sub_stack(8)
+            code += mips_load('$t3' , '$t3' , 0)
+            code += mips_store('$t3' , '$sp')
+            self._types.append(Type(Type.int))
+            return code
+        class_object = self.symbol_table.lookup_class(tp.name)
         func_index = class_object.get_func_index(function_name)
         func = class_object.get_function(function_name)
         if len(tree.children) > 2:
             code += self.visit(tree.children[2])
-            # print('****\n',code , '****\n')
         offset = 8
         for x in class_object.variables:
             code += mips_load('$t1' , '$t3' , offset)
@@ -442,8 +451,14 @@ class Cgen(Interpreter):
         code = ''
         code += self.visit(tree.children[0])
         code += mips_load('$t0' , '$sp' )
-        class_type = self._types.pop()
-        class_object = self.symbol_table.lookup_class(class_type.name)
+        tp = self._types.pop()
+        if tp.dimension > 0:
+            if ident != 'length':
+                raise FunctionError('Invalid function for array')
+            code += mips_store('$t0' , '$sp')
+            self._types.append(Type(Type.int))
+            return code
+        class_object = self.symbol_table.lookup_class(tp.name)
         var_index = class_object.get_var_index(ident)
         var_type = class_object.get_variable(ident).type
         self._types.append(var_type)
@@ -451,55 +466,51 @@ class Cgen(Interpreter):
         code += mips_store('$t1' , '$sp')
         return  code
 
-    def val(self, tree):  # todo = dimension
-        print("#### val code gen")
+    def val(self, tree):  
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
-        if operand_type.name == Type.double:  # and typ.dimension == 0:
+        if operand_type.name == Type.double and operand_type.dimension == 0:
             code += mips_load('$t0', '$sp')
             code += mips_load_double('$f0', '$t0')
             code += mips_store_double('$f0', '$sp')
-        else:  # bool, int
+        else: 
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$t0')
             code += mips_store('$t1', '$sp')
         return code
 
-    def print_stmt(self, tree):  # todo - not sure about the type checking
-        print('### print_stmt')
+    def print_stmt(self, tree): 
         code = ''
         for child in tree.children:
             code += self.visit(child)
             operand_type = self._types.pop()
-            print('#type:', operand_type.name)
+            if(operand_type.dimension > 0):
+                raise TypeError('Invalid dimension for Print')
             if operand_type.name == Type.double:
                 code += mips_jal(mips_get_label('print double'))
             elif operand_type.name == Type.int:
                 code += mips_jal(mips_get_label('print integer'))
             elif operand_type.name == Type.string:
                 code += mips_jal(mips_get_label('print string'))
-            elif operand_type.name == Type.bool:  # and t.dimension == 0:
+            elif operand_type.name == Type.bool:  
                 code += mips_jal(mips_get_label('print bool'))
         code += mips_jal(mips_get_label('print new line'))
         return code
 
-    def new_array(self, tree):  # todo - add the typechecking
+    def new_array(self, tree): 
         code = ''.join(self.visit(tree.children[0]))
-        shamt = 2
+        self.visit(tree.children[1])
         tp = self.array_last_type
-        if tp.is_primitive and tp.dimension == 0:
-            if tp.name == Type.double:
-                shamt = 3
         length_type = self._types.pop()
         if length_type.name != 'int' or length_type.dimension != 0:
             raise(TypeError('Invalid length type for NewArray()'))
 
         code += sub_stack(8)
-        code += mips_load_immidiate('$a0', shamt)
+        code += mips_load_immidiate('$a0', 3)
         code += mips_store('$a0', '$sp', 0)
         code += mips_jal(mips_get_label('new array'))
-        self._types.append(Type(self.array_last_type.name,
-                                self.array_last_type.dimension+1))
+        self._types.append(Type(tp.name,
+                                tp.dimension+1))
         return code
 
     def read_line(self, tree):
@@ -518,7 +529,6 @@ class Cgen(Interpreter):
         return ''.join(self.visit_children(tree))
 
     def const_int(self, tree):
-        print('#### const_int')
         code = ''
         const_val = tree.children[0].value.lower()
         code += mips_li('$t0', const_val)
@@ -628,7 +638,6 @@ class Cgen(Interpreter):
         if op1.name != op2.name:
             raise TypeError('invalid Type for multiplication')
         if op1.name == Type.int:
-            print('#########im in integer div')
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_div('$t2', '$t1', '$t0')
@@ -644,19 +653,27 @@ class Cgen(Interpreter):
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
             self._types.append(Type(Type.double))
+        else:
+            raise TypeError('Invalid Type for Division')
         return code
 
     def add(self, tree):
         code = ''.join(self.visit_children(tree))
         op2 = self._types.pop()
         op1 = self._types.pop()
+        if op1.dimension == op2.dimension and op1.dimension == 1 and op1.name == op2.name:
+            code += mips_jal(mips_get_label('join arrays'))
+            self._types.append(Type(op1.name , op2.dimension))
+            return code
         if not op1.is_primitive or not op2.is_primitive:
             raise TypeError('invalid Type for add')
         if op1.name == Type.bool or op2.name == Type.bool:
             raise TypeError('invalid Type for add')
         if op1.name != op2.name:
             raise TypeError('invalid Type for add')
-
+        if op1.dimension > 1 or op2.dimension > 1:
+            return TypeError('invalid dimension')
+        
         if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
@@ -676,6 +693,8 @@ class Cgen(Interpreter):
         elif op1.name == Type.string:
             code += mips_jal(mips_get_label('str concat'))
             self._types.append(Type(Type.string))
+        else:
+            raise TypeError('Invalid Type for addition')
         return code
 
     def sub(self, tree):
@@ -690,7 +709,8 @@ class Cgen(Interpreter):
             raise TypeError('invalid Type for sub')
         if op1.name != op2.name:
             raise TypeError('invalid Type for sub')
-
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for subtraction')
         if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
@@ -706,6 +726,8 @@ class Cgen(Interpreter):
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
             self._types.append(Type(Type.double))
+        else:
+            raise TypeError('Invalid Type for substraction')
         return code
 
     def and_bool(self, tree):
@@ -714,6 +736,8 @@ class Cgen(Interpreter):
         op2 = self._types.pop()
         if op1.name != Type.bool or op2.name != Type.bool:
             raise TypeError('Invalid Type for boolean action ')
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for and action')
         code += mips_load('$t0', '$sp')
         code += mips_load('$t0', '$sp', offset=8)
         code += mips_and('$t2', '$t0', '$t1')
@@ -729,6 +753,8 @@ class Cgen(Interpreter):
         op2 = self._types.pop()
         if op1.name != Type.bool or op2.name != Type.bool:
             raise TypeError('Invalid Type for boolean action ')
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for or action')
         code += mips_load('$t0', '$sp')
         code += mips_load('$t1', '$sp', offset=8)
         code += mips_or('$t2', '$t0', '$t1')
@@ -743,7 +769,9 @@ class Cgen(Interpreter):
         op2 = self._types.pop()
         if op1.name != op2.name:
             raise TypeError('Invalid Type for equal action')
-        if op1.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for comparison')
+        if op1.name == Type.double: 
             label_number = self.new_label()
             label = '__d_eq__' + label_number
             code += mips_load_double('$f0', '$sp')
@@ -757,11 +785,11 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        elif op1.name == Type.string:  # and typ.dimension == 0:
+        elif op1.name == Type.string:  
             code += '.text\n'
             code += mips_jump(mips_get_label('str cmp 1'))
             code += mips_store('$v0', '$sp', 0)
-        else:  # int, bool    #done i think
+        else:  # int, bool , class
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             # special equality checking operation - will set t2 = 1 if t1 == t0
@@ -777,7 +805,9 @@ class Cgen(Interpreter):
         op2 = self._types.pop()
         if op1.name != op2.name:
             raise TypeError('Invalid Type for equal action')
-        if op1.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for comparison')
+        if op1.name == Type.double: 
             label_number = self.new_label()
             label = '__d_eq__' + label_number
             code += mips_load_double('$f0', '$sp')
@@ -797,7 +827,7 @@ class Cgen(Interpreter):
             code += mips_load_immidiate('$t0', 1)
             code += 'sne $v0 , $v0 , $t0\n'
             code += mips_store('$v0', '$sp', 0)
-        else:  # int, bool    #done i think
+        else:  # int, bool    
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             # special equality checking operation - will set t2 = 1 if t1 == t0
@@ -809,14 +839,19 @@ class Cgen(Interpreter):
 
     def gt(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type.name == Type.int:
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != op2.name:
+            raise TypeError('Invalid Type for equal action')
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for comparison')
+        if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sgt $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type.name == Type.double:
+        elif op1.name == Type.double:
             label_number = self.new_label()
             label = '__d_gt__' + label_number
             code += mips_load_double('$f0', '$sp')
@@ -828,20 +863,26 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        self._types.pop()
+        else:
+            raise TypeError('Invalid Type for comparison')
         self._types.append(Type(Type.bool))
         return code
 
     def ge(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type.name == Type.int:
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != op2.name:
+            raise TypeError('Invalid Type for equal action')
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for comparison')
+        if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sge $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type.name == Type.double:
+        elif op1.name == Type.double:
             label_number = self.new_label()
             label = '__d_ge__' + label_number
             code += mips_load_double('$f0', '$sp')
@@ -853,20 +894,26 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        self._types.pop()
+        else:
+            raise TypeError('Invalid Type for comparison')
         self._types.append(Type(Type.bool))
         return code
 
     def lt(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type.name == Type.int:
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != op2.name:
+            raise TypeError('Invalid Type for equal action')
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for comparison')
+        if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'slt $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type.name == Type.double:
+        elif op1.name == Type.double:
             label_number = self.new_label()
             label = '__d_lt__' + label_number
             code += mips_load_double('$f0', '$sp')
@@ -878,20 +925,26 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        self._types.pop()
+        else:
+            raise TypeError('Invalid Type for comparison')
         self._types.append(Type(Type.bool))
         return code
 
     def le(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type.name == Type.int:
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != op2.name:
+            raise TypeError('Invalid Type for equal action')
+        if op1.dimension != 0 or op2.dimension != 0:
+            raise TypeError('Invalid dimension for comparison')
+        if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += 'sle $t2, $t1, $t0\n'  # special data comparison instruction
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        if operand_type.name == Type.double:
+        elif op1.name == Type.double:
             label_number = self.new_label()
             label = '__d_le__' + label_number
             code += mips_load_double('$f0', '$sp')
@@ -903,7 +956,8 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        self._types.pop()
+        else:
+            raise TypeError('Invalid Type for comparison')
         self._types.append(Type(Type.bool))
         return code
 
@@ -911,7 +965,7 @@ class Cgen(Interpreter):
     def not_bool(self, tree):
         code = ''.join(self.visit_children(tree))
         op1 = self._types.pop()
-        if op1.name != Type.bool:
+        if op1.name != Type.bool or op1.dimension > 0:
             raise TypeError('Invalid Type for boolean Action')
         label_number = self.new_label()
         label = '__not__' + label_number
@@ -931,7 +985,8 @@ class Cgen(Interpreter):
     def neg(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
-
+        if operand_type.dimension > 0 :
+            raise TypeError('Invalid dimension for negating')
         if operand_type.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_sub('$t0', '$zero', '$t0')
@@ -956,11 +1011,28 @@ class Cgen(Interpreter):
     
 
     def subscript(self, tree):
-        return 'subs_ '
+        code = ''
+        code += self.visit(tree.children[0])
+        tp = self._types.pop()
+        if tp.dimension == 0:
+            raise TypeError("Invalid array access")
+        code += self.visit(tree.children[1])
+        tp2 = self._types.pop()
+        if tp2.name != Type.int:
+            raise TypeError("Invalid index")
+        self._types.append(Type(tp.name , tp.dimension - 1))
+        code += mips_load('$a0' , '$sp' , 0)
+        code += mips_load('$v0' , '$sp' , 8)
+        code += add_stack(16)
+        code += mips_addi('$a0' , '$a0' , 1)
+        code += mips_shift_left('$a0' , '$a0' , 3)
+        code += mips_add('$v0' , '$v0' , '$a0')
+        code += sub_stack(8)
+        code += mips_store('$v0' , '$sp' , 0)
+        return code
 
     def stmt(self, tree):
         code = ''
-        print('#### stmt')
         child = tree.children[0]
         stmt_label = self.new_label()
         child._meta = stmt_label
@@ -968,7 +1040,6 @@ class Cgen(Interpreter):
         return code
 
     def if_stmt(self, tree):
-        print('### start if_stmt')
         condition = self.visit(tree.children[0])
         tp = self._types.pop()
         if tp.name != Type.bool:
@@ -993,8 +1064,7 @@ class Cgen(Interpreter):
         code += '{}:\n'.format(end_label)
         return code
 
-    def for_stmt(self, tree):  # todo - i have no clue
-        print('### start for_stmt')
+    def for_stmt(self, tree):  
         return ''.join(self.visit_children(tree))
 
     def for1(self, tree):
@@ -1101,7 +1171,6 @@ class Cgen(Interpreter):
         return code
 
     def while_stmt(self, tree):
-        print('### start while_stmt')
         check_label = self.new_loop_label()
         end_label = '_end_'+check_label
         parent_scope = self.symbol_table.get_current_scope()
@@ -1196,6 +1265,7 @@ class Cgen(Interpreter):
 
     def declare_global_static_funcs(self):
         code = ''
+        code += join_arrays()
         code += mips_new_array()
         code += mips_itod()
         code += mips_itob()
@@ -1482,7 +1552,12 @@ class_test = '''
 
     int main(){
         A x ;
+        A z;
         x = new A;
+        z = x;
+        if(z == x){
+            Print("joon baba");
+        }
         x.a = 2;
         x.y = new B;
         x.y.b = 4;
@@ -1565,8 +1640,121 @@ string_concat_test = '''
 
 '''
 
+array_test = '''
+    int main(){
+        int[] a;
+        int i;
+        a = NewArray(10 , int);
+        Print(a.length);         
+        
+    }
+
+
+'''
+
+array_test2 = '''
+
+void sort(int[] items) {
+
+    /* implementation of bubble sort */
+    int i;
+    int j;
+
+    int n;
+    n = items.length;
+
+    for (i = 0; i < n-1; i = i + 1)
+        for (j = 0; j < n - i - 1; j = j + 1)
+            if (items[j] > items[j + 1]) {
+                int t;
+                t = items[j];
+                items[j] = items[j + 1];
+                items[j + 1] = t;
+            }
+}
+
+int main() {
+    int i;
+    int j;
+    int[] rawitems;
+    int[] items;
+
+    Print("Please enter the numbers (max count: 100, enter -1 to end sooner): ");
+
+    rawitems = NewArray(100, int);
+    for (i = 0; i < 100; i = i + 1) {
+        int x;
+        x = ReadInteger();
+        if (x == -1) break;
+
+        rawitems[i] = x;
+    }
+
+    items = NewArray(i, int);
+
+    // copy to a more convenient location
+    for (j = 0; j < i; j = j + 1) {
+        items[j] = rawitems[j];
+    }
+
+    sort(items);
+
+    Print("After sort: ");
+
+    for (i = 0; i < items.length(); i = i + 1) {
+        Print(items[i]);
+    }
+}
+
+'''
+
+test_array3 = '''
+    int main(){
+        int[] a;
+        int[] b;
+        int[] c;
+        int i;
+        a = NewArray(10 , int);
+        b = NewArray(5 , int);
+        for(i = 0 ; i < a.length ; i = i + 1){
+            a[i] = i+1;
+        }
+        for(i = 0; i < b.length() ; i =i+1){
+            b[i] = i*i;
+        }
+        Print(a.length());
+        Print(b.length());
+        for(i = 0; i < b.length; i = i + 1){
+            Print(a[i] , " ", b[i]);
+        }
+        c = a + b;
+        Print(c.length);
+        b = a;
+        for( i = 0 ; i < c.length() ; i = i + 1){
+            Print(c[i] , " " , b[i]);
+        }
+    }
+
+
+
+'''
+
+test2 = '''
+class A {
+
+}
+
+int main(){
+    A a;
+
+    a = New A ;  
+}
+
+'''
+
+
 if __name__ == '__main__':
-    tree = get_parse_tree(string_concat_test)
+    tree = get_parse_tree(class_test)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'

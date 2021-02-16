@@ -88,7 +88,7 @@ l_value : IDENTIFIER -> var_addr
     | expr7 "[" expr "]" -> subscript
 
 call : IDENTIFIER  "(" (actuals)? ")" -> simple_call
-    | expr7  "."  IDENTIFIER "(" (actuals)* ")" -> method
+    | expr7  "."  IDENTIFIER "(" (actuals)* ")" -> class_call
   
 actuals :  expr (","expr)* 
 constant : INTEGER -> const_int 

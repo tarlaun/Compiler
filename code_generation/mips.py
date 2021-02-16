@@ -168,8 +168,83 @@ def mips_syscall():
 
 
 def mips_shift_left(v1, v2, shmt):
-    return ("sllv " + v1 + " , " + v2 + " , " + shmt + "\n")
+    return ("sllv " + v1 + " , " + v2 + " , " + str(shmt) + "\n")
 
+def join_arrays():
+    code = ''
+    code += mips_create_label('join arrays')
+    code += mips_load('$t0' , '$sp' , 8)
+    code += mips_load('$t1' , '$sp' , 0)
+    code += add_stack(16)
+    code += mips_load('$a0' , '$t0' , 0)
+    code += mips_load('$a1' , '$t1' , 0)
+    code += mips_add('$a0', '$a0' , '$a1')
+    code += mips_move('$t2' , '$a0')
+    code += mips_addi('$a0' ,'$a0', 1)
+    code += mips_shift_left('$a0', '$a0' , 3)
+    code += mips_load_immidiate('$v0' , 9)
+    code += mips_syscall()
+    code += mips_move('$a0' , '$v0')
+    code += sub_stack(8)
+    code += mips_store('$a0' , '$sp')
+    code += sub_stack(8)
+    code += mips_store('$ra' , '$sp')
+    code += mips_store('$t2' , '$a0')
+    code += mips_addi('$a0' , '$a0' , 8)
+    code += mips_load('$t3' , '$t0')
+    code += mips_addi('$a1' , '$t0', 8)
+    code += mips_jal(mips_get_label('copy array'))
+    code += mips_load('$t3' , '$t1')
+    code += mips_addi('$a1' , '$t1' , 8)
+    code += mips_jal(mips_get_label('copy array'))
+    code += mips_load('$ra' , '$sp')
+    code += add_stack(8)
+    code += mips_jr('$ra')
+
+    code += mips_create_label('copy array') #dest => a0  from => a1 length => t3
+    code += mips_load('$t4' , '$a1')
+    code += mips_store('$t4' , '$a0')
+    code += mips_addi('$a0' , '$a0' , 8)
+    code += mips_addi('$a1' ,'$a1' , 8)
+    code += mips_addi('$t3', '$t3' , -1)
+    code += mips_bne('$t3' , '$zero' , mips_get_label('copy array'))
+    code += mips_jr('$ra')
+    return code
+
+
+def concat_string():
+    code = ''
+    code += mips_create_label('str concat')
+    code += mips_load('$t0' , '$sp' , 8)
+    code += mips_load('$t1' , '$sp'  )
+    code += add_stack(16)
+    code += mips_load_immidiate('$a0' , 256)
+    code += mips_load_immidiate('$v0',  9)
+    code += mips_syscall()
+    code += sub_stack(8)
+    code += mips_store('$v0', '$sp' , 0)
+    code += sub_stack(8)
+    code += mips_store('$ra' , '$sp' , 0)
+    code += mips_move('$a0' , '$v0')
+    code += mips_move('$a1' , '$t0')
+    code += mips_jal(mips_get_label('str copy'))
+    code += mips_move('$a1' , '$t1')
+    code += mips_jal(mips_get_label('str copy'))
+
+    code += mips_load('$ra' , '$sp')
+    code += add_stack(8)
+    code += mips_jr('$ra')
+
+    code += mips_create_label('str copy')
+    code += mips_load_byte('$t4' , '$a1' , 0)
+    code += mips_store_byte('$t4' , '$a0' , 0)
+    code += mips_beq('$t4' , '$zero' , mips_get_label('str copy end'))
+    code += mips_addi('$a0' , '$a0', 1)
+    code += mips_addi('$a1' , '$a1' ,1)
+    code += mips_jump(mips_get_label('str copy'))
+    code += mips_create_label('str copy end')
+    code += mips_jr('$ra')
+    return code
 
 def concat_string():
     code = ''
@@ -233,7 +308,6 @@ def mips_new_array():
     code += mips_syscall()
     # length of the array is saved at the begining of the array
     code += mips_store('$t6', '$v0', 0)
-    code += mips_addi('$v0', '$v0', 8)
     code += sub_stack(8)
     code += mips_store('$v0', '$sp', 0)
     code += mips_jr('$ra')
