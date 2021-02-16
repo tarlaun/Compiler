@@ -453,7 +453,7 @@ class Cgen(Interpreter):
         if op1.name != op2.name:
             raise TypeError('invalid Type for add')
 
-        if op1 == Type.int:
+        if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_add('$t2', '$t0', '$t1')
@@ -461,7 +461,7 @@ class Cgen(Interpreter):
             self._types.append(Type.int)
             code += add_stack(8)
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif op1 == Type.double:
+        elif op1.name == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_add_double('$f4', '$f0', '$f2')
@@ -483,7 +483,7 @@ class Cgen(Interpreter):
         if op1.name != op2.name:
             raise TypeError('invalid Type for sub')
 
-        if op1 == Type.int:
+        if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_sub('$t2', '$t1', '$t0')
@@ -491,7 +491,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             self._types.append(Type(Type.int))
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif op1 == Type.double:
+        elif op1.name == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_sub_double('$f4', '$f2', '$f0')
