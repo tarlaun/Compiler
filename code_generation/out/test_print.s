@@ -5,16 +5,10 @@
 #type: int
 #### start stmt
 ### print_stmt
-#### const_int
-#type: int
+#type: bool
 #### start stmt
 ### print_stmt
-#### const_int
-#type: int
-#### start stmt
-### print_stmt
-#### const_int
-#type: int
+#type: string
 .text
 .globl main
 main:
@@ -25,20 +19,15 @@ sub $sp, $sp, 8
 sw $t0, 0($sp)
 jal __print__integer__
 jal __print__new__line__
-li $t0, 6
+li $t0, 1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __print__integer__
+jal __print__bool__
 jal __print__new__line__
-li $t0, 7
+la $t0 , str_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-li $t0, 8
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __print__integer__
+jal __print__string__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
@@ -158,6 +147,7 @@ syscall
 jr $ra
 
 .data
+str_1: .asciiz "string"
 true: 
 .align 2
  .asciiz "true"

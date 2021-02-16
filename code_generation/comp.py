@@ -48,7 +48,7 @@ def main(argv):
                 input2_lines.append(line.strip())
 
     if len(input1_lines) != len(input2_lines):
-        output = ["different line count in these files! : file {} : #{} , file {} : #{}, {}".format(
+        output = ["different line count in these files! : file {} : #{} , file {} : #{}".format(
             inputfile1, len(input1_lines), inputfile2, len(input2_lines))]
         with open(outputfile, "w") as output_file:
             for item in output:
