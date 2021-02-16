@@ -8,7 +8,7 @@ sub $sp, $sp, 8
 sw $t0, 0($sp)
 li.s $f0 , 1.5
 sub $sp, $sp, 8
-sw $f0, 0($sp)
+s.d $f0, 0($sp)
 lw $t0, 8($sp)
 l.d $f0, 0($sp)
 s.d $f0, 0($t0)
@@ -20,7 +20,7 @@ sub $sp, $sp, 8
 sw $t0, 0($sp)
 li.s $f0 , 3.4
 sub $sp, $sp, 8
-sw $f0, 0($sp)
+s.d $f0, 0($sp)
 lw $t0, 8($sp)
 l.d $f0, 0($sp)
 s.d $f0, 0($t0)
