@@ -18,3 +18,4 @@
 #### val code gen
 #### var name b
 ### symbol string
+Semantic Error
