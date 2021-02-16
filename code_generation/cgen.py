@@ -584,7 +584,7 @@ class Cgen(Interpreter):
         self._types.append(Type(Type.bool))
         return code
 
-    def ne(self , tree):
+    def ne(self, tree):
         code = ''.join(self.visit_children(tree))
         op1 = self._types.pop()
         op2 = self._types.pop()
@@ -607,7 +607,7 @@ class Cgen(Interpreter):
         elif op1.name == Type.string:  # and typ.dimension == 0:
             code += '.text\n'
             code += mips_jump(mips_get_label('str cmp 1'))
-            code += mips_load_immidiate('$t0' , 1)
+            code += mips_load_immidiate('$t0', 1)
             code += 'sne $v0 , $v0 , $t0\n'
             code += mips_store('$v0', '$sp', 0)
         else:  # int, bool    #done i think
@@ -1049,8 +1049,12 @@ int main() {
 """
 
 function_test_code = '''
-int func(int a, int b){
-    return a;
+void calc() {
+    Print("Im in the FUNCTION");
+}
+
+int main() {
+    calc();
 }
 '''
 

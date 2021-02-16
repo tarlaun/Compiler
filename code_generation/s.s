@@ -1,6 +1,6 @@
 .text
 .globl main
-main:
+__calc/formals/root__:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
 la $t0 , var_1
@@ -178,9 +178,7 @@ syscall
 jr $ra
 
 .data
-var_1:
-.align 2
-.space 4
+str_1: .asciiz "Im in the FUNCTION"
 true: 
 .align 2
  .asciiz "true"

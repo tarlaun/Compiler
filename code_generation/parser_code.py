@@ -84,8 +84,8 @@ l_value : IDENTIFIER -> var_addr
     |  expr7 "." IDENTIFIER -> var_access 
     | expr7 "[" expr "]" -> subscript
 
-call : IDENTIFIER  "(" actuals ")" 
-    | expr7  "."  IDENTIFIER "(" actuals ")" -> method
+call : IDENTIFIER  "(" (actuals)* ")" 
+    | expr7  "."  IDENTIFIER "(" (actuals)* ")" -> method
   
 actuals :  expr (","expr)* 
 constant : INTEGER -> const_int 
