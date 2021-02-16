@@ -126,7 +126,7 @@ class Cgen(Interpreter):
         self.symbol_table.pop_scope()
         if ident == 'main':
             code += mips_jr('$ra')
-        return code + global_funcs
+        return code
 
     def variable_declaration(self, tree):
         code = ''
@@ -511,7 +511,7 @@ class Cgen(Interpreter):
         code += mips_and('$t2', '$t0', '$t1')
         code += mips_store('$t2', '$sp', offset=8)
         code += add_stack(8)
-        
+
         self._types.append(Type.bool)
         return code
 
@@ -687,7 +687,7 @@ class Cgen(Interpreter):
     def neg(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
-        
+
         if operand_type.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_sub('$t0', '$zero', '$t0')
