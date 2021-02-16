@@ -5,11 +5,13 @@
 #### start stmt
 #### start stmt
 ### print_stmt
+#### EXPR
 #### const_int
 #type: int
 #### start stmt
 #### start stmt
 ### print_stmt
+#### EXPR
 #### const_int
 #type: int
 .text

@@ -22,6 +22,7 @@
 ### symbol bool
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol bool
@@ -38,6 +39,7 @@
 ### symbol bool
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol bool
@@ -51,6 +53,7 @@
 ### symbol bool
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol bool

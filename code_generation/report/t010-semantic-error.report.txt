@@ -1,1 +1,1 @@
-difference in line #1: file: out/t010-semantic-error.out -----> content: Oh, No <> file: tests/t010-semantic-error.out -----> content: Semantic Error 
+OK 

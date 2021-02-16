@@ -22,6 +22,7 @@
 ### symbol double
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol double
@@ -38,6 +39,7 @@
 ### symbol double
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol double
@@ -54,6 +56,7 @@
 ### symbol double
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol double
@@ -70,6 +73,7 @@
 ### symbol double
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol double
@@ -192,9 +196,9 @@ mul.s $f4, $f2, $f0
 s.s $f4, 8($sp)
 addi $sp, $sp, 8
 lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
 la $t0 , var_3

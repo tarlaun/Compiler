@@ -5,6 +5,7 @@
 #### start stmt
 #### start stmt
 ### print_stmt
+#### EXPR
 #type: string
 #### start stmt
 ### start if_stmt
@@ -12,6 +13,7 @@
 #### start stmt
 #### start stmt
 ### print_stmt
+#### EXPR
 #type: string
 .text
 .globl main

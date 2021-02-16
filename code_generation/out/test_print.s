@@ -7,15 +7,18 @@
 #### const_int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name a
 ### symbol int
 #type: int
 #### start stmt
 ### print_stmt
+#### EXPR
 #type: bool
 #### start stmt
 ### print_stmt
+#### EXPR
 #type: string
 .text
 .globl main

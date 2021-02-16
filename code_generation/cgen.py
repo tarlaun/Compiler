@@ -165,7 +165,7 @@ class Cgen(Interpreter):
 
         for variable in tree.children:
             formal_name = variable.children[1].value
-            formal_type = Type(variable.children[0])
+            formal_type = Type(variable.children[0].children[0].value)
             if formal_type.name == Type.double and formal_type.dimension == 0:
                 label = (str(self.symbol_table.get_current_scope()
                              ) + "/" + formal_name).replace("/", "_")
@@ -190,6 +190,7 @@ class Cgen(Interpreter):
         return tree.children[0].value
 
     def stmt_block(self, tree):
+        print('####### stmt_block')
         parent_scope = self.symbol_table.get_current_scope()
         label = self.new_stmt_block_label()
         current_scope = Scope(label, parent_scope)
@@ -235,8 +236,7 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         tp1 = self._types.pop()
         tp2 = self._types.pop()
-        if not convertible(tp1 , tp2):
-            print(tp1.name , tp2.name)
+        if not convertible(tp1, tp2):
             raise TypeError('Invalid assignment type')
         if tp2.name == Type.double:  # and typ.dimension == 0:
             code += mips_load('$t0', '$sp', offset=8)  # label address
@@ -788,7 +788,9 @@ class Cgen(Interpreter):
         function_name = tree.children[0].value
         function = self.symbol_table.lookup_function(function_name)
         function_label = function.label
-        # code += sub_stack(8)
+        # code += mips_load('$t0', '$sp')
+        # code += add_stack(8)
+
         # code += mips_store('$ra', '$sp')
         code += mips_jal(function_label)
         # code += mips_load('$ra', '$sp')
@@ -801,7 +803,7 @@ class Cgen(Interpreter):
 
     def stmt(self, tree):
         code = ''
-        print('#### start stmt')
+        print('#### stmt')
         child = tree.children[0]
         stmt_label = self.new_label()
         child._meta = stmt_label
@@ -1250,7 +1252,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(double_test)
+    tree = get_parse_tree(test_function_with_formal)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'

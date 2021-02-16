@@ -24,6 +24,7 @@
 ### symbol int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol int
@@ -40,6 +41,7 @@
 ### symbol int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol int
@@ -56,6 +58,7 @@
 ### symbol int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol int
@@ -73,6 +76,7 @@
 #########im in integer div
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol int
@@ -90,6 +94,7 @@
 #########im in integer div
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol int

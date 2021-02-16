@@ -7,6 +7,7 @@
 #### EXPR
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name a
 ### symbol int
@@ -17,6 +18,7 @@
 #### EXPR
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name b
 ### symbol int
