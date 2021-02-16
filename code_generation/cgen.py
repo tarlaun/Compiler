@@ -71,8 +71,9 @@ class Cgen(Interpreter):
         self._types = []
         self.symbol_table = SymbolTable()
         self.data = DataSection()
-    def filter_lists(self , object1):
-        if isinstance(object1 , list):
+
+    def filter_lists(self, object1):
+        if isinstance(object1, list):
             code = ''
             for x in object1:
                 code += x
@@ -225,7 +226,6 @@ class Cgen(Interpreter):
 
     def assignment(self, tree):  # todo - type checking - array
         code = ''.join(self.visit_children(tree))
-        print('im here')
         variable_type = self._types[-1]
         if variable_type.name == Type.double:  # and typ.dimension == 0:
             code += mips_load('$t0', '$sp', offset=8)  # label address
@@ -822,10 +822,11 @@ class Cgen(Interpreter):
         current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        
+
         init_code = self.filter_lists(self.visit_children(tree.children[0]))
         check_code = self.filter_lists(self.visit_children(tree.children[1]))
-        every_loop_code = self.filter_lists(self.visit_children(tree.children[2]))
+        every_loop_code = self.filter_lists(
+            self.visit_children(tree.children[2]))
         stmt_code = self.filter_lists(self.visit_children(tree.children[3]))
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
@@ -1035,10 +1036,13 @@ int main() {
 """
 for_test_code = """
 int main() {
-    int i;
-    for(i = 0; i < 10; i = i+1){
-        Print(i);
-   }
+  int i;
+  i = 0;
+   for (; i <10;) {
+     Print(i);
+     i = i + 1;
+  }
+  Print("done");
 }
 """
 
