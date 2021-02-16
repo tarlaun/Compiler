@@ -9,8 +9,26 @@
 ### symbol int
 #type: int
 .text
-j main
 .globl main
+main:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal __read__integer__
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+jal __end__
 __new__array__:
 lw $a0, 8($sp)
 lw $a1, 0($sp)
@@ -128,27 +146,11 @@ __end__:
 li $v0 , 10
 syscall
 jr $ra
-main:
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __read__integer__
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-jal __end__
 
 .data
+var_1:
+.align 2
+.space 4
 true: 
 .align 2
  .asciiz "true"
@@ -158,6 +160,3 @@ false:
 nw: 
 .align 2
  .asciiz "\n"
-var_1:
-.align 2
-.space 4

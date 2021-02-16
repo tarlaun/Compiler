@@ -4,8 +4,14 @@
 #### const_int
 #type: int
 .text
-j main
 .globl main
+main:
+li $t0, 5
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+jal __end__
 __new__array__:
 lw $a0, 8($sp)
 lw $a1, 0($sp)
@@ -123,13 +129,6 @@ __end__:
 li $v0 , 10
 syscall
 jr $ra
-main:
-li $t0, 5
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-jal __end__
 
 .data
 true: 

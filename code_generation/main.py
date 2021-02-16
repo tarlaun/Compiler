@@ -29,7 +29,7 @@ def main(argv):
     with open("out/" + outputfile, "w") as output_file:
         sys.stdout = output_file
         output_code = mips_text()
-        output_code += mips_jump('main')
+        # output_code += mips_jal('main')
         output_code += '.globl main\n'
         cgen = Cgen()
         output_code += cgen.visit(parse_tree)

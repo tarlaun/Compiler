@@ -78,7 +78,9 @@ class Cgen(Interpreter):
         root = Scope('root')
         self.symbol_table.push_scope(root)
 
-        return ''.join(self.visit_children(tree))
+        code = ''.join(self.visit_children(tree))
+        code += self.declare_global_static_funcs()
+        return code
 
     def declaration(self, tree):
         code = ''
@@ -112,7 +114,6 @@ class Cgen(Interpreter):
         # function_data.set_label(label)
 
         if ident == 'main':  # ????
-            code += self.declare_global_static_funcs()
             code += ('main:\n')
         else:
             code += mips_create_label(str(function_scope))
@@ -122,7 +123,7 @@ class Cgen(Interpreter):
 
         self.symbol_table.pop_scope()
         if ident == 'main':
-            code += mips_jr('$ra')
+            code += mips_jal('__end__')
         return code
 
     def variable_declaration(self, tree):
@@ -136,7 +137,7 @@ class Cgen(Interpreter):
         variable_type = Type(self.visit(tree.children[0]), 0)
         variable_name = tree.children[1]
         label = self.new_variable_label()
-        self.data.add_data(label + ':\n' + mips_align(2) + '.space 4')
+        self.data.add_data(label + ':\n' + mips_align(2) + '.space 4\n')
         symbol = Symbol(variable_name, variable_type,
                         scope=self.symbol_table.get_current_scope(), label=label)
         self.symbol_table.push_symbol(symbol)
