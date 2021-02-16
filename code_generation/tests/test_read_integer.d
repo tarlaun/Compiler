@@ -1,8 +1,8 @@
 int main(){
     int a;
-    string b;
+    int b;
     a = ReadInteger();
     Print(a);
-    b = ReadLine();
+    b = ReadInteger();
     Print(b);
 }

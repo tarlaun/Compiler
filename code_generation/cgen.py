@@ -422,7 +422,8 @@ class Cgen(Interpreter):
             raise TypeError('invalid Type for multiplication')
         if op1.name != op2.name:
             raise TypeError('invalid Type for multiplication')
-        if op1 == Type.int:
+        if op1.name == Type.int:
+            print('#########im in integer div')
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_div('$t2', '$t1', '$t0')
@@ -431,7 +432,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             self._types.append(Type(Type.int))
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif op1 == Type.double:
+        elif op1.name == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_div_double('$f4', '$f2', '$f0')
@@ -891,16 +892,6 @@ int add(){
 }
 '''
 
-test1 = '''
-
-int main(int a , int b){
-    a = 5;
-    Print(a);
-}
-
-
-'''
-
 test_in_out = '''
 int main(){
     int a;
@@ -909,12 +900,10 @@ int main(){
 }
 '''
 
-tast_print = '''
+test_print = '''
 int main(){
     Print(5);
 }
-
-
 '''
 
 test_int_operation = '''
@@ -924,14 +913,13 @@ int main(){
     int c;
     a = 5;
     b = 10;
-    c = a + b;
+    c = a / b;
     Print(c);
 }
 '''
 
 if __name__ == '__main__':
     tree = get_parse_tree(test_int_operation)
-    # print(tree)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
