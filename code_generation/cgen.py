@@ -78,7 +78,9 @@ class Cgen(Interpreter):
         root = Scope('root')
         self.symbol_table.push_scope(root)
 
-        return ''.join(self.visit_children(tree))
+        code = ''.join(self.visit_children(tree))
+        code += self.declare_global_static_funcs()
+        return code
 
     def declaration(self, tree):
         code = ''
@@ -107,20 +109,19 @@ class Cgen(Interpreter):
 
         function_data = Function(function_scope, ident, return_type)
         self.symbol_table.push_function(function_data)
-        
+
         # set function label
         # function_data.set_label(label)
 
         if ident == 'main':  # ????
-            global_funcs = self.declare_global_static_funcs()
             code += ('main:\n')
         else:
             code += mips_create_label(str(function_scope))
         code += sub_stack(8)
-        code += mips_store('$ra' , '$sp')
+        code += mips_store('$ra', '$sp')
         # code += self.visit(ident)
         code += self.visit(stmt_block)
-        code += mips_load('$ra' , '$sp' ,0)
+        code += mips_load('$ra', '$sp', 0)
         code += add_stack(8)
         self.symbol_table.pop_scope()
         if ident == 'main':
@@ -138,7 +139,7 @@ class Cgen(Interpreter):
         variable_type = Type(self.visit(tree.children[0]), 0)
         variable_name = tree.children[1]
         label = self.new_variable_label()
-        self.data.add_data(label + ':\n' + mips_align(2) + '.space 4')
+        self.data.add_data(label + ':\n' + mips_align(2) + '.space 4\n')
         symbol = Symbol(variable_name, variable_type,
                         scope=self.symbol_table.get_current_scope(), label=label)
         self.symbol_table.push_symbol(symbol)
@@ -667,7 +668,7 @@ class Cgen(Interpreter):
         else_label = self.new_label()
         end_label = self.new_laebl()
 
-        code += mips_load('$a0', '$sp', 0)
+        code = mips_load('$a0', '$sp', 0)
         code += add_stack(8)
         code += mips_beq('$a0', 0, end_label)
         code += mips_jump(then_label)
