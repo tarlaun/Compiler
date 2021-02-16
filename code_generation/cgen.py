@@ -772,7 +772,6 @@ class Cgen(Interpreter):
     def while_stmt(self, tree):
         print('### start while_stmt')
         check_label = self.new_loop_label()
-        continue_label = '_cont_'+check_label
         end_label = '_end_'+check_label
 
         parent_scope = self.symbol_table.get_current_scope()
@@ -796,9 +795,6 @@ class Cgen(Interpreter):
         code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
         code += mips_beqz('$a0', end_label)
-        code += mips_jump(continue_label)
-
-        code += '{}:\n'.format(continue_label)
         code += stmt_code
         code += '{}:\n'.format(end_label)
         return code
