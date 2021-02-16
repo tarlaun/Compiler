@@ -57,7 +57,7 @@ def mips_addi(v1, v2, v3):
 
 
 def mips_add_double(v1, v2, v3):
-    return ("add.d " + v1 + ", " + v2 + ", " + v3 + '\n')
+    return ("add.s " + v1 + ", " + v2 + ", " + v3 + '\n')
 
 
 def mips_sub(v1, v2, v3):
@@ -65,7 +65,7 @@ def mips_sub(v1, v2, v3):
 
 
 def mips_sub_double(v1, v2, v3):
-    return ("sub.d " + v1 + ", " + v2 + ", " + v3 + '\n')
+    return ("sub.s " + v1 + ", " + v2 + ", " + v3 + '\n')
 
 
 def mips_mul(v1, v2, v3):
@@ -73,7 +73,7 @@ def mips_mul(v1, v2, v3):
 
 
 def mips_mul_double(v1, v2, v3):
-    return ("mul.d " + v1 + ", " + v2 + ", " + v3 + '\n')
+    return ("mul.s " + v1 + ", " + v2 + ", " + v3 + '\n')
 
 
 def mips_div(v1, v2, v3):
@@ -81,7 +81,7 @@ def mips_div(v1, v2, v3):
 
 
 def mips_div_double(v1, v2, v3):
-    return ("div.d " + v1 + ", " + v2 + ", " + v3 + '\n')
+    return ("div.s " + v1 + ", " + v2 + ", " + v3 + '\n')
 
 
 def mips_or(v1, v2, v3):
@@ -133,11 +133,11 @@ def mips_store(src, dst, offset=0):
 
 
 def mips_store_double(src, dst, offset=0):
-    return ("s.d " + src + ", " + str(offset) + "(" + dst + ")" + '\n')
+    return ("s.s " + src + ", " + str(offset) + "(" + dst + ")" + '\n')
 
 
 def mips_load_double(dst, src, offset=0):
-    return ("l.d " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
+    return ("l.s " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
 
 
 def mips_li(dst, val):
@@ -401,7 +401,6 @@ def print_double():
     code += mips_create_label('print double')
     code += mips_load_double('$f12', '$sp', 0)
     code += add_stack(8)
-    code += 'cvt.s.d $f12 , $f12\n'
     code += mips_load_immidiate('$v0', 2)
     code += mips_syscall()
     code += mips_jr('$ra')
