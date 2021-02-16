@@ -1,20 +1,9 @@
 #### start the code generation
-#### start stmt
-#### EXPR
-#### EXPR
-#### const_int
 .text
 .globl main
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-li $t0, 5
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-sub $sp, $sp, 8
-li $a0 , 2
-sw $a0, 0($sp)
-jal __new__array__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra

@@ -1,3 +1,3 @@
 int main(){
-    NewArray(5, int);
+   // NewArray(5, int);
 }

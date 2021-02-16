@@ -149,7 +149,7 @@ def mips_load_byte(dst, src, offset=0):
 
 
 def mips_beq(v1, v2, v3):
-    return ("beq " + v1 + ", " + v2 + ", " + v3 + '\n')
+    return ("beq " + v1 + ", " + str(v2) + ", " + v3 + '\n')
 
 
 def mips_beqz(register, label):

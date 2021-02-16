@@ -737,9 +737,10 @@ class Cgen(Interpreter):
         condition = self.visit(tree.children[0])
         then_code = self.visit(tree.children[1])
         hasElse = len(tree.children) != 2
-        then_label = self.new_label()
+
         else_label = self.new_label()
-        end_label = self.new_laebl()
+        then_label = self.new_label()
+        end_label = self.new_label()
 
         code = mips_load('$a0', '$sp', 0)
         code += add_stack(8)
@@ -1013,9 +1014,32 @@ int main(){
 }
 '''
 
+test_if = '''
+int main(){
+    int a;
+    if (true){
+        a = 5;
+        Print(a);
+    }
+    else{
+        a = 6;
+        Print(a);
+    }
+
+    if (false){
+        a = 5;
+        Print(a);
+    }
+    else{
+        a = 6;
+        Print(a);
+    }
+}
+'''
+
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_array)
+    tree = get_parse_tree(test_if)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'

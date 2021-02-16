@@ -1,3 +1,51 @@
+#### start the code generation
+### variable
+#### start stmt
+### start if_stmt
+#### EXPR
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
+#### start stmt
+### start if_stmt
+#### EXPR
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
 .text
 .globl main
 main:
