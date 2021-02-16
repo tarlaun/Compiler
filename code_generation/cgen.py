@@ -114,7 +114,6 @@ class Cgen(Interpreter):
         # function_data.set_label(label)
 
         if ident == 'main':  # ????
-            global_funcs = self.declare_global_static_funcs()
             code += ('main:\n')
         else:
             code += mips_create_label(str(function_scope))
