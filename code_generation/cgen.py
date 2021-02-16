@@ -805,6 +805,17 @@ class Cgen(Interpreter):
         code += mips_jump('$ra')
         return code
 
+    def itob(self, tree):
+        code = self.visit_children(tree)
+        tp = self._types.pop()
+        if tp.name != Type.int:
+            raise TypeError('invalid Type for itob')
+        code += mips_jal(mips_get_label('itob'))
+        code += sub_stack(8)
+        code += mips_store('$v0' , '$sp')
+        self._types.append(Type(Type.bool))
+        return code 
+
     def declare_global_static_funcs(self):
         code = ''
         code += mips_new_array()
