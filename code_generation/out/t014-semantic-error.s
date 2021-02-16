@@ -23,12 +23,14 @@ addi $sp, $sp, 8
 j $ra
 lw $ra, 0($sp)
 addi $sp, $sp, 8
+jr $ra
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
+jal __f__formals__root__
 lw $t0, 8($sp)
 lw $t1, 0($sp)
 sw $t1, 0($t0)

@@ -1,1 +1,1 @@
-different line count in these files! : file out/test_function.out : #0 , file tests/test_function.out : #1 
+OK 

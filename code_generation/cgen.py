@@ -116,7 +116,7 @@ class Cgen(Interpreter):
         self.symbol_table.push_scope(function_scope)
 
         function_data = Function(scope=function_scope,
-                                 name=ident , label = '', return_type=return_type)
+                                 name=ident, label='', return_type=return_type)
         function_data.label = '__' + function_data.scope.get_id() + '__'
         self.symbol_table.push_function(function_data)
 
@@ -134,8 +134,8 @@ class Cgen(Interpreter):
         code += mips_load('$ra', '$sp', 0)
         code += add_stack(8)
         self.symbol_table.pop_scope()
-        if ident == 'main':
-            code += mips_jr('$ra')
+        # if ident == 'main':
+        code += mips_jr('$ra')
         return code
 
     def variable_declaration(self, tree):
@@ -165,14 +165,12 @@ class Cgen(Interpreter):
         for variable in tree.children:
             formal_name = variable.children[1].value
             formal_type = Type(variable.children[0])
-            code += '.data\n'
-            code += '.align 2\n'
             if formal_type.name == Type.double and formal_type.dimension == 0:
-                code += '{}: .space 8\n'.format(
-                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+                self.data.add_data('{}: .space 8\n'.format(
+                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_")) + mips_align(2))
             else:
-                code += '{}: .space 4\n'.format(
-                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+                self.data.add_data('{}: .space 4\n'.format(
+                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_")) + mips_align(2))
         return code
 
     def type(self, tree):
@@ -758,7 +756,17 @@ class Cgen(Interpreter):
         return code
 
     def actuals(self, tree):
-        return 'actuals'
+        code = ''
+        # function_name = tree.children[0].value
+        # function = self.symbol_table.lookup_function(function_name)
+        # function_label = function.label
+        # code += sub_stack(8)
+        # code += mips_store('$ra', '$sp')
+        # code += mips_jump(function_label)
+        # code += mips_load('$ra', '$sp')
+        # code += add_stack(8)
+        # also handle for class
+        return code
 
     def method(self, tree):
         return 'METH'
@@ -768,7 +776,12 @@ class Cgen(Interpreter):
         function_name = tree.children[0].value
         function = self.symbol_table.lookup_function(function_name)
         function_label = function.label
-        # mips code
+        # code += sub_stack(8)
+        # code += mips_store('$ra', '$sp')
+        code += mips_jal(function_label)
+        # code += mips_load('$ra', '$sp')
+        # code += add_stack(8)
+        # also handle for class
         return code
 
     def subscript(self, tree):
@@ -1057,12 +1070,12 @@ int main() {
 """
 
 function_test_code = '''
-void calc() {
+void calc(int a) {
     Print("Im in the FUNCTION");
 }
 
 int main() {
-    calc();
+    calc(5);
 }
 '''
 
@@ -1151,7 +1164,7 @@ int main(){
     b = 3.4;
     Print(b);
     c = a * b;
-    Print(c); 
+    Print(c);
 }
 '''
 
@@ -1195,7 +1208,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(for_test_code)
+    tree = get_parse_tree(function_test_code)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
