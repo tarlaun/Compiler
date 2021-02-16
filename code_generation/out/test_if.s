@@ -1,17 +1,46 @@
 #### start the code generation
 ### variable
-### variable
+#### start stmt
+### start if_stmt
+#### EXPR
+#### start stmt
 #### start stmt
 ### symbol int
 #### EXPR
+#### const_int
 #### start stmt
 ### print_stmt
 #### val code gen
 ### symbol int
 #type: int
 #### start stmt
+#### start stmt
 ### symbol int
 #### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
+#### start stmt
+### start if_stmt
+#### EXPR
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
 #### start stmt
 ### print_stmt
 #### val code gen
@@ -22,10 +51,17 @@
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
+lw $a0, 0($sp)
+addi $sp, $sp, 8
+beq $a0, 0, ll_7
+j ll_6
+ll_6:
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __read__integer__
+li $t0, 5
+sub $sp, $sp, 8
+sw $t0, 0($sp)
 lw $t0, 8($sp)
 lw $t1, 0($sp)
 sw $t1, 0($t0)
@@ -40,17 +76,68 @@ lw $t1, 0($t0)
 sw $t1, 0($sp)
 jal __print__integer__
 jal __print__new__line__
-la $t0 , var_2
+j ll_7
+ll_5:
+la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __read__integer__
+li $t0, 6
+sub $sp, $sp, 8
+sw $t0, 0($sp)
 lw $t0, 8($sp)
 lw $t1, 0($sp)
 sw $t1, 0($t0)
 sw $t1, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
-la $t0 , var_2
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+lw $a0, 0($sp)
+addi $sp, $sp, 8
+beq $a0, 0, ll_17
+j ll_16
+ll_16:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 5
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+j ll_17
+ll_15:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 6
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
@@ -181,9 +268,6 @@ jr $ra
 
 .data
 var_1:
-.align 2
-.space 4
-var_2:
 .align 2
 .space 4
 true: 

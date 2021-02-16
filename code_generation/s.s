@@ -3,7 +3,7 @@
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-li $t0, 5
+la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 li.s $f0 , 11.5
@@ -58,11 +58,6 @@ sw $t0, 0($sp)
 lw $t0, 0($sp)
 l.s $f0, 0($t0)
 s.s $f0, 0($sp)
-l.s $f0, 0($sp)
-l.s $f2, 8($sp)
-add.s $f4, $f0, $f2
-s.s $f4, 8($sp)
-addi $sp, $sp, 8
 lw $t0, 8($sp)
 l.s $f0, 0($sp)
 s.s $f0, 0($t0)
@@ -199,6 +194,15 @@ syscall
 jr $ra
 
 .data
+var_1:
+.align 2
+.space 4
+var_2:
+.align 2
+.space 4
+var_3:
+.align 2
+.space 4
 true: 
 .align 2
  .asciiz "true"

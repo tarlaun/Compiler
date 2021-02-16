@@ -6,4 +6,10 @@ int main(){
     b = 3.4;
     c = a + b;
     Print(c);
+    c = a - b;
+    Print(c);
+    c = a * b;
+    Print(c);
+    c = a / b;
+    Print(c);
 }

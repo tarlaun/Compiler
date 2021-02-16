@@ -395,7 +395,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             self._types.append(Type(Type.int))
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif op1 == Type.double:
+        elif op1.name == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_mul_double('$f4', '$f2', '$f0')
@@ -741,7 +741,8 @@ class Cgen(Interpreter):
         then_code = self.visit(tree.children[1])
         hasElse = len(tree.children) != 2
         else_label = self.new_label()
-        end_label = self.new_laebl()
+        then_label = self.new_label()
+        end_label = self.new_label()
 
         code = condition
         code += mips_load('$a0', '$sp', 0)
@@ -1004,7 +1005,7 @@ int main(){
     Print(a);
     b = 3.4;
     Print(b);
-    c = a + b;
+    c = a * b;
     Print(c); 
 }
 '''
@@ -1015,9 +1016,32 @@ int main(){
 }
 '''
 
+test_if = '''
+int main(){
+    int a;
+    if (true){
+        a = 5;
+        Print(a);
+    }
+    else{
+        a = 6;
+        Print(a);
+    }
+
+    if (false){
+        a = 5;
+        Print(a);
+    }
+    else{
+        a = 6;
+        Print(a);
+    }
+}
+'''
+
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_array)
+    tree = get_parse_tree(test_double_operation)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'

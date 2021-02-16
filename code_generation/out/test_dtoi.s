@@ -1,16 +1,8 @@
 #### start the code generation
 ### variable
-### variable
 #### start stmt
 ### symbol int
 #### EXPR
-#### start stmt
-### print_stmt
-#### val code gen
-### symbol int
-#type: int
-#### start stmt
-### symbol int
 #### EXPR
 #### start stmt
 ### print_stmt
@@ -25,7 +17,12 @@ sw $ra, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __read__integer__
+li.s $f0 , 4.7
+sub $sp, $sp, 8
+s.s $f0, 0($sp)
+jal __dtoi__
+sub $sp, $sp, 8
+sw $v0, 0($sp)
 lw $t0, 8($sp)
 lw $t1, 0($sp)
 sw $t1, 0($t0)
@@ -33,24 +30,6 @@ sw $t1, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
 la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-la $t0 , var_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __read__integer__
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
-la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
@@ -181,9 +160,6 @@ jr $ra
 
 .data
 var_1:
-.align 2
-.space 4
-var_2:
 .align 2
 .space 4
 true: 
