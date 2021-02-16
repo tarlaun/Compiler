@@ -80,11 +80,11 @@ expr7 : constant
     l_value : IDENTIFIER -> var_addr 
     |  expr7 "." IDENTIFIER -> var_access 
     | expr7 "[" expr "]" -> subscript
-    
+
 call : IDENTIFIER  "(" actuals ")" 
     | expr7  "."  IDENTIFIER "(" actuals ")" -> method
   
-actuals :  expr (","expr)* |  
+actuals :  expr (","expr)* 
 constant : INTEGER -> const_int 
     | DOUBLE -> const_double  
     | BOOL -> const_bool 
