@@ -235,7 +235,7 @@ def mips_array_decl():
 def mips_btoi():
     code = ""
     code += mips_create_label('btoi')
-    code += mips_load('$v0', '$fp', 4)
+    code += mips_load('$v0', '$sp', 0)
     code += add_stack(8)
     code += mips_jr('$ra')
     return code
@@ -257,7 +257,7 @@ def mips_itob():
 def mips_dtoi():
     code = ""
     code += mips_create_label('dtoi')
-    code += ('l.s $f0, 4($fp)\n')
+    code += ('l.s $f0, 0($sp)\n')
     code += ('round.w.s $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
     code += add_stack(8)
@@ -268,7 +268,7 @@ def mips_dtoi():
 def mips_itod():
     code = ""
     code += mips_create_label('itod')
-    code += mips_load('$s0', '$fp', 4)
+    code += mips_load('$s0', '$sp', 0)
     code += ('mtc1 $s0, $f0\n')
     code += ('cvt.s.w $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
