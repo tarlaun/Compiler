@@ -69,6 +69,7 @@ expr6 : "-" expr6 -> neg
     | "!" expr6 -> not_bool
     | expr7
 expr7 : constant 
+    | converters 
     | "ReadInteger" "(" ")" -> read_integer 
     | "ReadLine" "(" ")" -> read_line 
     | "new" IDENTIFIER -> class_inst 
@@ -90,11 +91,14 @@ constant : INTEGER -> const_int
     | BOOL -> const_bool 
     | STRING -> const_string
     | "null" -> null
-
+converters :"itod(" expr ")" -> itod|
+            "itob(" expr ")" -> itob|
+            "btoi(" expr ")" -> btoi|
+            "dtoi(" expr ")" -> dtoi
+            
 TYPE : "int" | "double" | "bool" | "string"
 ACCESS_MODE: "private" | "protected" | "public"
 BOOL: "true" | "false"
-CAST: "dtoi" | "itod" | "btoi" | "itob"
 INTEGER: /([-\+])?[0-9]+/
 DOUBLE: /([-\+])?([0-9])+\.([0-9])*((E|e)(\+|\-)?([0-9])+)?/
 IDENTIFIER: /(?!void|int|double|bool|string|true|false|class|interface|null|this|extends|implements|for|while|if|else|return|break|continue|new|NewArray|Print|ReadInteger|ReadLine|dtoi|itod|btoi|itob|private|protected|public)[a-zA-Z][_a-zA-Z0-9]*/
