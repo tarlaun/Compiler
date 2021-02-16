@@ -44,6 +44,7 @@ class Cgen(Interpreter):
     loop_counter = 0
     array_last_type = None
 
+
     def new_variable_label(self):
         self.varible_label_counter += 1
         # fix this
@@ -69,8 +70,10 @@ class Cgen(Interpreter):
         super().__init__()
         self.loop_labels = []
         self._types = []
+        self.func_formals = []
         self.symbol_table = SymbolTable()
         self.data = DataSection()
+        self.current_function = None
 
     def filter_lists(self, object1):
         if isinstance(object1, list):
@@ -99,7 +102,7 @@ class Cgen(Interpreter):
     def function_declaration(self, tree):
         code = ''
         if len(tree.children) == 4:
-            return_type = self.visit(tree.children[0])
+            return_type = Type(self.visit(tree.children[0]))
             ident = tree.children[1]
             formals = tree.children[2]
             stmt_block = tree.children[3]
@@ -116,10 +119,10 @@ class Cgen(Interpreter):
         self.symbol_table.push_scope(function_scope)
 
         function_data = Function(scope=function_scope,
-                                 name=ident, label='', return_type=return_type)
+                                 name=ident, label='', return_type=return_type , funnc_formals= self.func_formals)
         function_data.label = '__' + function_data.scope.get_id() + '__'
         self.symbol_table.push_function(function_data)
-
+        self.current_function = function_data
         # set function label
         # function_data.set_label(label)
 
@@ -131,6 +134,7 @@ class Cgen(Interpreter):
         code += mips_store('$ra', '$sp')
         # code += self.visit(ident)
         code += self.visit(stmt_block)
+        code += '{}:\n'.format(function_data.label+'__end__')
         code += mips_load('$ra', '$sp', 0)
         code += add_stack(8)
         self.symbol_table.pop_scope()
@@ -158,7 +162,7 @@ class Cgen(Interpreter):
         return code
 
     def formals(self, tree):
-        code = ''
+        self.func_formals = []
         parent_scope = self.symbol_table.get_current_scope()
         current_scope = Scope('formals', parent_scope)
         self.symbol_table.push_scope(current_scope)
@@ -179,7 +183,8 @@ class Cgen(Interpreter):
             symbol = Symbol(formal_name, formal_type,
                             scope=self.symbol_table.get_current_scope(), label=label)
             self.symbol_table.push_symbol(symbol)
-        return code
+            self.func_formals.append(symbol)
+        return ''
 
     def type(self, tree):
         if type(tree.children[0]) == lark.lexer.Token:
@@ -228,6 +233,7 @@ class Cgen(Interpreter):
     def expr7(self, tree):
         code = ''
         more_code = self.visit_children(tree)
+    
         if len(more_code) == 0:
             return code
         return ''.join(more_code)
@@ -553,7 +559,7 @@ class Cgen(Interpreter):
         if op1.name != Type.bool or op2.name != Type.bool:
             raise TypeError('Invalid Type for boolean action ')
         code += mips_load('$t0', '$sp')
-        code += mips_load('$t0', '$sp', offset=8)
+        code += mips_load('$t1', '$sp', offset=8)
         code += mips_or('$t2', '$t0', '$t1')
         code += mips_store('$t2', '$sp', offset=8)
         code += add_stack(8)
@@ -769,16 +775,7 @@ class Cgen(Interpreter):
 
     def actuals(self, tree):
         code = ''
-        # function_name = tree.children[0].value
-        # function = self.symbol_table.lookup_function(function_name)
-        # function_label = function.label
-        # code += sub_stack(8)
-        # code += mips_store('$ra', '$sp')
-        # code += mips_jump(function_label)
-        # code += mips_load('$ra', '$sp')
-        # code += add_stack(8)
-        # also handle for class
-        return code
+        return ''.join(self.visit_children(tree))
 
     def method(self, tree):
         return 'METH'
@@ -788,14 +785,27 @@ class Cgen(Interpreter):
         function_name = tree.children[0].value
         function = self.symbol_table.lookup_function(function_name)
         function_label = function.label
-        # code += mips_load('$t0', '$sp')
-        # code += add_stack(8)
-
-        # code += mips_store('$ra', '$sp')
+        if len(tree.children) > 1:
+            code += self.visit(tree.children[1])
+        offset = 0
+        for x in reversed(function.func_formals):
+            code += mips_load_address('$t0' , x.label)
+            code += mips_load('$t1' , '$sp' , offset)
+            code += mips_load('$t2' , '$t0' , 0)
+            code += mips_store('$t2' , '$sp' , offset)
+            code += mips_store('$t1' , '$t0' , 0)
+            offset += 8
         code += mips_jal(function_label)
-        # code += mips_load('$ra', '$sp')
-        # code += add_stack(8)
-        # also handle for class
+        for x in reversed(function.func_formals):
+            code += mips_load_address('$t0' , x.label)
+            code += mips_load('$t1' , '$sp' , 0)
+            code += add_stack(8)
+            code += mips_store('$t1' , '$t0' , 0)
+        
+        if function.return_type != None:
+            self._types.append(function.return_type)
+            code += sub_stack(8)
+            code += mips_store('$v0' , '$sp' , 0)
         return code
 
     def subscript(self, tree):
@@ -976,11 +986,15 @@ class Cgen(Interpreter):
 
     def return_stmt(self, tree):
         code = ''
+        if self.current_function.return_type == None and len(tree.children) != 0:
+            raise TypeError('Invalid return')
         if len(tree.children) == 1:
-            self.visit(tree.children[0])
+            code += self.visit(tree.children[0])
+            if self.current_function.return_type.name != self._types.pop().name:
+                raise TypeError('Invalid return Type')
             code += mips_load('$v0', '$sp', 0)
             code += add_stack(8)
-        code += mips_jump('$ra')
+        code += mips_jump(self.current_function.label+'__end__')
         return code
 
     def converters(self, tree):
@@ -1224,12 +1238,43 @@ int main(){
 '''
 
 test_function_with_formal = '''
-    void calc(int a){
-        Print(a);
+    void calc(int a , int b){
+        Print(a , " " , b);
+        if(a == 3){
+            calc(2,131);
+        }
     }
 
     int main(){
-        calc(5);
+        calc(5 , 4);
+        calc(3, 6);
+    }
+'''
+
+test_funciton_return = '''
+    int calc(int a){
+        return 2 * a + 3;
+    }
+
+    int main(){
+        Print(calc(3));
+    }
+'''
+
+test_function_recursive = '''
+    int fib(int a ){
+        int x;
+        if (a == 0 || a == 1){
+           return 1;
+        }
+        Print(a);
+        x =  fib( a - 1) + fib( a - 2);
+        Print("Ab " , a , " " , x);
+        return x;
+    }
+
+    int main(){
+        Print(fib(5));
     }
 '''
 
@@ -1252,7 +1297,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_function_with_formal)
+    tree = get_parse_tree(test_function_recursive)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
