@@ -1,18 +1,9 @@
-#### start the code generation
-#### start stmt
-### print_stmt
-#### const_int
-#type: int
 .text
+jal main
+jal end
+jr $ra
 .globl main
-main:
-li $t0, 5
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-jal __end__
-__new__array__:
+new__array:
 lw $a0, 8($sp)
 lw $a1, 0($sp)
 addi $sp, $sp, 16
@@ -26,96 +17,96 @@ addi $v0, $v0, 8
 sub $sp, $sp, 8
 sw $v0, 0($sp)
 jr $ra
-__itod__:
+itod:
 lw $s0, 4($fp)
 mtc1 $s0, $f0
 cvt.s.w $f0, $f0
 mfc1 $v0, $f0
 jr $ra
-__itob__:
+itob:
 lw $s0, 4($fp)
 li $v0 , 0
-beqz $s0 , __itob__jump__
+beqz $s0 , itob__jump
 li $v0 , 1
-__itob__jump__:
+itob__jump:
 jr $ra
-__dtoi__:
+dtoi:
 l.s $f0, 4($fp)
 round.w.s $f0, $f0
 mfc1 $v0, $f0
 jr $ra
-__btoi__:
+btoi:
 lw $v0, 4($fp)
 jr $ra
-__str__cmp__1__:
+str__cmp__1:
 lw $a0, 0($sp)
 lw $a1, 8($sp)
 addi $sp, $sp, 16
-__str__cmp__:
+str__cmp:
 lb $t0, 0($a0)
 lb $t1, 0($a1)
-bne $t0, $t1, __not__eq__str__
-bne $t0, $zero, __stat__cont__
+bne $t0, $t1, not__eq__str
+bne $t0, $zero, stat__cont
 li $v0 , 1
 jr $ra
-__stat__cont__:
+stat__cont:
 addi $a0, $a0, 1
 addi $a1, $a1, 1
-j __str__cmp__
-__not__eq__str__:
+j str__cmp
+not__eq__str:
 li $v0 , 0
 jr $ra
-__print__double__:
+print__double:
 l.d $f12, 0($sp)
 addi $sp, $sp, 8
 cvt.s.d $f12 , $f12
 li $v0 , 2
 syscall
 jr $ra
-__print__bool__:
+print__bool:
 lw $a0, 0($sp)
 addi $sp, $sp, 8
-beqz $a0 , __print__bool__cont__2__
+beqz $a0 , print__bool__cont__2
 li $v0 , 4
 la $a0 , true
 syscall
-j __print__bool__end__
-__print__bool__cont__2__:
+j print__bool__end
+print__bool__cont__2:
 li $v0 , 4
 la $a0 , false
 syscall
-__print__bool__end__:
+print__bool__end:
 jr $ra
-__print__integer__:
+print__integer:
 lw $a0, 0($sp)
 addi $sp, $sp, 8
 li $v0 , 1
 syscall
 jr $ra
-__print__string__:
+print__string:
 lw $a0, 0($sp)
 addi $sp, $sp, 8
 li $v0 , 4
 syscall
 jr $ra
-__print__new__line__:
+print__new__line:
 li $v0 , 4
 la $a0 , nw
 syscall
 jr $ra
-__read__char__:
+read__char:
 li $v0 , 12
 syscall
 sub $sp, $sp, 8
 sw $v0, 0($sp)
 jr $ra
-__read__integer__:
+read__integer:
 li $v0 , 5
 syscall
 sub $sp, $sp, 8
 sw $v0, 0($sp)
 jr $ra
-__read__line__:
+read__line:
 li $v0 , 9
 syscall
 move $a0, $v0
@@ -125,18 +116,31 @@ li $a1 , 256
 li $v0 , 8
 syscall
 jr $ra
-__end__:
+end:
 li $v0 , 10
 syscall
 jr $ra
+main:
+move $fp , $sp
+sub $sp, $sp, 8
+sw $ra, 0($sp)
+li $t0, 5
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal print__integer
+jal print__new__line
+lw $ra, 0($sp)
+addi $sp, $sp, 8
+move $sp , $fp
+jr $ra
 
 .data
-true: 
+true:
 .align 2
  .asciiz "true"
-false: 
+false:
 .align 2
  .asciiz "false"
-nw: 
+nw:
 .align 2
  .asciiz "\n"

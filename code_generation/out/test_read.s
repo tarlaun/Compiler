@@ -11,6 +11,8 @@
 .text
 .globl main
 main:
+sub $sp, $sp, 8
+sw $ra, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -28,6 +30,8 @@ lw $t1, 0($t0)
 sw $t1, 0($sp)
 jal __print__integer__
 jal __print__new__line__
+lw $ra, 0($sp)
+addi $sp, $sp, 8
 jal __end__
 __new__array__:
 lw $a0, 8($sp)
