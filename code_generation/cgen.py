@@ -336,7 +336,7 @@ class Cgen(Interpreter):
         const_val = tree.children[0].value.lower()
         code += 'li.s $f0 , {}\n'.format(const_val)
         code += sub_stack(8)
-        code += mips_store('$f0', '$sp')
+        code += mips_store_double('$f0', '$sp')
         self._types.append(Type(Type.double, dimension=0))
         return code
 

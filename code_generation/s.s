@@ -6,9 +6,9 @@ sw $ra, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-li $t0, 1.5
+li.s $f0 , 1.5
 sub $sp, $sp, 8
-sw $t0, 0($sp)
+sw $f0, 0($sp)
 lw $t0, 8($sp)
 l.d $f0, 0($sp)
 s.d $f0, 0($t0)
@@ -18,9 +18,9 @@ addi $sp, $sp, 8
 la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-li $t0, 3.4
+li.s $f0 , 3.4
 sub $sp, $sp, 8
-sw $t0, 0($sp)
+sw $f0, 0($sp)
 lw $t0, 8($sp)
 l.d $f0, 0($sp)
 s.d $f0, 0($t0)
