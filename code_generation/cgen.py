@@ -899,8 +899,8 @@ class Cgen(Interpreter):
         current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        check_code = self.visit_children(tree.children[0])
-        stmt_code = self.visit_children(tree.children[1])
+        check_code =self.filter_lists(self.visit_children(tree.children[0]))
+        stmt_code = self.filter_lists(self.visit_children(tree.children[1]))
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
         code = ''
