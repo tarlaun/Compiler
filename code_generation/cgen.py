@@ -761,28 +761,113 @@ class Cgen(Interpreter):
 
     def for_stmt(self, tree):  # todo - i have no clue
         print('### start for_stmt')
-        if len(tree.children == 2):
-            check_code = self.visit(tree.children[0])
-            stmt_code = self.visit(tree.children[1])
-        if len(tree.children == 3):
-            pass
-        # generate for(expr;expr;expr){stmt;} code
+        return ''.join(self.visit_children(tree))
+    
+    def for1(self , tree):
+        check_label = self.new_loop_label()
+        end_label = '_end_' + check_label
+        parent_scope = self.symbol_table.get_current_scope()
+        current_scope = Scope(check_label , parent_scope)
+        self.symbol_table.push_scope(current_scope)
+        self.loop_labels.append(check_label)
+        init_code = self.visit_children(tree.children[0])
+        check_code =self.visit_children(tree.children[1])
+        every_loop_code = self.visit_children(tree.children[2])
+        stmt_code = self.visit_children(tree.children[3])
+        self.symbol_table.pop_scope()
         self.loop_labels.pop()
-        return None
+        code = ''
+        code += init_code
+        code += '{}:\n'.format(check_label)
+        code += every_loop_code
+        code += check_code
+        code += mips_load('$a0', '$sp', 0)
+        code += add_stack(8)
+        code += mips_beqz('$a0', end_label)
+        code += stmt_code
+        code += mips_jump(check_label)
+        code += '{}:\n'.format(end_label)
+        return code
+
+    def for2(self , tree):
+        check_label = self.new_loop_label()
+        end_label = '_end_' + check_label
+        parent_scope = self.symbol_table.get_current_scope()
+        current_scope = Scope(check_label , parent_scope)
+        self.symbol_table.push_scope(current_scope)
+        self.loop_labels.append(check_label)
+        init_code = self.visit_children(tree.children[0])
+        check_code =self.visit_children(tree.children[1])
+        stmt_code = self.visit_children(tree.children[2])
+        self.symbol_table.pop_scope()
+        self.loop_labels.pop()
+        code = ''
+        code += init_code
+        code += '{}:\n'.format(check_label)
+        code += check_code
+        code += mips_load('$a0', '$sp', 0)
+        code += add_stack(8)
+        code += mips_beqz('$a0', end_label)
+        code += stmt_code
+        code += mips_jump(check_label)
+        code += '{}:\n'.format(end_label)
+        return code
+        
+    def for3(self , tree):
+        check_label = self.new_loop_label()
+        end_label = '_end_' + check_label
+        parent_scope = self.symbol_table.get_current_scope()
+        current_scope = Scope(check_label , parent_scope)
+        self.symbol_table.push_scope(current_scope)
+        self.loop_labels.append(check_label)
+        check_code =self.visit_children(tree.children[0])
+        every_loop_code = self.visit_children(tree.children[1])
+        stmt_code = self.visit_children(tree.children[2])
+        self.symbol_table.pop_scope()
+        self.loop_labels.pop()
+        code = ''
+        code += '{}:\n'.format(check_label)
+        code += every_loop_code
+        code += check_code
+        code += mips_load('$a0', '$sp', 0)
+        code += add_stack(8)
+        code += mips_beqz('$a0', end_label)
+        code += stmt_code
+        code += mips_jump(check_label)
+        code += '{}:\n'.format(end_label)
+        return code
+    
+    def for4(self , tree):
+        check_label = self.new_loop_label()
+        end_label = '_end_' + check_label
+        parent_scope = self.symbol_table.get_current_scope()
+        current_scope = Scope(check_label , parent_scope)
+        self.symbol_table.push_scope(current_scope)
+        self.loop_labels.append(check_label)
+        check_code =self.visit_children(tree.children[0])
+        stmt_code = self.visit_children(tree.children[1])
+        self.symbol_table.pop_scope()
+        self.loop_labels.pop()
+        code = ''
+        code += '{}:\n'.format(check_label)
+        code += check_code
+        code += mips_load('$a0', '$sp', 0)
+        code += add_stack(8)
+        code += mips_beqz('$a0', end_label)
+        code += stmt_code
+        code += mips_jump(check_label)
+        code += '{}:\n'.format(end_label)
+        return code
+        
 
     def while_stmt(self, tree):
         print('### start while_stmt')
         check_label = self.new_loop_label()
         end_label = '_end_'+check_label
-
         parent_scope = self.symbol_table.get_current_scope()
         current_scope = Scope(check_label, parent_scope)
-        self.symbol_table.push_scope(current_scope)
-        symbol = Symbol('loop', 'loop', value=None,
-                        scope=current_scope, label=check_label)
-        self.symbol_table.push_symbol(symbol)
+        self.symbol_table.push_scope(current_scope)      
         self.loop_labels.append(check_label)
-
         check_code = self.visit(tree.children[0])
         stmt_code = self.visit(tree.children[1])
 
