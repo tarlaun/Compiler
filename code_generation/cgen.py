@@ -116,7 +116,8 @@ class Cgen(Interpreter):
         self.symbol_table.push_scope(function_scope)
 
         function_data = Function(scope=function_scope,
-                                 name=ident, return_type=return_type)
+                                 name=ident , label = '', return_type=return_type)
+        function_data.label = '__' + function_data.scope.get_id() + '__'
         self.symbol_table.push_function(function_data)
 
         # set function label
@@ -766,10 +767,8 @@ class Cgen(Interpreter):
         code = ''
         function_name = tree.children[0].value
         function = self.symbol_table.lookup_function(function_name)
-        function_label = '__' + function.scope.get_id() + '__'
-        self.symbol_table.push_scope(function.scope)
+        function_label = function.label
         # mips code
-        self.symbol_table.pop_scope()
         return code
 
     def subscript(self, tree):
