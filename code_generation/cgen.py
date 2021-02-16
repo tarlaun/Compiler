@@ -1037,10 +1037,19 @@ int main(){
     }
 }
 '''
-
+test_equal = '''
+int main(){
+    if( true == true ){
+        Print("true is equal to true");
+    }
+    if( true != false ){
+        Print("true is not equal to false");
+    }
+}
+'''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(while_test_code)
+    tree = get_parse_tree(test_equal)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
