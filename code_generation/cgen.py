@@ -30,10 +30,10 @@ def is_array(type):
 
 def convertible(type1, type2):  # type1 (Derived), type2 (Base)
     if type1.is_primitive() or type2.is_primitive():
-        return type1 == type2
+        return type1.name == type2.name
 
     if is_array(type1) or is_array(type2):
-        return type1 == type2
+        return type1.name == type2.name and type1.dimension == type2.dimension
 
 
 class Cgen(Interpreter):
@@ -233,8 +233,11 @@ class Cgen(Interpreter):
 
     def assignment(self, tree):  # todo - type checking - array
         code = ''.join(self.visit_children(tree))
-        variable_type = self._types[-1]
-        if variable_type.name == Type.double:  # and typ.dimension == 0:
+        tp1 = self._types.pop()
+        tp2 = self._types.pop()
+        if not convertible(tp1 , tp2):
+            raise TypeError('Invalid assignment type')
+        if tp2.name == Type.double:  # and typ.dimension == 0:
             code += mips_load('$t0', '$sp', offset=8)  # label address
             code += mips_load_double('$f0', '$sp')  # value to be assigned
             code += mips_store_double('$f0', '$t0')  # save value in the label
@@ -248,8 +251,7 @@ class Cgen(Interpreter):
             code += mips_store('$t1', '$sp', offset=8)
             code += add_stack(8)
         code += add_stack(8)
-
-        self._types.pop()
+        self._types.append(tp2)
         return code
 
     def class_inst(self, tree):  # todo
