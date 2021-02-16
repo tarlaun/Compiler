@@ -407,7 +407,7 @@ class Cgen(Interpreter):
             code += 'mfhi $t2\n'
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-            self._types.append(Type.int)
+            self._types.append(Type(Type.int))
         return code
 
     def div(self, tree):
@@ -458,7 +458,7 @@ class Cgen(Interpreter):
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_add('$t2', '$t0', '$t1')
             code += mips_store(src='$t2', dst='$sp', offset=8)
-            self._types.append(Type.int)
+            self._types.append(Type(Type.int))
             code += add_stack(8)
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
         elif op1.name == Type.double:
@@ -467,7 +467,7 @@ class Cgen(Interpreter):
             code += mips_add_double('$f4', '$f0', '$f2')
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
-            self._types.append(Type.double)
+            self._types.append(Type(Type.double))
         return code
 
     def sub(self, tree):
@@ -497,7 +497,7 @@ class Cgen(Interpreter):
             code += mips_sub_double('$f4', '$f2', '$f0')
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
-            self._types.append(Type.double)
+            self._types.append(Type(Type.double))
         return code
 
     def and_bool(self, tree):
@@ -512,7 +512,7 @@ class Cgen(Interpreter):
         code += mips_store('$t2', '$sp', offset=8)
         code += add_stack(8)
 
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def or_bool(self, tree):
@@ -526,7 +526,7 @@ class Cgen(Interpreter):
         code += mips_or('$t2', '$t0', '$t1')
         code += mips_store('$t2', '$sp', offset=8)
         code += add_stack(8)
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def eq(self, tree):
@@ -560,7 +560,7 @@ class Cgen(Interpreter):
             code += 'seq $t2, $t1, $t0\n'
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def gt(self, tree):
@@ -585,7 +585,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
         self._types.pop()
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def ge(self, tree):
@@ -610,7 +610,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
         self._types.pop()
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def lt(self, tree):
@@ -635,7 +635,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
         self._types.pop()
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def le(self, tree):
@@ -660,7 +660,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
         self._types.pop()
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     # operation for getting opposite of a bool value.
@@ -681,7 +681,7 @@ class Cgen(Interpreter):
         code += label + ':\n'
         code += sub_stack(8)
         code += mips_store('$t1', '$sp')
-        self._types.append(Type.bool)
+        self._types.append(Type(Type.bool))
         return code
 
     def neg(self, tree):
