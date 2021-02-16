@@ -545,8 +545,8 @@ class Cgen(Interpreter):
         code = ''.join(self.visit_children(tree))
         op1 = self._types.pop()
         op2 = self._types.pop()
-        if op1.name != Type.bool or op2.name != Type.bool:
-            raise TypeError('Invalid Type for boolean action ')
+        if op1.name != op2.name:
+            raise TypeError('Invalid Type for equal action')
         if op1.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
             label_number = self.new_label()
             label = '__d_eq__' + label_number
