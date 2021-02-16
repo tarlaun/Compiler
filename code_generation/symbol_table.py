@@ -104,12 +104,12 @@ class Scope:
 
 
 class Function:
-    def __init__(self, scope, name, return_type=None, label=None , funnc_formals = None):
+    def __init__(self, scope, name, return_type=None, label=None , func_formals = None):
         self.scope = scope
         self.name = name
         self.return_type = return_type
         self.label = label
-        self.func_formals = funnc_formals
+        self.func_formals = func_formals
 
 
 class Class:
