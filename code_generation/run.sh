@@ -30,7 +30,7 @@ do
     fi
     if [ $? -eq 0 ]; then
         echo "Code Compiled Successfuly!"
-	spim -a -f "$OUTPUT_DIRECTORY$output_asm" < "$TEST_DIRECTORY$program_input" > "$OUTPUT_DIRECTORY$output_filename"
+	spim -a -f "$OUTPUT_DIRECTORY$output_asm" < "$TEST_DIRECTORY$program_input" > "$OUTPUT_DIRECTORY$output_filename" && tail -n +2 "$OUTPUT_DIRECTORY$output_filename" > "$OUTPUT_DIRECTORY$output_filename.tmp" && mv "$OUTPUT_DIRECTORY$output_filename.tmp" "$OUTPUT_DIRECTORY$output_filename"
 	if [ $? -eq 0 ]; then
 		echo "Code Executed Successfuly!"
 		if command -v python3; then

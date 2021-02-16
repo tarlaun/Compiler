@@ -1,1 +1,1 @@
-different line count in these files! : file out/test_print.out : #0 , file tests/test_print.out : #1 
+OK 

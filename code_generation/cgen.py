@@ -126,7 +126,7 @@ class Cgen(Interpreter):
         self.symbol_table.pop_scope()
         if ident == 'main':
             code += mips_jr('$ra')
-        return code + global_funcs
+        return code
 
     def variable_declaration(self, tree):
         code = ''
