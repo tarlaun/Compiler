@@ -809,7 +809,8 @@ class Cgen(Interpreter):
         return ''.join(self.visit_children(tree))
 
     def itob(self, tree):
-        code = self.visit_children(tree)
+        code =''
+        code = self.visit_children(tree)[0]
         tp = self._types.pop()
         if tp.name != Type.int:
             raise TypeError('invalid Type for itob')
