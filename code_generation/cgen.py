@@ -805,6 +805,9 @@ class Cgen(Interpreter):
         code += mips_jump('$ra')
         return code
 
+    def converters(self , tree):
+        return ''.join(self.visit_children(tree))
+
     def itob(self, tree):
         code = self.visit_children(tree)
         tp = self._types.pop()
