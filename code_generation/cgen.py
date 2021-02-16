@@ -192,8 +192,6 @@ class Cgen(Interpreter):
 
     def expr1(self, tree):
         x = self.visit_children(tree)
-        if len(x) == 1:
-            x = x[0]
         return ''.join(x)
 
     def expr2(self, tree):
@@ -557,7 +555,7 @@ class Cgen(Interpreter):
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
             # special floating point coprocessor instruction, checks equality
-            code += 'c.eq.d $f0, $f2\n'
+            code += 'c.eq.s $f0, $f2\n'
             code += 'bc1f ' + label + '\n'
             # bc1f is a flag that stores equality operation result. if eq is false it jumps to label.
             code += mips_li('$t0', 1)
@@ -578,6 +576,42 @@ class Cgen(Interpreter):
         self._types.append(Type(Type.bool))
         return code
 
+    def ne(self , tree):
+        code = ''.join(self.visit_children(tree))
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != op2.name:
+            raise TypeError('Invalid Type for equal action')
+        if op1.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
+            label_number = self.new_label()
+            label = '__d_eq__' + label_number
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_li('$t0', 0)
+            # special floating point coprocessor instruction, checks equality
+            code += 'c.eq.s $f0, $f2\n'
+            code += 'bc1f ' + label + '\n'
+            # bc1f is a flag that stores equality operation result. if eq is false it jumps to label.
+            code += mips_li('$t0', 1)
+            code += label + ':\n'
+            code += add_stack(8)
+            code += mips_store('$t0', '$sp')
+        elif op1.name == Type.string:  # and typ.dimension == 0:
+            code += '.text\n'
+            code += mips_jump(mips_get_label('str cmp 1'))
+            code += mips_load_immidiate('$t0' , 1)
+            code += 'sne $v0 , $v0 , $t0\n'
+            code += mips_store('$v0', '$sp', 0)
+        else:  # int, bool    #done i think
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            # special equality checking operation - will set t2 = 1 if t1 == t0
+            code += 'sne $t2, $t1, $t0\n'
+            code += add_stack(8)
+            code += mips_store('$t2', '$sp')
+        self._types.append(Type(Type.bool))
+        return code
+
     def gt(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types.pop()
@@ -593,7 +627,7 @@ class Cgen(Interpreter):
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
-            code += 'c.gt.d $f2, $f0\n'  # if gt is false, will jump to label
+            code += 'c.gt.s $f2, $f0\n'  # if gt is false, will jump to label
             code += 'bc1f ' + label
             code += mips_li('$t0', 1)  # will reach this code if gt is true
             code += label + ':\n'
@@ -618,7 +652,7 @@ class Cgen(Interpreter):
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
-            code += 'c.ge.d $f2, $f0\n'  # if ge is false, will jump to label
+            code += 'c.ge.s $f2, $f0\n'  # if ge is false, will jump to label
             code += 'bc1f ' + label
             code += mips_li('$t0', 1)  # will reach this code if ge is true
             code += label + ':\n'
@@ -643,7 +677,7 @@ class Cgen(Interpreter):
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
-            code += 'c.lt.d $f2, $f0\n'  # if lt is false, will jump to label
+            code += 'c.lt.s $f2, $f0\n'  # if lt is false, will jump to label
             code += 'bc1f ' + label
             code += mips_li('$t0', 1)  # will reach this code if lt is true
             code += label + ':\n'
@@ -668,7 +702,7 @@ class Cgen(Interpreter):
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_li('$t0', 0)
-            code += 'c.le.d $f2, $f0\n'  # if le is false, will jump to label
+            code += 'c.le.s $f2, $f0\n'  # if le is false, will jump to label
             code += 'bc1f ' + label
             code += mips_li('$t0', 1)  # will reach this code if le is true
             code += label + ':\n'
@@ -709,7 +743,7 @@ class Cgen(Interpreter):
             code += mips_store('$t0', '$sp')
         elif operand_type.name == Type.double:
             code += mips_load_double('$f0', '$sp')
-            code += 'ng.d $f0, $f0\n'  # special FP instruction for negating double
+            code += 'ng.s $f0, $f0\n'  # special FP instruction for negating double
             code += mips_store('$f0', '$sp')
         else:
             raise TypeError('Invalid Type for negating')
@@ -1136,7 +1170,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(for_test_code)
+    tree = get_parse_tree(test_equal)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
