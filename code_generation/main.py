@@ -3,6 +3,7 @@ import getopt
 from parser_code import get_parse_tree
 from cgen import Cgen
 from mips import *
+from Error import *
 
 
 def main(argv):
@@ -28,13 +29,15 @@ def main(argv):
 
     with open("out/" + outputfile, "w") as output_file:
         sys.stdout = output_file
-        output_code = mips_text()
-        # output_code += mips_jal('main')
-        output_code += '.globl main\n'
-        cgen = Cgen()
-        output_code += cgen.visit(parse_tree)
-        # print('######', cgen.data.data)
-        output_code += cgen.data.data
+        try:
+            output_code = mips_text()
+            # output_code += mips_jal('main')
+            output_code += '.globl main\n'
+            cgen = Cgen()
+            output_code += cgen.visit(parse_tree)
+            output_code += cgen.data.data
+        except (TypeError, SymbolTableError, FunctionError, ClassError):
+            output_code = 'Semantic Error'
         output_file.write(output_code)
         sys.stdout.close()
 
