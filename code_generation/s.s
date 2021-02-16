@@ -29,6 +29,11 @@ sw $t0, 0($sp)
 li $t0, 0
 sub $sp, $sp, 8
 sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 8($sp)
+seq $t2, $t1, $t0
+addi $sp, $sp, 8
+sw $t2, 0($sp)
 lw $a0, 0($sp)
 addi $sp, $sp, 8
 beq $a0, 0, ll_10

@@ -192,8 +192,6 @@ class Cgen(Interpreter):
 
     def expr1(self, tree):
         x = self.visit_children(tree)
-        if len(x) == 1:
-            x = x[0]
         return ''.join(x)
 
     def expr2(self, tree):
@@ -545,6 +543,40 @@ class Cgen(Interpreter):
         return code
 
     def eq(self, tree):
+        code = ''.join(self.visit_children(tree))
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != op2.name:
+            raise TypeError('Invalid Type for equal action')
+        if op1.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
+            label_number = self.new_label()
+            label = '__d_eq__' + label_number
+            code += mips_load_double('$f0', '$sp')
+            code += mips_load_double('$f2', '$sp', offset=8)
+            code += mips_li('$t0', 0)
+            # special floating point coprocessor instruction, checks equality
+            code += 'c.eq.d $f0, $f2\n'
+            code += 'bc1f ' + label + '\n'
+            # bc1f is a flag that stores equality operation result. if eq is false it jumps to label.
+            code += mips_li('$t0', 1)
+            code += label + ':\n'
+            code += add_stack(8)
+            code += mips_store('$t0', '$sp')
+        elif op1.name == Type.string:  # and typ.dimension == 0:
+            code += '.text\n'
+            code += mips_jump(mips_get_label('str cmp 1'))
+            code += mips_store('$v0', '$sp', 0)
+        else:  # int, bool    #done i think
+            code += mips_load('$t0', '$sp')
+            code += mips_load('$t1', '$sp', offset=8)
+            # special equality checking operation - will set t2 = 1 if t1 == t0
+            code += 'seq $t2, $t1, $t0\n'
+            code += add_stack(8)
+            code += mips_store('$t2', '$sp')
+        self._types.append(Type(Type.bool))
+        return code
+
+    def ne(self , tree):
         code = ''.join(self.visit_children(tree))
         op1 = self._types.pop()
         op2 = self._types.pop()
@@ -1136,7 +1168,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(for_test_code)
+    tree = get_parse_tree(test_equal)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
