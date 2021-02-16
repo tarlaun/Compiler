@@ -22,8 +22,8 @@ formals: variable ("," variable)*
 class_declaration: "class" IDENTIFIER (extend)? (implement)? "{" (field)* "}"
 extend: "extends" IDENTIFIER
 implement: "implements" IDENTIFIER ("," IDENTIFIER)*
-field: access_mode variable_declaration
-    |  access_mode function_declaration
+field: (access_mode)* variable_declaration
+    |  (access_mode)* function_declaration
 access_mode: ACCESS_MODE
 interface_declaration: "interface" IDENTIFIER "{" (prototype)* "}"
 prototype: type IDENTIFIER "(" formals ")" ";"
