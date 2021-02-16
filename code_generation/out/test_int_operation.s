@@ -1,22 +1,27 @@
 #### start the code generation
 ### variable
 ### variable
+### variable
 #### start stmt
 ### symbol int
 #### EXPR
+#### const_int
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### symbol int
+#### EXPR
+#### val code gen
+### symbol int
+#### val code gen
+### symbol int
 #### start stmt
 ### print_stmt
 #### val code gen
 ### symbol int
 #type: int
-#### start stmt
-### symbol string
-#### EXPR
-#### start stmt
-### print_stmt
-#### val code gen
-### symbol string
-#type: string
 .text
 .globl main
 main:
@@ -25,38 +30,55 @@ sw $ra, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __read__integer__
+li $t0, 5
+sub $sp, $sp, 8
+sw $t0, 0($sp)
 lw $t0, 8($sp)
 lw $t1, 0($sp)
 sw $t1, 0($t0)
 sw $t1, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 10
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-la $t0 , var_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __read__line__
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
 la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
-jal __print__string__
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
@@ -180,6 +202,9 @@ var_1:
 .align 2
 .space 4
 var_2:
+.align 2
+.space 4
+var_3:
 .align 2
 .space 4
 true: 

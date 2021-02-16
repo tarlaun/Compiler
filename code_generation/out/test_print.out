@@ -1,3 +1,5 @@
-5
-true
-string
+The following symbols are undefined:
+__print__new__line__
+var_1
+__print__integer__
+

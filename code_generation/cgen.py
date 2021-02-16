@@ -917,8 +917,20 @@ int main(){
 
 '''
 
+test_int_operation = '''
+int main(){
+    int a;
+    int b;
+    int c;
+    a = 5;
+    b = 10;
+    c = a + b;
+    Print(c);
+}
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(test_in_out)
+    tree = get_parse_tree(test_int_operation)
     # print(tree)
     print(tree.pretty())
     code = mips_text()
