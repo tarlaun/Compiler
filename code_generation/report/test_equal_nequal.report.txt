@@ -1,0 +1,2 @@
+difference in line #1: file: out/test_equal_nequal.out -----> content: The following symbols are undefined: <> file: tests/test_equal_nequal.out -----> content: true is equal to true 
+difference in line #2: file: out/test_equal_nequal.out -----> content: main <> file: tests/test_equal_nequal.out -----> content: true is not equal to false 

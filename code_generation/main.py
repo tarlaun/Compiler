@@ -29,15 +29,36 @@ def main(argv):
 
     with open("out/" + outputfile, "w") as output_file:
         sys.stdout = output_file
+        output_code = mips_text()
+        # output_code += mips_jal('main')
+        output_code += '.globl main\n'
         try:
-            output_code = mips_text()
-            # output_code += mips_jal('main')
-            output_code += '.globl main\n'
             cgen = Cgen()
             output_code += cgen.visit(parse_tree)
             output_code += cgen.data.data
         except (TypeError, SymbolTableError, FunctionError, ClassError):
-            output_code = 'Semantic Error'
+            # Semantic Error
+            output_code = '''.text
+                .globl main
+                main:
+                la $t0 , error
+                sub $sp, $sp, 8
+                sw $t0, 0($sp)
+                jal __print__string__
+                li $v0 , 10
+                syscall
+
+                __print__string__:
+                lw $a0, 0($sp)
+                addi $sp, $sp, 8
+                li $v0 , 4
+                syscall
+                jr $ra
+
+                .data
+                error:
+                .align 2
+                .asciiz "Semantic Error"'''
         output_file.write(output_code)
         sys.stdout.close()
 
