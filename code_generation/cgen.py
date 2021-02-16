@@ -124,7 +124,7 @@ class Cgen(Interpreter):
         code += add_stack(8)
         self.symbol_table.pop_scope()
         if ident == 'main':
-            code += mips_end_programm()
+            code += mips_jr('$ra')
         return code + global_funcs
 
     def variable_declaration(self, tree):
@@ -231,6 +231,7 @@ class Cgen(Interpreter):
             code += mips_store('$t1', '$t0')
             code += mips_store('$t1', '$sp', offset=8)
             code += add_stack(8)
+        code += add_stack(8)
         self._types.pop()
         return code
 
@@ -854,7 +855,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(tast_print)
+    tree = get_parse_tree(test_in_out)
     # print(tree)
     print(tree.pretty())
     code = mips_text()
