@@ -122,7 +122,7 @@ class Cgen(Interpreter):
 
         self.symbol_table.pop_scope()
         if ident == 'main':
-            code += mips_jal(mips_get_label('end'))
+            code += mips_jr('$ra')
         return code
 
     def variable_declaration(self, tree):
@@ -255,7 +255,7 @@ class Cgen(Interpreter):
         print("#### val code gen")
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
-        if operand_type == Type.double:  # and typ.dimension == 0:
+        if operand_type.name == Type.double:  # and typ.dimension == 0:
             code += mips_load('$t0', '$sp')
             code += mips_load_double('$f0', '$t0')
             code += mips_store_double('$f0', '$sp')
@@ -829,7 +829,8 @@ int add(){
 test1 = '''
 
 int main(int a , int b){
-
+    a = 5;
+    Print(a);
 }
 
 
@@ -843,13 +844,22 @@ int main(){
 }
 '''
 
+tast_print = '''
+int main(){
+    Print(5);
+}
+
+
+'''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_in_out)
+    tree = get_parse_tree(tast_print)
     # print(tree)
     print(tree.pretty())
     code = mips_text()
-    code += mips_jump('main')
+    code += mips_jal('main')
+    code += mips_jal(mips_get_label('end'))
+    code += mips_jr('$ra')
     code += '.globl main'
     cgen = Cgen()
     code += str(cgen.visit(tree))
