@@ -3,16 +3,59 @@
 __calc__formals__root__:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-la $t0 , str_1
+la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __print__string__
-jal __print__new__line__
-lw $ra, 0($sp)
-addi $sp, $sp, 8
-main:
+li $t0, 0
 sub $sp, $sp, 8
-sw $ra, 0($sp)
+sw $t0, 0($sp)
+j loop_label_2
+loop_label_1:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+li $t0, 1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 8($sp)
+add $t2, $t0, $t1
+sw $t2, 8($sp)
+addi $sp, $sp, 8
+loop_label_2:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+li $t0, 10
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 8($sp)
+slt $t2, $t1, $t0
+addi $sp, $sp, 8
+sw $t2, 0($sp)
+lw $a0, 0($sp)
+addi $sp, $sp, 8
+beqz $a0 , _end_loop_label_1
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+j loop_label_1
+_end_loop_label_1:
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra

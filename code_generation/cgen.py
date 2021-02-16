@@ -71,6 +71,13 @@ class Cgen(Interpreter):
         self._types = []
         self.symbol_table = SymbolTable()
         self.data = DataSection()
+    def filter_lists(self , object1):
+        if isinstance(object1 , list):
+            code = ''
+            for x in object1:
+                code += x
+            return code
+        return object
 
     def start(self, tree):
         print('#### start the code generation')
@@ -192,8 +199,7 @@ class Cgen(Interpreter):
         return ''.join(self.visit_children(tree))
 
     def expr1(self, tree):
-        x = self.visit_children(tree)
-        return ''.join(x)
+        return ''.join(self.filter_lists(self.visit_children(tree)))
 
     def expr2(self, tree):
         return ''.join(self.visit_children(tree))
@@ -219,7 +225,7 @@ class Cgen(Interpreter):
 
     def assignment(self, tree):  # todo - type checking - array
         code = ''.join(self.visit_children(tree))
-
+        print('im here')
         variable_type = self._types[-1]
         if variable_type.name == Type.double:  # and typ.dimension == 0:
             code += mips_load('$t0', '$sp', offset=8)  # label address
@@ -810,21 +816,25 @@ class Cgen(Interpreter):
 
     def for1(self, tree):
         check_label = self.new_loop_label()
+        check_label2 = self.new_loop_label()
         end_label = '_end_' + check_label
         parent_scope = self.symbol_table.get_current_scope()
         current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        init_code = self.visit_children(tree.children[0])[0]
-        check_code = self.visit_children(tree.children[1])[0]
-        every_loop_code = self.visit_children(tree.children[2])[0]
-        stmt_code = self.visit_children(tree.children[3])[0]
+        
+        init_code = self.filter_lists(self.visit_children(tree.children[0]))
+        check_code = self.filter_lists(self.visit_children(tree.children[1]))
+        every_loop_code = self.filter_lists(self.visit_children(tree.children[2]))
+        stmt_code = self.filter_lists(self.visit_children(tree.children[3]))
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
         code = ''
         code += init_code
+        code += mips_jump(check_label2)
         code += '{}:\n'.format(check_label)
         code += every_loop_code
+        code += '{}:\n'.format(check_label2)
         code += check_code
         code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
