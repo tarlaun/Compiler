@@ -69,6 +69,7 @@ print_stmt : "Print" "(" expr ("," expr)* ")" ";"
     | "!" expr6 -> not_bool
     | expr7
     expr7 : constant 
+    | converters 
     | "ReadInteger" "(" ")" -> read_integer 
     | "ReadLine" "(" ")" -> read_line 
     | "new" IDENTIFIER -> class_inst 
@@ -87,7 +88,11 @@ print_stmt : "Print" "(" expr ("," expr)* ")" ";"
     | BOOL -> const_bool 
     | STRING -> const_string
     | "null" -> null
-
+converters : "itod(" expr ")" -> itod|
+            "itob(" expr ")" -> itob|
+            "btoi(" expr ")" -> btoi|
+            "dtoi(" expr ")" -> dtoi
+            
 TYPE : "int" | "double" | "bool" | "string"
 ACCESS_MODE: "private" | "protected" | "public"
 BOOL: "true" | "false"
