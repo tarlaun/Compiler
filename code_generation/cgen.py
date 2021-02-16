@@ -107,7 +107,8 @@ class Cgen(Interpreter):
         function_scope = Scope(ident, cur_scope)
         self.symbol_table.push_scope(function_scope)
 
-        function_data = Function(function_scope, ident, return_type)
+        function_data = Function(scope=function_scope,
+                                 name=ident, return_type=return_type)
         self.symbol_table.push_function(function_data)
 
         # set function label
@@ -480,7 +481,7 @@ class Cgen(Interpreter):
             self._types.append(Type(Type.double))
 
         elif op1.name == Type.string:
-            pass
+            raise TypeError('invalid Type for add')
         return code
 
     def sub(self, tree):
@@ -756,7 +757,14 @@ class Cgen(Interpreter):
         return 'METH'
 
     def call(self, tree):
-        return 'CALL'
+        code = ''
+        function_name = tree.children[0].value
+        function = self.symbol_table.lookup_function(function_name)
+        function_label = '__' + function.scope.get_id() + '__'
+        self.symbol_table.push_scope(function.scope)
+        # mips code
+        self.symbol_table.pop_scope()
+        return code
 
     def subscript(self, tree):
         return 'subs_ '
@@ -1174,7 +1182,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(function_test_code)
+    tree = get_parse_tree(for_test_code)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'

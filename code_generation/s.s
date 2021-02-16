@@ -1,6 +1,6 @@
 .text
 .globl main
-__calc/formals/root__:
+__calc__formals__root__:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
 la $t0 , str_1
@@ -13,7 +13,7 @@ addi $sp, $sp, 8
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-CALLlw $ra, 0($sp)
+lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
 __new__array__:

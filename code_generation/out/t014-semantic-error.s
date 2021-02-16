@@ -1,63 +1,48 @@
 #### start the code generation
 #### start stmt
-### start if_stmt
+#### EXPR
+#### const_int
+### variable
+#### start stmt
+#### var name b
+### symbol string
 #### EXPR
 #### start stmt
-#### start stmt
 ### print_stmt
-#type: string
-#### start stmt
-### start if_stmt
-#### EXPR
-#### start stmt
-#### start stmt
-### print_stmt
+#### val code gen
+#### var name b
+### symbol string
 #type: string
 .text
 .globl main
+__f__formals__root__:
+sub $sp, $sp, 8
+sw $ra, 0($sp)
+lw $v0, 0($sp)
+addi $sp, $sp, 8
+j $ra
+lw $ra, 0($sp)
+addi $sp, $sp, 8
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-li $t0, 1
+la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-li $t0, 1
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 8($sp)
-seq $t2, $t1, $t0
-addi $sp, $sp, 8
-sw $t2, 0($sp)
-lw $a0, 0($sp)
-addi $sp, $sp, 8
-beq $a0, 0, ll_5
-la $t0 , str_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
 jal __print__string__
 jal __print__new__line__
-ll_5:
-li $t0, 1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-li $t0, 0
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-sne $t2, $t1, $t0
-addi $sp, $sp, 8
-sw $t2, 0($sp)
-lw $a0, 0($sp)
-addi $sp, $sp, 8
-beq $a0, 0, ll_10
-la $t0 , str_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __print__string__
-jal __print__new__line__
-ll_10:
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
@@ -180,8 +165,9 @@ syscall
 jr $ra
 
 .data
-str_1: .asciiz "true is equal to true"
-str_2: .asciiz "true is not equal to false"
+var_1:
+.align 2
+.space 4
 true: 
 .align 2
  .asciiz "true"
