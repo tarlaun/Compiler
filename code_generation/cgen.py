@@ -12,7 +12,7 @@ from Error import *
 class Type:
     def __init__(self, name, dimension=0):
         self.name = name
-        dimension = dimension
+        self.dimension = dimension
     double = "double"
     int = "int"
     bool = "bool"
@@ -288,7 +288,8 @@ class Cgen(Interpreter):
         return code
 
     def new_array(self, tree):  # todo - add the typechecking
-        code = ''.join(self.visit_children(tree))
+        array_type = self.visit(tree.children[1])
+        code = ''.join(self.visit(tree.children[0]))
         shamt = 2
         tp = self.array_last_type
         if tp.is_primitive and tp.dimension == 0:
@@ -1006,8 +1007,15 @@ int main(){
 }
 '''
 
+test_array = '''
+int main(){
+    NewArray(5, int);
+}
+'''
+
+
 if __name__ == '__main__':
-    tree = get_parse_tree(test_double_operation)
+    tree = get_parse_tree(test_array)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
