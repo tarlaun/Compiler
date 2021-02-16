@@ -765,16 +765,16 @@ class Cgen(Interpreter):
     def for_stmt(self, tree):  # todo - i have no clue
         print('### start for_stmt')
         return ''.join(self.visit_children(tree))
-    
-    def for1(self , tree):
+
+    def for1(self, tree):
         check_label = self.new_loop_label()
         end_label = '_end_' + check_label
         parent_scope = self.symbol_table.get_current_scope()
-        current_scope = Scope(check_label , parent_scope)
+        current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
         init_code = self.visit_children(tree.children[0])
-        check_code =self.visit_children(tree.children[1])
+        check_code = self.visit_children(tree.children[1])
         every_loop_code = self.visit_children(tree.children[2])
         stmt_code = self.visit_children(tree.children[3])
         self.symbol_table.pop_scope()
@@ -792,15 +792,15 @@ class Cgen(Interpreter):
         code += '{}:\n'.format(end_label)
         return code
 
-    def for2(self , tree):
+    def for2(self, tree):
         check_label = self.new_loop_label()
         end_label = '_end_' + check_label
         parent_scope = self.symbol_table.get_current_scope()
-        current_scope = Scope(check_label , parent_scope)
+        current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
         init_code = self.visit_children(tree.children[0])
-        check_code =self.visit_children(tree.children[1])
+        check_code = self.visit_children(tree.children[1])
         stmt_code = self.visit_children(tree.children[2])
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
@@ -815,15 +815,15 @@ class Cgen(Interpreter):
         code += mips_jump(check_label)
         code += '{}:\n'.format(end_label)
         return code
-        
-    def for3(self , tree):
+
+    def for3(self, tree):
         check_label = self.new_loop_label()
         end_label = '_end_' + check_label
         parent_scope = self.symbol_table.get_current_scope()
-        current_scope = Scope(check_label , parent_scope)
+        current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        check_code =self.visit_children(tree.children[0])
+        check_code = self.visit_children(tree.children[0])
         every_loop_code = self.visit_children(tree.children[1])
         stmt_code = self.visit_children(tree.children[2])
         self.symbol_table.pop_scope()
@@ -839,15 +839,15 @@ class Cgen(Interpreter):
         code += mips_jump(check_label)
         code += '{}:\n'.format(end_label)
         return code
-    
-    def for4(self , tree):
+
+    def for4(self, tree):
         check_label = self.new_loop_label()
         end_label = '_end_' + check_label
         parent_scope = self.symbol_table.get_current_scope()
-        current_scope = Scope(check_label , parent_scope)
+        current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        check_code =self.visit_children(tree.children[0])
+        check_code = self.visit_children(tree.children[0])
         stmt_code = self.visit_children(tree.children[1])
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
@@ -861,7 +861,6 @@ class Cgen(Interpreter):
         code += mips_jump(check_label)
         code += '{}:\n'.format(end_label)
         return code
-        
 
     def while_stmt(self, tree):
         print('### start while_stmt')
@@ -869,7 +868,7 @@ class Cgen(Interpreter):
         end_label = '_end_'+check_label
         parent_scope = self.symbol_table.get_current_scope()
         current_scope = Scope(check_label, parent_scope)
-        self.symbol_table.push_scope(current_scope)      
+        self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
         check_code = self.visit(tree.children[0])
         stmt_code = self.visit(tree.children[1])
@@ -1137,7 +1136,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_equal)
+    tree = get_parse_tree(for_test_code)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
