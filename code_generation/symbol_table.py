@@ -32,7 +32,8 @@ class SymbolTable():
                 if symbol.name == name:
                     return symbol
             for parent in scope.parent_scopes:
-                search_stack.append(parent)
+                if parent:
+                    search_stack.append(parent)
         raise Exception(
             'SymbolTable Error: symbol does not exist in symbolTable.')
 
@@ -80,6 +81,7 @@ class Symbol:
 
 class Scope:
     def __init__(self, name, parent_scope=None):
+        print('scope => parent_scope', parent_scope)
         self.name = name
         self.parent_scopes = []
         self.parent_scopes.append(parent_scope)
@@ -99,12 +101,12 @@ class Scope:
             parent = parent.parent_scopes[0]
         return id
 
-    def __str__(self):
-        return self.get_id()
+    # def __str__(self):
+    #     return self.get_id()
 
 
 class Function:
-    def __init__(self, scope, name, return_type=None , label = None):
+    def __init__(self, scope, name, return_type=None, label=None):
         self.scope = scope
         self.name = name
         self.return_type = return_type

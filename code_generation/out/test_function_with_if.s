@@ -1,21 +1,37 @@
+#### start the code generation
+#### start stmt
+### start if_stmt
+#### EXPR
+#### start stmt
+#### start stmt
+### print_stmt
+#type: string
+#### start stmt
+#### EXPR
 .text
 .globl main
-__<symbol_table.Scope__object__at__0x104cc8640>__:
+__calc__formals__root__:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-la $t0 , <symbol_table.Scope object at 0x104cc82e0>/a
+li $t0, 1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
+lw $a0, 0($sp)
+addi $sp, $sp, 8
+beq $a0, 0, ll_5
+la $t0 , str_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal __print__string__
 jal __print__new__line__
+ll_5:
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
+jal __calc__formals__root__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
@@ -138,8 +154,7 @@ syscall
 jr $ra
 
 .data
-<symbol_table.Scope object at 0x104cc82e0>_a: .space 4
-.align 2
+str_1: .asciiz "Im in the FUNCTION and statement is true"
 true: 
 .align 2
  .asciiz "true"

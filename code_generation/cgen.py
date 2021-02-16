@@ -166,11 +166,18 @@ class Cgen(Interpreter):
             formal_name = variable.children[1].value
             formal_type = Type(variable.children[0])
             if formal_type.name == Type.double and formal_type.dimension == 0:
+                label = str(self.symbol_table.get_current_scope()
+                            ) + "/" + formal_name
                 self.data.add_data('{}: .space 8\n'.format(
-                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_")) + mips_align(2))
+                    label.replace("/", "_")) + mips_align(2))
             else:
+                label = str(self.symbol_table.get_current_scope()
+                            ) + "/" + formal_name
                 self.data.add_data('{}: .space 4\n'.format(
-                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_")) + mips_align(2))
+                    label.replace("/", "_")) + mips_align(2))
+            symbol = Symbol(formal_name, formal_type,
+                            scope=self.symbol_table.get_current_scope(), label=label)
+            self.symbol_table.push_symbol(symbol)
         return code
 
     def type(self, tree):
@@ -1207,8 +1214,18 @@ int main(){
 }
 '''
 
+test_function_with_formal = '''
+    void calc(int a){
+        Print(a);
+    }
+
+    int main(){
+        
+    }
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(function_test_code)
+    tree = get_parse_tree(test_function_with_formal)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
