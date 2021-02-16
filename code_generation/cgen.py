@@ -462,8 +462,6 @@ class Cgen(Interpreter):
             raise TypeError('invalid Type for add')
         if op1.name == Type.bool or op2.name == Type.bool:
             raise TypeError('invalid Type for add')
-        if op1.name == Type.string or op2.name == Type.string:
-            raise TypeError('invalid Type for add')
         if op1.name != op2.name:
             raise TypeError('invalid Type for add')
 
@@ -482,6 +480,9 @@ class Cgen(Interpreter):
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
             self._types.append(Type(Type.double))
+
+        elif op1.name == Type.string:
+            pass
         return code
 
     def sub(self, tree):
