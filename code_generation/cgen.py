@@ -112,7 +112,7 @@ class Cgen(Interpreter):
         # function_data.set_label(label)
 
         if ident == 'main':  # ????
-            code += self.declare_global_static_funcs()
+            global_funcs = self.declare_global_static_funcs()
             code += ('main:\n')
         else:
             code += mips_create_label(str(function_scope))
@@ -124,8 +124,8 @@ class Cgen(Interpreter):
         code += add_stack(8)
         self.symbol_table.pop_scope()
         if ident == 'main':
-            code += mips_jr('$ra')
-        return code
+            code += mips_end_programm()
+        return code + global_funcs
 
     def variable_declaration(self, tree):
         code = ''
@@ -756,7 +756,6 @@ class Cgen(Interpreter):
         code += read_char()
         code += read_integer()
         code += read_line()
-        code += mips_end_programm()
         return code
 
 
@@ -859,9 +858,6 @@ if __name__ == '__main__':
     # print(tree)
     print(tree.pretty())
     code = mips_text()
-    code += mips_jal('main')
-    code += mips_jal(mips_get_label('end'))
-    code += mips_jr('$ra')
     code += '.globl main\n'
     cgen = Cgen()
     code += str(cgen.visit(tree))
