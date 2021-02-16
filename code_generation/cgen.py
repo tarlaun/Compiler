@@ -292,7 +292,6 @@ class Cgen(Interpreter):
         return code
 
     def new_array(self, tree):  # todo - add the typechecking
-        array_type = self.visit(tree.children[1])
         code = ''.join(self.visit(tree.children[0]))
         shamt = 2
         tp = self.array_last_type
