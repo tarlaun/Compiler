@@ -3,7 +3,7 @@
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-la $t0 , var_1
+li $t0, 5
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 li.s $f0 , 11.5
@@ -199,15 +199,6 @@ syscall
 jr $ra
 
 .data
-var_1:
-.align 2
-.space 4
-var_2:
-.align 2
-.space 4
-var_3:
-.align 2
-.space 4
 true: 
 .align 2
  .asciiz "true"
