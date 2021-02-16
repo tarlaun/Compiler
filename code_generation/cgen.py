@@ -134,6 +134,7 @@ class Cgen(Interpreter):
         code += mips_load('$ra', '$sp', 0)
         code += add_stack(8)
         self.symbol_table.pop_scope()
+        self.symbol_table.pop_scope()
         # if ident == 'main':
         code += mips_jr('$ra')
         return code
@@ -288,7 +289,7 @@ class Cgen(Interpreter):
     def print_stmt(self, tree):  # todo - not sure about the type checking
         print('### print_stmt')
         code = ''
-        for child in tree.children[0].children:
+        for child in tree.children:
             code += self.visit(child)
             operand_type = self._types.pop()
             print('#type:', operand_type.name)

@@ -12,6 +12,7 @@
 ### symbol int
 #### EXPR
 #### const_int
+#### EXPR
 #### var name i
 ### symbol int
 #### EXPR
@@ -20,7 +21,16 @@
 ### symbol int
 #### const_int
 #### start stmt
+#### start stmt
 ### print_stmt
+#### EXPR
+#type: string
+#### EXPR
+#### val code gen
+#### var name i
+### symbol int
+#type: int
+#### EXPR
 #type: string
 #### start stmt
 #### var name a
@@ -46,7 +56,20 @@
 ### symbol int
 #### start stmt
 ### print_stmt
+#### EXPR
 #type: string
+#### EXPR
+#### val code gen
+#### var name i
+### symbol int
+#type: int
+#### EXPR
+#type: string
+#### EXPR
+#### val code gen
+#### var name b
+### symbol int
+#type: int
 .text
 .globl main
 main:
@@ -67,10 +90,41 @@ addi $sp, $sp, 8
 la $t0 , var_3
 sub $sp, $sp, 8
 sw $t0, 0($sp)
+li $t0, 1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+j loop_label_2
 loop_label_1:
 la $t0 , var_3
 sub $sp, $sp, 8
 sw $t0, 0($sp)
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+li $t0, 1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 8($sp)
+add $t2, $t0, $t1
+sw $t2, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+loop_label_2:
 li $t0, 1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -78,6 +132,17 @@ lw $a0, 0($sp)
 addi $sp, $sp, 8
 beqz $a0 , _end_loop_label_1
 la $t0 , str_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal __print__string__
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+la $t0 , str_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 jal __print__string__
@@ -108,9 +173,9 @@ addi $sp, $sp, 8
 sw $t2, 0($sp)
 lw $a0, 0($sp)
 addi $sp, $sp, 8
-beq $a0, 0, ll_8
+beq $a0, 0, ll_9
 j _end_loop_label_1
-ll_8:
+ll_9:
 la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -139,10 +204,28 @@ addi $sp, $sp, 8
 addi $sp, $sp, 8
 j loop_label_1
 _end_loop_label_1:
-la $t0 , str_2
+la $t0 , str_3
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 jal __print__string__
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+la $t0 , str_4
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal __print__string__
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
@@ -276,7 +359,9 @@ var_3:
 .align 2
 .space 4
 str_1: .asciiz "Please enter the #"
-str_2: .asciiz "Sum of "
+str_2: .asciiz " number:"
+str_3: .asciiz "Sum of "
+str_4: .asciiz " items is: "
 true: 
 .align 2
  .asciiz "true"

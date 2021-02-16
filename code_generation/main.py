@@ -36,7 +36,8 @@ def main(argv):
             cgen = Cgen()
             output_code += cgen.visit(parse_tree)
             output_code += cgen.data.data
-        except (TypeError, SymbolTableError, FunctionError, ClassError):
+        except:
+            # except (TypeError, SymbolTableError, FunctionError, ClassError):
             # Semantic Error
             output_code = '''.text
                 .globl main

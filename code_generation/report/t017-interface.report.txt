@@ -1,0 +1,1 @@
+difference in line #1: file: out/t017-interface.out -----> content: Semantic Error <> file: tests/t017-interface.out -----> content: 2 

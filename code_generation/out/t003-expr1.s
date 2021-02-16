@@ -111,30 +111,35 @@
 ### symbol int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name a
 ### symbol int
 #type: int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name b
 ### symbol int
 #type: int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name c
 ### symbol int
 #type: int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name d
 ### symbol int
 #type: int
 #### start stmt
 ### print_stmt
+#### EXPR
 #### val code gen
 #### var name z
 ### symbol int
