@@ -74,15 +74,14 @@ expr7 : constant
     | "ReadLine" "(" ")" -> read_line 
     | "new" IDENTIFIER -> class_inst 
     | "NewArray" "(" expr "," type ")" -> new_array 
-    | CAST "(" expr ")" -> cast
     | "(" expr ")" 
     | l_value -> val 
     | call
     l_value : IDENTIFIER -> var_addr 
     |  expr7 "." IDENTIFIER -> var_access 
     | expr7 "[" expr "]" -> subscript
+    
 call : IDENTIFIER  "(" actuals ")" 
-    | CAST "(" actuals ")"
     | expr7  "."  IDENTIFIER "(" actuals ")" -> method
   
 actuals :  expr (","expr)* |  
@@ -91,10 +90,10 @@ constant : INTEGER -> const_int
     | BOOL -> const_bool 
     | STRING -> const_string
     | "null" -> null
-converters :"itod(" expr ")" -> itod|
-            "itob(" expr ")" -> itob|
-            "btoi(" expr ")" -> btoi|
-            "dtoi(" expr ")" -> dtoi
+converters :"itod(" expr ")" -> itod
+    | "itob(" expr ")" -> itob
+    | "btoi(" expr ")" -> btoi
+    | "dtoi(" expr ")" -> dtoi
             
 TYPE : "int" | "double" | "bool" | "string"
 ACCESS_MODE: "private" | "protected" | "public"
