@@ -334,9 +334,9 @@ class Cgen(Interpreter):
     def const_double(self, tree):
         code = ''
         const_val = tree.children[0].value.lower()
-        code += mips_li('$t0', const_val)
+        code += 'li.s $f0 , {}\n'.format(const_val)
         code += sub_stack(8)
-        code += mips_store('$t0', '$sp')
+        code += mips_store('$f0', '$sp')
         self._types.append(Type(Type.double, dimension=0))
         return code
 
@@ -1016,6 +1016,9 @@ if __name__ == '__main__':
     code += cgen.data.data
     print("CODE:")
     print(code)
+    f = open("s.s", "w")
+    f.write(code)
+    f.close()
 
 '''  def expr(self, tree):
         print('#### start expr')
