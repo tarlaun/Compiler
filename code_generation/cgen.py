@@ -797,6 +797,7 @@ class Cgen(Interpreter):
         code += add_stack(8)
         code += mips_beqz('$a0', end_label)
         code += stmt_code
+        code += mips_jump(check_label)
         code += '{}:\n'.format(end_label)
         return code
 

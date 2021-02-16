@@ -64,6 +64,7 @@ sw $t1, 0($t0)
 sw $t1, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
+j loop_label_1
 _end_loop_label_1:
 lw $ra, 0($sp)
 addi $sp, $sp, 8
