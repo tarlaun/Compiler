@@ -331,6 +331,15 @@ class Cgen(Interpreter):
         self._types.append(Type(Type.int, dimension=0))
         return code
 
+    def const_double(self, tree):
+        code = ''
+        const_val = tree.children[0].value.lower()
+        code += mips_li('$t0', const_val)
+        code += sub_stack(8)
+        code += mips_store('$t0', '$sp')
+        self._types.append(Type(Type.double, dimension=0))
+        return code
+
     def const_bool(self, tree):
         code = ''
         const_val = tree.children[0].value.lower()
@@ -805,22 +814,22 @@ class Cgen(Interpreter):
         code += mips_jump('$ra')
         return code
 
-    def converters(self , tree):
+    def converters(self, tree):
         return ''.join(self.visit_children(tree))
 
     def itob(self, tree):
-        code =''
+        code = ''
         code = self.visit_children(tree)[0]
         tp = self._types.pop()
         if tp.name != Type.int:
             raise TypeError('invalid Type for itob')
         code += mips_jal(mips_get_label('itob'))
         code += sub_stack(8)
-        code += mips_store('$v0' , '$sp')
+        code += mips_store('$v0', '$sp')
         self._types.append(Type(Type.bool))
-        return code 
-    
-    def btoi(self , tree):
+        return code
+
+    def btoi(self, tree):
         code = ''
         code = self.visit_children(tree)[0]
         tp = self._types.pop()
@@ -828,7 +837,7 @@ class Cgen(Interpreter):
             raise TypeError('Invalid Type for btoi')
         code += mips_jal(mips_get_label('btoi'))
         code += sub_stack(8)
-        code += mips_store('$v0' , '$sp')
+        code += mips_store('$v0', '$sp')
         self._types.append(Type(Type.int))
         return code
 
@@ -839,11 +848,11 @@ class Cgen(Interpreter):
             raise TypeError('Invalid Type for itod')
         code += mips_jal(mips_get_label('itod'))
         code += sub_stack(8)
-        code += mips_store('$v0' , '$sp' )
+        code += mips_store('$v0', '$sp')
         self._types.append(Type(Type.double))
         return code
-    
-    def dtoi(self , tree):
+
+    def dtoi(self, tree):
         code = ''
         code = self.visit_children(tree)[0]
         tp = self._types.pop()
@@ -851,10 +860,9 @@ class Cgen(Interpreter):
             raise TypeError('Invalid Type for dtoi')
         code += mips_jal(mips_get_label('dtoi'))
         code += sub_stack(8)
-        code += mips_store('$v0' , '$sp')
+        code += mips_store('$v0', '$sp')
         self._types.append(Type(Type.int))
         return code
-
 
     def declare_global_static_funcs(self):
         code = ''
@@ -980,14 +988,26 @@ int main(){
 
 test_itob = '''
 int main(){
-    double a;
+    bool a;
     a = itob(5);
     Print(a);
 }
 '''
 
+test_double_operation = '''
+int main(){
+    double a;
+    double b;
+    double c;
+    a = 1.5;
+    b = 3.4;
+    c = a + b;
+    Print(c);
+}
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(test_itob)
+    tree = get_parse_tree(test_double_operation)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
