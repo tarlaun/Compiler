@@ -1,22 +1,168 @@
 .text
 .globl main
-__calc__formals__root__:
-sub $sp, $sp, 8
-sw $ra, 0($sp)
-la $t0 , formals__root_a
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__new__line__
-lw $ra, 0($sp)
-addi $sp, $sp, 8
-jr $ra
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-jal __calc__formals__root__
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li.s $f0 , 1.5
+sub $sp, $sp, 8
+s.s $f0, 0($sp)
+lw $t0, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li.s $f0 , 3.4
+sub $sp, $sp, 8
+s.s $f0, 0($sp)
+lw $t0, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+l.s $f0, 0($sp)
+l.s $f2, 8($sp)
+add.s $f4, $f0, $f2
+s.s $f4, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+jal __print__double__
+jal __print__new__line__
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+l.s $f0, 0($sp)
+l.s $f2, 8($sp)
+sub.s $f4, $f2, $f0
+s.s $f4, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+jal __print__double__
+jal __print__new__line__
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+l.s $f0, 0($sp)
+l.s $f2, 8($sp)
+mul.s $f4, $f2, $f0
+s.s $f4, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+jal __print__double__
+jal __print__new__line__
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+la $t0 , var_2
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+l.s $f0, 0($sp)
+l.s $f2, 8($sp)
+div.s $f4, $f2, $f0
+s.s $f4, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+jal __print__double__
+jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
@@ -139,8 +285,15 @@ syscall
 jr $ra
 
 .data
-formals__root_a: .space 4
+var_1:
 .align 2
+.space 4
+var_2:
+.align 2
+.space 4
+var_3:
+.align 2
+.space 4
 true: 
 .align 2
  .asciiz "true"

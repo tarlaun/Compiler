@@ -236,6 +236,7 @@ class Cgen(Interpreter):
         tp1 = self._types.pop()
         tp2 = self._types.pop()
         if not convertible(tp1 , tp2):
+            print(tp1.name , tp2.name)
             raise TypeError('Invalid assignment type')
         if tp2.name == Type.double:  # and typ.dimension == 0:
             code += mips_load('$t0', '$sp', offset=8)  # label address
@@ -419,7 +420,7 @@ class Cgen(Interpreter):
             code += mips_mul_double('$f4', '$f2', '$f0')
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
-            self._types.append(Type(Type.int))
+            self._types.append(Type(Type.double))
         return code
 
     def mod(self, tree):
@@ -1230,8 +1231,26 @@ test_function_with_formal = '''
     }
 '''
 
+double_test = '''
+int main(){
+    double a;
+    double b;
+    double c;
+    a = 1.5;
+    b = 3.4;
+    c = a + b;
+    Print(c);
+    c = a - b;
+    Print(c);
+    c = a * b;
+    Print(c);
+    c = a / b;
+    Print(c);
+}
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(test_function_with_formal)
+    tree = get_parse_tree(double_test)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
