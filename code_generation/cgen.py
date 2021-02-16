@@ -234,7 +234,6 @@ class Cgen(Interpreter):
             code += mips_store_double('$f0', '$sp', offset=8)
             code += add_stack(8)
         else:  # int, bool
-            print('#joon')
             code += mips_load('$t0', '$sp', offset=8)
             code += mips_load('$t1', '$sp')
             code += mips_store('$t1', '$t0')
@@ -242,7 +241,6 @@ class Cgen(Interpreter):
             code += add_stack(8)
         code += add_stack(8)
         self._types.pop()
-        print('ass ass : ' , code)
         return code
 
     def class_inst(self, tree):  # todo
@@ -818,7 +816,6 @@ class Cgen(Interpreter):
         self.loop_labels.append(check_label)
         
         init_code = self.filter_lists(self.visit_children(tree.children[0]))
-        print('init code' , init_code)
         check_code = self.filter_lists(self.visit_children(tree.children[1]))
         every_loop_code = self.filter_lists(self.visit_children(tree.children[2]))
         stmt_code = self.filter_lists(self.visit_children(tree.children[3]))
