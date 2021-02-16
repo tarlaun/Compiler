@@ -191,7 +191,10 @@ class Cgen(Interpreter):
         return ''.join(self.visit_children(tree))
 
     def expr1(self, tree):
-        return ''.join(self.visit_children(tree))
+        x = self.visit_children(tree)
+        if len(x) == 1:
+            x = x[0]
+        return ''.join(x)
 
     def expr2(self, tree):
         return ''.join(self.visit_children(tree))
