@@ -133,7 +133,7 @@ def mips_store(src, dst, offset=0):
 
 
 def mips_store_double(src, dst, offset=0):
-    return ("s.d" + src + ", " + str(offset) + "(" + dst + ")" + '\n')
+    return ("s.d " + src + ", " + str(offset) + "(" + dst + ")" + '\n')
 
 
 def mips_load_double(dst, src, offset=0):
@@ -334,7 +334,7 @@ def read_integer():
 def read_line():
     code = ''
     code += mips_create_label('read line')
-    code += mips_load_immidiate('$a0' , 256)
+    code += mips_load_immidiate('$a0', 256)
     code += mips_load_immidiate('$v0', 9)
     code += mips_syscall()
     code += mips_move('$a0', '$v0')
