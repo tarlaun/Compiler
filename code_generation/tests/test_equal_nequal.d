@@ -1,5 +1,5 @@
 int main(){
-    if( true == 1 ){
+    if( true == true ){
         Print("true is equal to true");
     }
     if( true != false ){

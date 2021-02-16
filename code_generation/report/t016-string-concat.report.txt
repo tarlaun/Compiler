@@ -1,1 +1,1 @@
-different line count in these files! : file out/t016-string-concat.out : #2 , file tests/t016-string-concat.out : #1 
+difference in line #1: file: out/t016-string-concat.out -----> content: Semantic Error <> file: tests/t016-string-concat.out -----> content: hello world 

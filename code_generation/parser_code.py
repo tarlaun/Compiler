@@ -40,10 +40,10 @@ stmt: (expr)? ";"
     | stmt_block
 if_stmt: "if" "(" expr ")" stmt ("else" stmt)?
 while_stmt: "while" "(" expr ")" stmt
-for_stmt: "for" "(" expr ";" expr ";" expr ")" stmt -> for1 |
-         "for" "(" expr ";" expr ";"  ")" stmt -> for2 |
-         "for" "(" ";" expr ";" expr ")" stmt -> for3 |
-         "for" "(" ";" expr ";" ")" stmt -> for4 
+for_stmt: "for" "(" expr ";" expr ";" expr ")" stmt -> for1 
+        | "for" "(" expr ";" expr ";"  ")" stmt -> for2 
+        | "for" "(" ";" expr ";" expr ")" stmt -> for3 
+        | "for" "(" ";" expr ";" ")" stmt -> for4 
 return_stmt: "return" (expr)? ";"
 break_stmt: "break" ";"
 print_stmt : "Print" "(" expr ("," expr)* ")" ";" 
