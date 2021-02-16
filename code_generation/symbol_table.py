@@ -95,7 +95,7 @@ class Scope:
         id = self.name
         parent = self.parent_scopes[0]
         while parent:
-            id += ('/' + parent.name)
+            id += ('__' + parent.name)
             parent = parent.parent_scopes[0]
         return id
 
