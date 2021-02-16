@@ -1,1 +1,1 @@
-difference in line #1: file: out/test_double_operation.out -----> content: 102.40003967 <> file: tests/test_double_operation.out -----> content: 4.9 
+OK 

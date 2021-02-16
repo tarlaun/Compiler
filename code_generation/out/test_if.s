@@ -54,8 +54,8 @@ sw $ra, 0($sp)
 lw $a0, 0($sp)
 addi $sp, $sp, 8
 beq $a0, 0, ll_7
-j ll_5
-ll_5:
+j ll_6
+ll_6:
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -77,7 +77,7 @@ sw $t1, 0($sp)
 jal __print__integer__
 jal __print__new__line__
 j ll_7
-ll_6:
+ll_5:
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -101,8 +101,8 @@ jal __print__new__line__
 lw $a0, 0($sp)
 addi $sp, $sp, 8
 beq $a0, 0, ll_17
-j ll_15
-ll_15:
+j ll_16
+ll_16:
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -124,7 +124,7 @@ sw $t1, 0($sp)
 jal __print__integer__
 jal __print__new__line__
 j ll_17
-ll_16:
+ll_15:
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -206,9 +206,8 @@ __not__eq__str__:
 li $v0 , 0
 jr $ra
 __print__double__:
-l.d $f12, 0($sp)
+l.s $f12, 0($sp)
 addi $sp, $sp, 8
-cvt.s.d $f12 , $f12
 li $v0 , 2
 syscall
 jr $ra

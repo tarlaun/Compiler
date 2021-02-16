@@ -111,9 +111,8 @@ __not__eq__str__:
 li $v0 , 0
 jr $ra
 __print__double__:
-l.d $f12, 0($sp)
+l.s $f12, 0($sp)
 addi $sp, $sp, 8
-cvt.s.d $f12 , $f12
 li $v0 , 2
 syscall
 jr $ra
