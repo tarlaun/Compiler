@@ -244,7 +244,7 @@ def mips_btoi():
 def mips_itob():
     code = ""
     code += mips_create_label('itob')
-    code += mips_load('$s0', '$fp', 4)
+    code += mips_load('$s0', '$sp', 0)
     code += mips_load_immidiate('$v0', 0)
     code += mips_beqz('$s0', mips_get_label('itob jump'))
     code += mips_load_immidiate('$v0', 1)
