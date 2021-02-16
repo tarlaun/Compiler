@@ -68,7 +68,7 @@ sub $sp, $sp, 8
 sw $v0, 0($sp)
 jr $ra
 __itod__:
-lw $s0, 4($fp)
+lw $s0, 0($sp)
 mtc1 $s0, $f0
 cvt.s.w $f0, $f0
 mfc1 $v0, $f0
@@ -83,13 +83,13 @@ __itob__jump__:
 addi $sp, $sp, 8
 jr $ra
 __dtoi__:
-l.s $f0, 4($fp)
-round.w.s $f0, $f0
+l.s $f0, 0($sp)
+cvt.w.s $f0, $f0
 mfc1 $v0, $f0
 addi $sp, $sp, 8
 jr $ra
 __btoi__:
-lw $v0, 4($fp)
+lw $v0, 0($sp)
 addi $sp, $sp, 8
 jr $ra
 __str__cmp__1__:

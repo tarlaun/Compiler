@@ -1,25 +1,15 @@
 #### start the code generation
 ### variable
 #### start stmt
-### symbol bool
+### symbol double
 #### EXPR
 #### EXPR
 #### const_int
 #### start stmt
 ### print_stmt
 #### val code gen
-### symbol bool
-#type: bool
-#### start stmt
-### symbol bool
-#### EXPR
-#### EXPR
-#### const_int
-#### start stmt
-### print_stmt
-#### val code gen
-### symbol bool
-#type: bool
+### symbol double
+#type: double
 .text
 .globl main
 main:
@@ -31,45 +21,22 @@ sw $t0, 0($sp)
 li $t0, 5
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-jal __itob__
+jal __itod__
 sub $sp, $sp, 8
 sw $v0, 0($sp)
 lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
+l.d $f0, 0($sp)
+s.d $f0, 0($t0)
+s.d $f0, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__bool__
-jal __print__new__line__
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-li $t0, 0
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __itob__
-sub $sp, $sp, 8
-sw $v0, 0($sp)
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__bool__
+l.d $f0, 0($t0)
+s.d $f0, 0($sp)
+jal __print__double__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
