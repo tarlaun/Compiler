@@ -107,8 +107,7 @@ class Cgen(Interpreter):
 
         function_data = Function(function_scope, ident, return_type)
         self.symbol_table.push_function(function_data)
-        code += sub_stack(8)
-        code += mips_store('$ra' , '$sp')
+        
         # set function label
         # function_data.set_label(label)
 
@@ -117,7 +116,8 @@ class Cgen(Interpreter):
             code += ('main:\n')
         else:
             code += mips_create_label(str(function_scope))
-
+        code += sub_stack(8)
+        code += mips_store('$ra' , '$sp')
         # code += self.visit(ident)
         code += self.visit(stmt_block)
         code += mips_load('$ra' , '$sp' ,0)
@@ -862,7 +862,7 @@ if __name__ == '__main__':
     code += mips_jal('main')
     code += mips_jal(mips_get_label('end'))
     code += mips_jr('$ra')
-    code += '.globl main'
+    code += '.globl main\n'
     cgen = Cgen()
     code += str(cgen.visit(tree))
     code += cgen.data.data
