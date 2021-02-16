@@ -126,7 +126,7 @@ class Cgen(Interpreter):
         self.symbol_table.pop_scope()
         if ident == 'main':
             code += mips_jr('$ra')
-        return code
+        return code + global_funcs
 
     def variable_declaration(self, tree):
         code = ''
@@ -366,118 +366,176 @@ class Cgen(Interpreter):
 
     def mul(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type.name == Type.int:
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if not op1.is_primitive or not op2.is_primitive:
+            raise TypeError('invalid Type for multiplication')
+        if op1.name == Type.bool or op2.name == Type.bool:
+            raise TypeError('invalid Type for multiplication')
+        if op1.name == Type.string or op2.name == Type.string:
+            raise TypeError('invalid Type for multiplication')
+        if op1.name != op2.name:
+            raise TypeError('invalid Type for multiplication')
+
+        if op1.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_mul('$t2', '$t1', '$t0')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
+            self._types.append(Type(Type.int))
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif op1 == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_mul_double('$f4', '$f2', '$f0')
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
+            self._types.append(Type(Type.int))
         return code
 
     def mod(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type == Type.int:
+        op2 = self._types.pop()
+        op1 = self._types.pop()
+        if op2.type != Type.int or op1.Type != Type.int:
+            raise TypeError('Invalid modulo')
+        if op2 == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_div('$t2', '$t1', '$t0')
             code += 'mfhi $t2\n'
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
-
+            self._types.append(Type.int)
         return code
 
     def div(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type == Type.int:
+        op2 = self._types.pop()
+        op1 = self._types.pop()
+        if not op1.is_primitive or not op2.is_primitive:
+            raise TypeError('invalid Type for multiplication')
+        if op1.name == Type.bool or op2.name == Type.bool:
+            raise TypeError('invalid Type for multiplication')
+        if op1.name == Type.string or op2.name == Type.string:
+            raise TypeError('invalid Type for multiplication')
+        if op1.name != op2.name:
+            raise TypeError('invalid Type for multiplication')
+        if op1 == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_div('$t2', '$t1', '$t0')
             code += 'mflo $t2\n'
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
+            self._types.append(Type(Type.int))
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif op1 == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_div_double('$f4', '$f2', '$f0')
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
+            self._types.append(Type(Type.double))
         return code
 
     def add(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type == Type.int:
+        op2 = self._types.pop()
+        op1 = self._types.pop()
+        if not op1.is_primitive or not op2.is_primitive:
+            raise TypeError('invalid Type for add')
+        if op1.name == Type.bool or op2.name == Type.bool:
+            raise TypeError('invalid Type for add')
+        if op1.name == Type.string or op2.name == Type.string:
+            raise TypeError('invalid Type for add')
+        if op1.name != op2.name:
+            raise TypeError('invalid Type for add')
+
+        if op1 == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_add('$t2', '$t0', '$t1')
             code += mips_store(src='$t2', dst='$sp', offset=8)
+            self._types.append(Type.int)
             code += add_stack(8)
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif op1 == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_add_double('$f4', '$f0', '$f2')
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
+            self._types.append(Type.double)
         return code
 
     def sub(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type == Type.int:
+        op2 = self._types.pop()
+        op1 = self._types.pop()
+        if not op1.is_primitive or not op2.is_primitive:
+            raise TypeError('invalid Type for sub')
+        if op1.name == Type.bool or op2.name == Type.bool:
+            raise TypeError('invalid Type for sub')
+        if op1.name == Type.string or op2.name == Type.string:
+            raise TypeError('invalid Type for sub')
+        if op1.name != op2.name:
+            raise TypeError('invalid Type for sub')
+
+        if op1 == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_load('$t1', '$sp', offset=8)
             code += mips_sub('$t2', '$t1', '$t0')
             code += mips_store(src='$t2', dst='$sp', offset=8)
             code += add_stack(8)
+            self._types.append(Type(Type.int))
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif operand_type == Type.double:
+        elif op1 == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_sub_double('$f4', '$f2', '$f0')
             code += mips_store_double('$f4', '$sp', offset=8)
             code += add_stack(8)
+            self._types.append(Type.double)
         return code
 
     def and_bool(self, tree):
         code = ''.join(self.visit_children(tree))
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != Type.bool or op2.name != Type.bool:
+            raise TypeError('Invalid Type for boolean action ')
         code += mips_load('$t0', '$sp')
         code += mips_load('$t0', '$sp', offset=8)
         code += mips_and('$t2', '$t0', '$t1')
         code += mips_store('$t2', '$sp', offset=8)
         code += add_stack(8)
-        self._types.pop()
-        self._types.pop()
+        
         self._types.append(Type.bool)
         return code
 
     def or_bool(self, tree):
         code = ''.join(self.visit_children(tree))
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != Type.bool or op2.name != Type.bool:
+            raise TypeError('Invalid Type for boolean action ')
         code += mips_load('$t0', '$sp')
         code += mips_load('$t0', '$sp', offset=8)
         code += mips_or('$t2', '$t0', '$t1')
         code += mips_store('$t2', '$sp', offset=8)
         code += add_stack(8)
-        self._types.pop()
-        self._types.pop()
         self._types.append(Type.bool)
         return code
 
     def eq(self, tree):
         code = ''.join(self.visit_children(tree))
-        operand_type = self._types.pop()
-        if operand_type.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
+        op1 = self._types.pop()
+        op2 = self._types.pop()
+        if op1.name != Type.bool or op2.name != Type.bool:
+            raise TypeError('Invalid Type for boolean action ')
+        if op1.name == Type.double:  # and typ.dimension == 0: #todo - no clue what operand_type dimension is!!!
             label_number = self.new_label()
             label = '__d_eq__' + label_number
             code += mips_load_double('$f0', '$sp')
@@ -491,7 +549,7 @@ class Cgen(Interpreter):
             code += label + ':\n'
             code += add_stack(8)
             code += mips_store('$t0', '$sp')
-        elif operand_type.name == Type.string:  # and typ.dimension == 0:
+        elif op1.name == Type.string:  # and typ.dimension == 0:
             code += '.text\n'
             code += mips_jump(mips_get_label('str cmp 1'))
             code += mips_store('$v0', '$sp', 0)
@@ -502,7 +560,6 @@ class Cgen(Interpreter):
             code += 'seq $t2, $t1, $t0\n'
             code += add_stack(8)
             code += mips_store('$t2', '$sp')
-        self._types.pop()
         self._types.append(Type.bool)
         return code
 
@@ -609,6 +666,9 @@ class Cgen(Interpreter):
     # operation for getting opposite of a bool value.
     def not_bool(self, tree):
         code = ''.join(self.visit_children(tree))
+        op1 = self._types.pop()
+        if op1.name != Type.bool:
+            raise TypeError('Invalid Type for boolean Action')
         label_number = self.new_label()
         label = '__not__' + label_number
         code += mips_load('$t0', '$sp')
@@ -621,13 +681,13 @@ class Cgen(Interpreter):
         code += label + ':\n'
         code += sub_stack(8)
         code += mips_store('$t1', '$sp')
-        self._types.pop()
         self._types.append(Type.bool)
         return code
 
     def neg(self, tree):
         code = ''.join(self.visit_children(tree))
         operand_type = self._types[-1]
+        
         if operand_type.name == Type.int:
             code += mips_load('$t0', '$sp')
             code += mips_sub('$t0', '$zero', '$t0')
@@ -636,6 +696,8 @@ class Cgen(Interpreter):
             code += mips_load_double('$f0', '$sp')
             code += 'ng.d $f0, $f0\n'  # special FP instruction for negating double
             code += mips_store('$f0', '$sp')
+        else:
+            raise TypeError('Invalid Type for negating')
         return code
 
     def actuals(self, tree):
