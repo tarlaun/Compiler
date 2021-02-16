@@ -741,20 +741,21 @@ class Cgen(Interpreter):
         then_code = self.visit(tree.children[1])
         hasElse = len(tree.children) != 2
         else_label = self.new_label()
-        then_label = self.new_label()
         end_label = self.new_label()
-
+        next_label = end_label
+        if hasElse:
+            next_label = else_label
         code = condition
         code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
-        code += mips_beq('$a0', 0, end_label)
+        code += mips_beq('$a0', 0, next_label)
         code += then_code
-        code += mips_jump(end_label)
         if hasElse:
+            code += mips_jump(end_label)
             else_code = self.visit(tree.children[2])
             code += '{}:\n'.format(else_label)
             code += else_code
-
+        code += '{}:\n'.format(end_label)
         return code
 
     def for_stmt(self, tree):  # todo - i have no clue
