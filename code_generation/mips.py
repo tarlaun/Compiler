@@ -330,6 +330,7 @@ def read_integer():
 def read_line():
     code = ''
     code += mips_create_label('read line')
+    code += mips_load_immidiate('$a0' , 256)
     code += mips_load_immidiate('$v0', 9)
     code += mips_syscall()
     code += mips_move('$a0', '$v0')

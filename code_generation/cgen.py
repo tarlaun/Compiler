@@ -906,6 +906,15 @@ int main(){
 }
 '''
 
+test_read_line = '''
+int main(){
+    string s;
+    s = ReadLine();
+    Print(s);
+}
+
+'''
+
 test_int_operation = '''
 int main(){
     int a;
@@ -919,7 +928,7 @@ int main(){
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_int_operation)
+    tree = get_parse_tree(test_read_line)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
