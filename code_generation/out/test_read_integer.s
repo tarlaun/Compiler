@@ -165,6 +165,7 @@ sub $sp, $sp, 8
 sw $v0, 0($sp)
 jr $ra
 __read__line__:
+li $a0 , 256
 li $v0 , 9
 syscall
 move $a0, $v0

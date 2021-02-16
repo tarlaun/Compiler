@@ -927,8 +927,16 @@ int main(){
 }
 '''
 
+test_itob = '''
+int main(){
+    double a;
+    a = itob(5);
+    Print(a);
+}
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(test_read_line)
+    tree = get_parse_tree(test_itob)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'

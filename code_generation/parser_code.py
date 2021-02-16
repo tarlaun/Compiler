@@ -77,7 +77,7 @@ expr7 : constant
     | "(" expr ")" 
     | l_value -> val 
     | call
-    l_value : IDENTIFIER -> var_addr 
+l_value : IDENTIFIER -> var_addr 
     |  expr7 "." IDENTIFIER -> var_access 
     | expr7 "[" expr "]" -> subscript
 
