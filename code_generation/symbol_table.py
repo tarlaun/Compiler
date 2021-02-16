@@ -104,7 +104,7 @@ class Scope:
 
 
 class Function:
-    def __init__(self, scope, name, return_type=None , label = None):
+    def __init__(self, scope, name, return_type=None, label=None):
         self.scope = scope
         self.name = name
         self.return_type = return_type
@@ -119,63 +119,3 @@ class Class:
 
     def set_label(self, label):
         self.label = label
-
-
-if_test_code = """
-int main() {
-    int a;
-    a = 1;
-    if(true){
-        int a;
-        a = 1;
-    }
-}
-
-void func2(){
-
-}
-
-void func3(int a){
-
-}
-"""
-
-
-if __name__ == '__main__':
-    # tree = get_parse_tree(if_test_code)
-    # SymbolTable().visit(tree)
-    None
-
-    # if __name__ == '__main__':
-    #     # THIS IS JUST FOR TEST
-    #     symbol_table = SymbolTable()
-
-    #     # root scope
-    #     root = Scope('root')
-    #     symbol_table.push_scope(root)
-
-    #     root_symbol = Symbol('root_var', 11)
-    #     root_symbol2 = Symbol('shared_var', 22)
-
-    #     symbol_table.push_symbol(root_symbol)
-    #     symbol_table.push_symbol(root_symbol2)
-
-    #     print('lookup root_var', symbol_table.lookup_symbol('root_var'))
-
-    #     # another scope
-    #     scope1 = Scope('scope1', root)
-    #     symbol_table.push_scope(scope1)
-
-    #     scope1_symbol = Symbol('shared_var', 33)
-    #     symbol_table.push_symbol(scope1_symbol)
-    #     print('lookup shared_var', symbol_table.lookup_symbol('shared_var'))
-
-    #     # another scope
-    #     scope2 = Scope('scope2', scope1)
-
-    #     symbol_table.push_scope(scope2)
-
-    #     scope2_symbol = Symbol('scope2_var', 44)
-    #     symbol_table.push_symbol(scope2_symbol)
-    #     print('lookup scope2_var', symbol_table.lookup_symbol('scope2_var'))
-    #     print('lookup shared_var', symbol_table.lookup_symbol('shared_var'))

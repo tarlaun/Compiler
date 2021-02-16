@@ -16,9 +16,11 @@ jal __print__string__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
+jr $ra
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
+jal __calc__formals__root__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra

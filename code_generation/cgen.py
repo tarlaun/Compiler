@@ -116,7 +116,7 @@ class Cgen(Interpreter):
         self.symbol_table.push_scope(function_scope)
 
         function_data = Function(scope=function_scope,
-                                 name=ident , label = '', return_type=return_type)
+                                 name=ident, label='', return_type=return_type)
         function_data.label = '__' + function_data.scope.get_id() + '__'
         self.symbol_table.push_function(function_data)
 
@@ -134,8 +134,8 @@ class Cgen(Interpreter):
         code += mips_load('$ra', '$sp', 0)
         code += add_stack(8)
         self.symbol_table.pop_scope()
-        if ident == 'main':
-            code += mips_jr('$ra')
+        # if ident == 'main':
+        code += mips_jr('$ra')
         return code
 
     def variable_declaration(self, tree):
@@ -165,14 +165,19 @@ class Cgen(Interpreter):
         for variable in tree.children:
             formal_name = variable.children[1].value
             formal_type = Type(variable.children[0])
-            code += '.data\n'
-            code += '.align 2\n'
             if formal_type.name == Type.double and formal_type.dimension == 0:
-                code += '{}: .space 8\n'.format(
-                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+                label = (str(self.symbol_table.get_current_scope()
+                             ) + "/" + formal_name).replace("/", "_")
+                self.data.add_data('{}: .space 8\n'.format(
+                    label) + mips_align(2))
             else:
-                code += '{}: .space 4\n'.format(
-                    (str(self.symbol_table.get_current_scope()) + "/" + formal_name).replace("/", "_"))
+                label = (str(self.symbol_table.get_current_scope()
+                             ) + "/" + formal_name).replace("/", "_")
+                self.data.add_data('{}: .space 4\n'.format(
+                    label) + mips_align(2))
+            symbol = Symbol(formal_name, formal_type,
+                            scope=self.symbol_table.get_current_scope(), label=label)
+            self.symbol_table.push_symbol(symbol)
         return code
 
     def type(self, tree):
@@ -242,7 +247,7 @@ class Cgen(Interpreter):
             code += mips_store('$t1', '$sp', offset=8)
             code += add_stack(8)
         code += add_stack(8)
-        
+
         self._types.pop()
         return code
 
@@ -759,7 +764,17 @@ class Cgen(Interpreter):
         return code
 
     def actuals(self, tree):
-        return 'actuals'
+        code = ''
+        # function_name = tree.children[0].value
+        # function = self.symbol_table.lookup_function(function_name)
+        # function_label = function.label
+        # code += sub_stack(8)
+        # code += mips_store('$ra', '$sp')
+        # code += mips_jump(function_label)
+        # code += mips_load('$ra', '$sp')
+        # code += add_stack(8)
+        # also handle for class
+        return code
 
     def method(self, tree):
         return 'METH'
@@ -769,7 +784,12 @@ class Cgen(Interpreter):
         function_name = tree.children[0].value
         function = self.symbol_table.lookup_function(function_name)
         function_label = function.label
-        # mips code
+        # code += sub_stack(8)
+        # code += mips_store('$ra', '$sp')
+        code += mips_jal(function_label)
+        # code += mips_load('$ra', '$sp')
+        # code += add_stack(8)
+        # also handle for class
         return code
 
     def subscript(self, tree):
@@ -825,7 +845,7 @@ class Cgen(Interpreter):
 
         init_code = self.visit(tree.children[0])
         check_code = self.visit(tree.children[1])
-        every_loop_code =  self.visit(tree.children[2])
+        every_loop_code = self.visit(tree.children[2])
         stmt_code = self.visit(tree.children[3])
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
@@ -902,7 +922,7 @@ class Cgen(Interpreter):
         current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        check_code =self.visit(tree.children[0])
+        check_code = self.visit(tree.children[0])
         stmt_code = self.visit(tree.children[1])
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
@@ -1060,12 +1080,12 @@ int main() {
 """
 
 function_test_code = '''
-void calc() {
+void calc(int a) {
     Print("Im in the FUNCTION");
 }
 
 int main() {
-    calc();
+    calc(5);
 }
 '''
 
@@ -1154,7 +1174,7 @@ int main(){
     b = 3.4;
     Print(b);
     c = a * b;
-    Print(c); 
+    Print(c);
 }
 '''
 
@@ -1197,23 +1217,24 @@ int main(){
 }
 '''
 
-test_exception = '''
+test_function_with_formal = '''
+    void calc(int a){
+        Print(a);
+    }
+
     int main(){
-        int a;
-        b = 2;
-        Print(b);
+        calc(5);
     }
 '''
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_exception)
+    tree = get_parse_tree(test_function_with_formal)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
     cgen = Cgen()
     code += str(cgen.visit(tree))
     code += cgen.data.data
-    print("CODE:")
     print(code)
     f = open("s.s", "w")
     f.write(code)

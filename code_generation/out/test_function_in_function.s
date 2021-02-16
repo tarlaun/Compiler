@@ -1,62 +1,35 @@
 #### start the code generation
 #### start stmt
-#### EXPR
-#### val code gen
-#### var name a
-### symbol Tree('type', [Token('TYPE', 'int')])
-#### val code gen
-#### var name b
-### symbol Tree('type', [Token('TYPE', 'int')])
-### variable
-### variable
-#### start stmt
-#### var name a
-### symbol int
-#### EXPR
-#### start stmt
-#### var name b
-### symbol int
-#### EXPR
-#### start stmt
 ### print_stmt
-#type: int
+#type: string
+#### start stmt
+#### EXPR
+#### start stmt
+#### EXPR
 .text
 .globl main
-__test__formals__root__:
+__calc2__formals__root__:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-lw $v0, 0($sp)
+la $t0 , str_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal __print__string__
+jal __print__new__line__
+lw $ra, 0($sp)
 addi $sp, $sp, 8
-j $ra
+jr $ra
+__calc__formals__formals__root__:
+sub $sp, $sp, 8
+sw $ra, 0($sp)
+jal __calc2__formals__root__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
 main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __read__integer__
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
-la $t0 , var_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __read__integer__
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
-jal __test__formals__root__
-jal __print__integer__
-jal __print__new__line__
+jal __calc__formals__formals__root__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
@@ -179,16 +152,7 @@ syscall
 jr $ra
 
 .data
-formals__root_a: .space 4
-.align 2
-formals__root_b: .space 4
-.align 2
-var_1:
-.align 2
-.space 4
-var_2:
-.align 2
-.space 4
+str_1: .asciiz "im in CALC2 function"
 true: 
 .align 2
  .asciiz "true"

@@ -5,6 +5,7 @@
 ### symbol int
 #### EXPR
 #### const_int
+#### EXPR
 #### val code gen
 #### var name i
 ### symbol int
@@ -16,6 +17,7 @@
 #### var name i
 ### symbol int
 #### const_int
+#### start stmt
 #### start stmt
 ### print_stmt
 #### val code gen
@@ -33,6 +35,12 @@ sw $t0, 0($sp)
 li $t0, 0
 sub $sp, $sp, 8
 sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
 j loop_label_2
 loop_label_1:
 la $t0 , var_1
@@ -51,6 +59,12 @@ lw $t0, 0($sp)
 lw $t1, 8($sp)
 add $t2, $t0, $t1
 sw $t2, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
 addi $sp, $sp, 8
 loop_label_2:
 la $t0 , var_1
