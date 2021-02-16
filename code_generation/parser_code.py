@@ -19,11 +19,14 @@ function_declaration: type IDENTIFIER "(" formals ")" stmt_block
     | "static void" IDENTIFIER "(" formals ")" stmt_block
 formals: variable ("," variable)*
     |
-class_declaration: "class" IDENTIFIER (extend)? (implement)? "{" (field)* "}"
+class_declaration: "class" IDENTIFIER "{" (field)* "}" -> class1
+    |               "class" IDENTIFIER extend "{" (field)* "}" -> class2
+    |               "class" IDENTIFIER implement "{" (field)* "}" -> class3
+    |               "class" IDENTIFIER extend implement "{" (field)* "}" -> class4
 extend: "extends" IDENTIFIER
 implement: "implements" IDENTIFIER ("," IDENTIFIER)*
-field: (access_mode)* variable_declaration
-    |  (access_mode)* function_declaration
+field: (access_mode)? variable_declaration
+    |  (access_mode)? function_declaration
 access_mode: ACCESS_MODE
 interface_declaration: "interface" IDENTIFIER "{" (prototype)* "}"
 prototype: type IDENTIFIER "(" formals ")" ";"
@@ -84,7 +87,7 @@ l_value : IDENTIFIER -> var_addr
     |  expr7 "." IDENTIFIER -> var_access 
     | expr7 "[" expr "]" -> subscript
 
-call : IDENTIFIER  "(" (actuals)? ")" 
+call : IDENTIFIER  "(" (actuals)? ")" -> simple_call
     | expr7  "."  IDENTIFIER "(" (actuals)* ")" -> method
   
 actuals :  expr (","expr)* 
@@ -101,9 +104,9 @@ converters :"itod(" expr ")" -> itod
 TYPE : "int" | "double" | "bool" | "string"
 ACCESS_MODE: "private" | "protected" | "public"
 BOOL: "true" | "false"
-INTEGER: /([-\+])?[0-9]+/
-DOUBLE: /([-\+])?([0-9])+\.([0-9])*((E|e)(\+|\-)?([0-9])+)?/
-IDENTIFIER: /(?!void|int|double|bool|string|true|false|class|interface|null|this|extends|implements|for|while|if|else|return|break|continue|new|NewArray|Print|ReadInteger|ReadLine|dtoi|itod|btoi|itob|private|protected|public)[a-zA-Z][_a-zA-Z0-9]*/
+INTEGER: /[0-9]+/
+DOUBLE: /([0-9])+\.([0-9])*((E|e)(\+|\-)?([0-9])+)?/
+IDENTIFIER :  /(?!((true)|(false)|(void)|(int)|(double)|(bool)|(string)|(class)|(interface)|(null)|(extends)|(implements)|(for)|(while)|(if)|(else)|(return)|(break)|(new)|(NewArray)|(Print)|(ReadInteger)|(ReadLine))([^_a-zA-Z0-9]|$))[a-zA-Z][_a-zA-Z0-9]*/
 STRING : /"([^"\r\n]*)"/
 INLINE_COMMENT : /\/\/.*/
 COMMENT_END : /\*\/ / 

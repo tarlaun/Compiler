@@ -53,7 +53,7 @@ class SymbolTable():
         for c in self.classes:
             if c.name == name:
                 return c
-        raise Exception(
+        raise ClassError(
             'SymbolTable Error: class does not exist in symbolTable.')
 
 
@@ -113,10 +113,41 @@ class Function:
 
 
 class Class:
-    def __init__(self, scope, name, label=None):
+    def __init__(self, scope, name, label=None , variables = [] , functions = []):
         self.scope = scope
         self.name = name
         self.label = label
+        self.variables = variables
+        self.functions = functions
+
+    def get_func_index(self , name):
+        i = 0
+        for x in self.functions:
+            if x.name == name:
+                return i
+            i = i + 1
+        return -1
+    
+    def get_function(self , name) :
+        index = self.get_func_index(name)
+        if index == -1:
+            raise SymbolTableError('invalid function for class')
+        return self.functions[index]
+
+    def get_var_index(self, name):
+        i = 0
+        for x in self.variables:
+            if x.name == name:
+                return i
+            i = i + 1
+        return -1
+    
+    def get_variable(self , name):
+        index = self.get_var_index(name)
+        if index == -1:
+            raise SymbolTableError('invalid variable for class')
+        return self.variables[index]
 
     def set_label(self, label):
         self.label = label
+

@@ -147,6 +147,9 @@ def mips_li(dst, val):
 def mips_load_byte(dst, src, offset=0):
     return ("lb " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
 
+def mips_store_byte(dst , src , offset=0):
+    return ("sb " + dst + ", " + str(offset) + "(" + src + ")" + '\n')
+
 
 def mips_beq(v1, v2, v3):
     return ("beq " + v1 + ", " + str(v2) + ", " + v3 + '\n')
@@ -167,6 +170,41 @@ def mips_syscall():
 def mips_shift_left(v1, v2, shmt):
     return ("sllv " + v1 + " , " + v2 + " , " + shmt + "\n")
 
+
+def concat_string():
+    code = ''
+    code += mips_create_label('str concat')
+   
+    code += mips_load('$t0' , '$sp' , 8)
+    code += mips_load('$t1' , '$sp' , )
+    code += add_stack(16)
+    code += mips_load_immidiate('$a0' , 256)
+    code += mips_load_immidiate('$v0',  9)
+    code += mips_syscall()
+    code += sub_stack(8)
+    code += mips_store('$v0', '$sp' , 0)
+    code += sub_stack(8)
+    code += mips_store('$ra' , '$sp' , 0)
+    code += mips_move('$a0' , '$v0')
+    code += mips_move('$a1' , '$t0')
+    code += mips_jal(mips_get_label('str copy'))
+    code += mips_move('$a1' , '$t1')
+    code += mips_jal(mips_get_label('str copy'))
+
+    code += mips_load('$ra' , '$sp')
+    code += add_stack(8)
+    code += mips_jr('$ra')
+
+    code += mips_create_label('str copy')
+    code += mips_load_byte('$t4' , '$a1' , 0)
+    code += mips_store_byte('$t4' , '$a0' , 0)
+    code += mips_beq('$t4' , '$zero' , mips_get_label('str copy end'))
+    code += mips_addi('$a0' , '$a0', 1)
+    code += mips_addi('$a1' , '$a1' ,1)
+    code += mips_jump(mips_get_label('str copy'))
+    code += mips_create_label('str copy end')
+    code += mips_jr('$ra')
+    return code
 
 def print_newline(data_obj):
     codeData = 'nw: \n'

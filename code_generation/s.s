@@ -1,180 +1,31 @@
 .text
 .globl main
-__fib__formals__root__:
+main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-la $t0 , formals__root_a
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-li $t0, 0
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-seq $t2, $t1, $t0
-addi $sp, $sp, 8
-sw $t2, 0($sp)
-la $t0 , formals__root_a
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-li $t0, 1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-seq $t2, $t1, $t0
-addi $sp, $sp, 8
-sw $t2, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-or $t2, $t0, $t1
-sw $t2, 8($sp)
-addi $sp, $sp, 8
-lw $a0, 0($sp)
-addi $sp, $sp, 8
-beq $a0, 0, ll_5
-li $t0, 1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $v0, 0($sp)
-addi $sp, $sp, 8
-j __fib__formals__root____end__
-ll_5:
-la $t0 , formals__root_a
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-la $t0 , formals__root_a
+la $t0 , str_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-li $t0, 1
+la $t0 , str_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-sub $t2, $t1, $t0
-sw $t2, 8($sp)
-addi $sp, $sp, 8
-la $t0 , formals__root_a
-lw $t1, 0($sp)
-lw $t2, 0($t0)
-sw $t2, 0($sp)
-sw $t1, 0($t0)
-jal __fib__formals__root__
-la $t0 , formals__root_a
-lw $t1, 0($sp)
-addi $sp, $sp, 8
-sw $t1, 0($t0)
-sub $sp, $sp, 8
-sw $v0, 0($sp)
-la $t0 , formals__root_a
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-li $t0, 2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-sub $t2, $t1, $t0
-sw $t2, 8($sp)
-addi $sp, $sp, 8
-la $t0 , formals__root_a
-lw $t1, 0($sp)
-lw $t2, 0($t0)
-sw $t2, 0($sp)
-sw $t1, 0($t0)
-jal __fib__formals__root__
-la $t0 , formals__root_a
-lw $t1, 0($sp)
-addi $sp, $sp, 8
-sw $t1, 0($t0)
-sub $sp, $sp, 8
-sw $v0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 8($sp)
-add $t2, $t0, $t1
-sw $t2, 8($sp)
-addi $sp, $sp, 8
+jal __str__concat__
 lw $t0, 8($sp)
 lw $t1, 0($sp)
 sw $t1, 0($t0)
 sw $t1, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
-la $t0 , str_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __print__string__
-la $t0 , formals__root_a
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
-la $t0 , str_2
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-jal __print__string__
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
 lw $t1, 0($t0)
 sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-lw $v0, 0($sp)
-addi $sp, $sp, 8
-j __fib__formals__root____end__
-__fib__formals__root____end__:
-lw $ra, 0($sp)
-addi $sp, $sp, 8
-jr $ra
-main:
-sub $sp, $sp, 8
-sw $ra, 0($sp)
-li $t0, 5
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-la $t0 , formals__root_a
-lw $t1, 0($sp)
-lw $t2, 0($t0)
-sw $t2, 0($sp)
-sw $t1, 0($t0)
-jal __fib__formals__root__
-la $t0 , formals__root_a
-lw $t1, 0($sp)
-addi $sp, $sp, 8
-sw $t1, 0($t0)
-sub $sp, $sp, 8
-sw $v0, 0($sp)
-jal __print__integer__
+jal __print__string__
 jal __print__new__line__
 __main__formals__root____end__:
 lw $ra, 0($sp)
@@ -297,15 +148,41 @@ li $a1 , 256
 li $v0 , 8
 syscall
 jr $ra
+__str__concat__:
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+addi $sp, $sp, 16
+li $a0 , 256
+li $v0 , 9
+syscall
+sub $sp, $sp, 8
+sw $v0, 0($sp)
+sub $sp, $sp, 8
+sw $ra, 0($sp)
+move $a0, $v0
+move $a1, $t0
+jal __str__copy__
+move $a1, $t1
+jal __str__copy__
+lw $ra, 0($sp)
+addi $sp, $sp, 8
+jr $ra
+__str__copy__:
+lb $t4, 0($a1)
+sb $t4, 0($a0)
+beq $t4, $zero, __str__copy__end__
+addi $a0, $a0, 1
+addi $a1, $a1, 1
+j __str__copy__
+__str__copy__end__:
+jr $ra
 
 .data
-formals__root_a: .space 4
-.align 2
 var_1:
 .align 2
 .space 4
-str_1: .asciiz "Ab "
-str_2: .asciiz " "
+str_1: .asciiz "salam "
+str_2: .asciiz "chetori? "
 true: 
 .align 2
  .asciiz "true"

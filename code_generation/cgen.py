@@ -39,11 +39,16 @@ def convertible(type1, type2):  # type1 (Derived), type2 (Base)
 class Cgen(Interpreter):
     label_counter = 0
     string_label = 0
+    class_label = 0
     stmt_block_counter = 0
     varible_label_counter = 0
     loop_counter = 0
+    object_label_counter = 0
     array_last_type = None
 
+    def new_object_label(self):
+        self.object_label_counter += 1
+        return 'object_'+str(self.object_label_counter)
 
     def new_variable_label(self):
         self.varible_label_counter += 1
@@ -65,6 +70,10 @@ class Cgen(Interpreter):
     def new_string_label(self):
         self.string_label += 1
         return 'str_'+str(self.string_label)
+    
+    def new_class_label(self):
+        self.class_label += 1
+        return '__class__'+str(self.class_label)
 
     def __init__(self):
         super().__init__()
@@ -74,6 +83,10 @@ class Cgen(Interpreter):
         self.symbol_table = SymbolTable()
         self.data = DataSection()
         self.current_function = None
+        self.class_var_counter = 0
+        self.class_func_counter = 0
+        self.class_functions = []
+        self.class_variables = []
 
     def filter_lists(self, object1):
         if isinstance(object1, list):
@@ -98,6 +111,58 @@ class Cgen(Interpreter):
         for decl in tree.children:
             code += self.visit(decl)
         return code
+    
+    def class_declaration(self, tree):
+        return ''.join(self.visit(tree))
+
+    def class1(self , tree):
+        class_name = tree.children[0]
+        try:
+            self.symbol_table.lookup_class(class_name)
+            raise Exception('Class already defined')
+        except ClassError:
+            self.class_var_counter = 0
+            self.class_func_counter = 0
+            self.class_functions = []
+            self.class_variables = []
+            class_label = self.new_class_label()
+            parent_scope = self.symbol_table.get_current_scope()
+            current_scope = Scope('__class__'+class_name , parent_scope)
+            self.symbol_table.push_scope(current_scope)
+            class_object = Class(current_scope , class_name , class_label)
+            self.symbol_table.push_class(class_object)  
+            code = ''
+            if len(tree.children) > 1:
+                for field in tree.children[1:]:
+                    code += self.visit(field)
+            class_object.functions = self.class_functions.copy()
+            class_object.variables = self.class_variables.copy()
+            self.data.add_data(class_label+':\n' + mips_align(2) + '.space 4\n')
+            code += mips_load_immidiate('$v0' , 9)
+            code += mips_load_immidiate('$a0' , self.class_func_counter * 8)
+            code += mips_syscall()
+            code += mips_load_address('$t0' , class_label)
+            code += mips_store('$v0' , '$t0' , 0)
+            code += mips_load('$t0' , '$v0' , 0)
+            offset = 0
+            for func in self.class_functions:
+                code += mips_load_address('$t1' , func.label)
+                code += mips_store('$t1' , '$t0' , offset = offset)
+                offset += 8
+            return code          
+
+    def field(self , tree):
+        code = ''
+        
+        for child in tree.children:
+            if child.data == 'function_declaration':
+                code += self.visit(child)
+                self.class_func_counter += 1
+            elif child.data == 'variable_declaration':
+                code += self.visit(child)
+                self.class_var_counter += 1
+        return code
+
 
     def function_declaration(self, tree):
         code = ''
@@ -121,6 +186,7 @@ class Cgen(Interpreter):
         function_data = Function(scope=function_scope,
                                  name=ident, label='', return_type=return_type , funnc_formals= self.func_formals)
         function_data.label = '__' + function_data.scope.get_id() + '__'
+        self.class_functions.append(function_data)
         self.symbol_table.push_function(function_data)
         self.current_function = function_data
         # set function label
@@ -157,6 +223,7 @@ class Cgen(Interpreter):
         self.data.add_data(label + ':\n' + mips_align(2) + '.space 4\n')
         symbol = Symbol(variable_name, variable_type,
                         scope=self.symbol_table.get_current_scope(), label=label)
+        self.class_variables.append(symbol)
         self.symbol_table.push_symbol(symbol)
         # mips code to push to stack ==> probably not
         return code
@@ -261,8 +328,26 @@ class Cgen(Interpreter):
         self._types.append(tp2)
         return code
 
-    def class_inst(self, tree):  # todo
-        return 'class_inst'
+    def class_inst(self, tree):  
+        class_name = tree.children[0].value
+        class_object = self.symbol_table.lookup_class(class_name)
+        data_length = 8 + 8 * (len(class_object.variables))
+        object_label = self.new_object_label()
+        self.data.add_data(object_label + ':\n' + mips_align(2)  + '.space 4\n')
+        code = ''
+        code += mips_load_address('$t0' , class_object.label)
+        code += mips_load_address('$t1' , object_label)
+        code += mips_load_immidiate('$a0' , data_length)
+        code += mips_load_immidiate('$v0' , 9)
+        code += mips_syscall()
+        code += mips_store('$v0' , '$t1')
+        code += mips_store('$t0' , '$v0')
+        code += sub_stack(8)
+        code += mips_store('$t1' , '$sp')
+        symbol = Symbol(class_name , Type(class_name) , value = None , scope =self.symbol_table.get_current_scope() , label = object_label)
+        self.symbol_table.push_symbol(symbol)
+        self._types.append(symbol.type)
+        return code
 
     def var_addr(self, tree):  # finds variable label and push it to stack
         code = ''
@@ -278,8 +363,93 @@ class Cgen(Interpreter):
         self._types.append(symbol.type)
         return code
 
-    def var_access(self, tree):  # todo
-        return 'var_access'
+    def simple_call(self, tree):
+        code = ''
+        function_name = tree.children[0].value
+        function = self.symbol_table.lookup_function(function_name)
+        function_label = function.label
+        if len(tree.children) > 1:
+            code += self.visit(tree.children[1])
+        offset = 0
+        for x in reversed(function.func_formals):
+            code += mips_load_address('$t0' , x.label)
+            code += mips_load('$t1' , '$sp' , offset)
+            code += mips_load('$t2' , '$t0' , 0)
+            code += mips_store('$t2' , '$sp' , offset)
+            code += mips_store('$t1' , '$t0' , 0)
+            offset += 8
+        code += mips_jal(function_label)
+        for x in reversed(function.func_formals):
+            code += mips_load_address('$t0' , x.label)
+            code += mips_load('$t1' , '$sp' , 0)
+            code += add_stack(8)
+            code += mips_store('$t1' , '$t0' , 0)
+        
+        if function.return_type != None:
+            self._types.append(function.return_type)
+            code += sub_stack(8)
+            code += mips_store('$v0' , '$sp' , 0)
+        return code
+
+    def method(self, tree):
+        function_name = tree.children[1].value
+        code = ''
+        code += self.visit(tree.children[0])
+        code += mips_load('$t0' , '$sp')
+        code += mips_move('$t3' , '$t0')
+        code += add_stack(8)
+        class_type = self._types.pop()
+        class_object = self.symbol_table.lookup_class(class_type.name)
+        func_index = class_object.get_func_index(function_name)
+        func = class_object.get_function(function_name)
+        if len(tree.children) > 2:
+            code += self.visit(tree.children[2])
+            # print('****\n',code , '****\n')
+        offset = 8
+        for x in class_object.variables:
+            code += mips_load('$t1' , '$t3' , offset)
+            code += mips_load_address('$t2' , x.label)
+            code += mips_store('$t1' , '$t2' , 0)
+            offset += 8
+        offset = 0
+        for x in reversed(func.func_formals):
+            code += mips_load_address('$t0' , x.label)
+            code += mips_load('$t1' , '$sp' , offset)
+            code += mips_load('$t2' , '$t0' , 0)
+            code += mips_store('$t2' , '$sp' , offset)
+            code += mips_store('$t1' , '$t0' , 0)
+            offset += 8
+        code += mips_jal(func.label)
+        for x in reversed(func.func_formals):
+            code += mips_load_address('$t0' , x.label)
+            code += mips_load('$t1' , '$sp' , 0)
+            code += add_stack(8)
+            code += mips_store('$t1' , '$t0' , 0)
+        offset = 8
+        for x in class_object.variables:
+            code += mips_load_address('$t1' , x.label)
+            code += mips_load('$t2' , '$t1' , 0)
+            code += mips_store('$t2' , '$t3' , offset)
+            offset += 8
+        if func.return_type != None:
+            self._types.append(func.return_type)
+            code += sub_stack(8)
+            code += mips_store('$v0' , '$sp' , 0)
+        return code
+
+    def var_access(self, tree): 
+        ident = tree.children[1].value
+        code = ''
+        code += self.visit(tree.children[0])
+        code += mips_load('$t0' , '$sp' )
+        class_type = self._types.pop()
+        class_object = self.symbol_table.lookup_class(class_type.name)
+        var_index = class_object.get_var_index(ident)
+        var_type = class_object.get_variable(ident).type
+        self._types.append(var_type)
+        code += mips_addi('$t1' , '$t0' , 8 * ( 1 + var_index ))
+        code += mips_store('$t1' , '$sp')
+        return  code
 
     def val(self, tree):  # todo = dimension
         print("#### val code gen")
@@ -504,7 +674,8 @@ class Cgen(Interpreter):
             self._types.append(Type(Type.double))
 
         elif op1.name == Type.string:
-            raise TypeError('invalid Type for add')
+            code += mips_jal(mips_get_label('str concat'))
+            self._types.append(Type(Type.string))
         return code
 
     def sub(self, tree):
@@ -777,36 +948,12 @@ class Cgen(Interpreter):
         code = ''
         return ''.join(self.visit_children(tree))
 
-    def method(self, tree):
-        return 'METH'
+    
 
-    def call(self, tree):
-        code = ''
-        function_name = tree.children[0].value
-        function = self.symbol_table.lookup_function(function_name)
-        function_label = function.label
-        if len(tree.children) > 1:
-            code += self.visit(tree.children[1])
-        offset = 0
-        for x in reversed(function.func_formals):
-            code += mips_load_address('$t0' , x.label)
-            code += mips_load('$t1' , '$sp' , offset)
-            code += mips_load('$t2' , '$t0' , 0)
-            code += mips_store('$t2' , '$sp' , offset)
-            code += mips_store('$t1' , '$t0' , 0)
-            offset += 8
-        code += mips_jal(function_label)
-        for x in reversed(function.func_formals):
-            code += mips_load_address('$t0' , x.label)
-            code += mips_load('$t1' , '$sp' , 0)
-            code += add_stack(8)
-            code += mips_store('$t1' , '$t0' , 0)
-        
-        if function.return_type != None:
-            self._types.append(function.return_type)
-            code += sub_stack(8)
-            code += mips_store('$v0' , '$sp' , 0)
-        return code
+    def call(self,tree):
+        return ''.join(self.visit_children(tree.children))
+
+    
 
     def subscript(self, tree):
         return 'subs_ '
@@ -1063,6 +1210,7 @@ class Cgen(Interpreter):
         code += read_char()
         code += read_integer()
         code += read_line()
+        code += concat_string()
         return code
 
 
@@ -1278,6 +1426,21 @@ test_function_recursive = '''
     }
 '''
 
+func_test = '''
+void calc2(){
+    Print("im in CALC2 function");
+}
+
+void calc(){
+    calc2();
+}
+
+int main(){
+    calc();
+}
+
+'''
+
 double_test = '''
 int main(){
     double a;
@@ -1296,8 +1459,114 @@ int main(){
 }
 '''
 
+class_test = '''
+    class A{
+        int a;
+        B y;
+        void pq(int d){
+            Print("in A " , d);
+            Print("masht1 " , a);
+            a = d;
+            Print("masht2 " , a);
+        }
+    }
+    class B{
+        int b;
+        void pp(int c){
+            Print("in B " , c);
+            b = c;
+        }
+    }
+
+    
+
+    int main(){
+        A x ;
+        x = new A;
+        x.a = 2;
+        x.y = new B;
+        x.y.b = 4;
+        x.pq(18);
+        x.y.pp(21); 
+        Print(x.a + x.y.b);
+        x.a = x.a + x.y.b * 2;
+        Print(x.a);
+    }
+
+'''
+
+indent_test = '''
+    int main(){
+        int a;
+        a = a + 1;
+        a=a-2;
+        Print(a);
+    }
+
+'''
+
+string_test =  '''
+    int main(){
+        string s;
+        string x;
+        s = "salam";
+        x = s;
+        Print(s , " " , x);
+    }
+
+
+'''
+
+test = '''
+
+class Person {
+    string name;
+    int age;
+
+    void setName(string new_name) {
+        name = new_name;
+    }
+
+    void setAge(int new_age) {
+        age = new_age;
+    }
+
+    void print() {
+        Print("Name: ", name, " Age: ", age);
+    }
+
+}
+
+int main() {
+    Person p;
+
+    string name;
+    int age;
+
+    name = ReadLine();
+    age = ReadInteger();
+
+    p = new Person;
+    p.setName(name);
+    p.setAge(age);
+
+    p.print();
+}
+
+
+'''
+
+string_concat_test = '''
+    int main(){
+        string s;
+        s = "salam " + "chetori? ";
+        Print(s);
+    }
+
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(test_function_recursive)
+    tree = get_parse_tree(string_concat_test)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
