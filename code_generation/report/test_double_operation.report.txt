@@ -1,1 +1,1 @@
-OK 
+different line count in these files! : file out/test_double_operation.out : #4 , file tests/test_double_operation.out : #1 

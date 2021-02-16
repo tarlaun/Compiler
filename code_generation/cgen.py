@@ -395,7 +395,7 @@ class Cgen(Interpreter):
             code += add_stack(8)
             self._types.append(Type(Type.int))
         # double type --- use coprocessor. $f0-$f31 registers. Only use even numbered ones.
-        elif op1 == Type.double:
+        elif op1.name == Type.double:
             code += mips_load_double('$f0', '$sp')
             code += mips_load_double('$f2', '$sp', offset=8)
             code += mips_mul_double('$f4', '$f2', '$f0')
@@ -1005,7 +1005,7 @@ int main(){
     Print(a);
     b = 3.4;
     Print(b);
-    c = a + b;
+    c = a * b;
     Print(c); 
 }
 '''
@@ -1041,7 +1041,7 @@ int main(){
 
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_if)
+    tree = get_parse_tree(test_double_operation)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
