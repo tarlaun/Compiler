@@ -735,18 +735,18 @@ class Cgen(Interpreter):
     def if_stmt(self, tree):
         print('### start if_stmt')
         condition = self.visit(tree.children[0])
+        tp = self._types.pop()
+        if tp.name != Type.bool:
+            raise TypeError('Invalid type for if condition')
         then_code = self.visit(tree.children[1])
         hasElse = len(tree.children) != 2
-        then_label = self.new_label()
         else_label = self.new_label()
         end_label = self.new_laebl()
 
-        code = mips_load('$a0', '$sp', 0)
+        code = condition
+        code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
         code += mips_beq('$a0', 0, end_label)
-        code += mips_jump(then_label)
-
-        code += '{}:\n'.format(then_label)
         code += then_code
         code += mips_jump(end_label)
         if hasElse:
