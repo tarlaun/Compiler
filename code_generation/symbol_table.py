@@ -1,6 +1,6 @@
 from lark.visitors import Interpreter
 from parser_code import get_parse_tree
-
+from Error import *
 
 class SymbolTable():
     def __init__(self):
@@ -33,7 +33,7 @@ class SymbolTable():
                     return symbol
             for parent in scope.parent_scopes:
                 search_stack.append(parent)
-        raise Exception(
+        raise SymbolTableError(
             'SymbolTable Error: symbol does not exist in symbolTable.')
 
     def push_function(self, function):

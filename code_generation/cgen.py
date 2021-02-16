@@ -1197,8 +1197,16 @@ int main(){
 }
 '''
 
+test_exception = '''
+    int main(){
+        int a;
+        b = 2;
+        Print(b);
+    }
+'''
+
 if __name__ == '__main__':
-    tree = get_parse_tree(for_test_code)
+    tree = get_parse_tree(test_exception)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'
