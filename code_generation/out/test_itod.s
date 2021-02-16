@@ -1,6 +1,7 @@
 #### start the code generation
 ### variable
 #### start stmt
+#### var name a
 ### symbol double
 #### EXPR
 #### EXPR
@@ -8,6 +9,7 @@
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name a
 ### symbol double
 #type: double
 .text

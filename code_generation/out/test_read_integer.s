@@ -2,19 +2,23 @@
 ### variable
 ### variable
 #### start stmt
+#### var name a
 ### symbol int
 #### EXPR
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name a
 ### symbol int
 #type: int
 #### start stmt
+#### var name b
 ### symbol int
 #### EXPR
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name b
 ### symbol int
 #type: int
 .text

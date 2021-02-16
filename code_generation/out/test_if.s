@@ -5,12 +5,14 @@
 #### EXPR
 #### start stmt
 #### start stmt
+#### var name a
 ### symbol int
 #### EXPR
 #### const_int
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name a
 ### symbol int
 #type: int
 .text

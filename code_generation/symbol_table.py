@@ -24,7 +24,7 @@ class SymbolTable():
         cur_scope.symbols.append(symbol)
 
     def lookup_symbol(self, name):
-        cur_scope = self.stack[len(self.stack) - 1]
+        cur_scope = self.get_current_scope()
         search_stack = [cur_scope]
         while(len(search_stack) != 0):
             scope = search_stack.pop()

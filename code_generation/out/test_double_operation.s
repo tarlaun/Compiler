@@ -3,57 +3,75 @@
 ### variable
 ### variable
 #### start stmt
+#### var name a
 ### symbol double
 #### EXPR
 #### start stmt
+#### var name b
 ### symbol double
 #### EXPR
 #### start stmt
+#### var name c
 ### symbol double
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol double
 #### val code gen
+#### var name b
 ### symbol double
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol double
 #type: double
 #### start stmt
+#### var name c
 ### symbol double
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol double
 #### val code gen
+#### var name b
 ### symbol double
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol double
 #type: double
 #### start stmt
+#### var name c
 ### symbol double
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol double
 #### val code gen
+#### var name b
 ### symbol double
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol double
 #type: double
 #### start stmt
+#### var name c
 ### symbol double
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol double
 #### val code gen
+#### var name b
 ### symbol double
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol double
 #type: double
 .text

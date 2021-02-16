@@ -3,43 +3,56 @@
 ### variable
 ### variable
 #### start stmt
+#### var name a
 ### symbol bool
 #### EXPR
 #### start stmt
+#### var name b
 ### symbol bool
 #### EXPR
 #### start stmt
+#### var name c
 ### symbol bool
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol bool
 #### val code gen
+#### var name b
 ### symbol bool
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol bool
 #type: bool
 #### start stmt
+#### var name c
 ### symbol bool
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol bool
 #### val code gen
+#### var name b
 ### symbol bool
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol bool
 #type: bool
 #### start stmt
+#### var name c
 ### symbol bool
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol bool
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol bool
 #type: bool
 .text

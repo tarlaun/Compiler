@@ -242,6 +242,7 @@ class Cgen(Interpreter):
     def var_addr(self, tree):  # finds variable label and push it to stack
         code = ''
         var_name = tree.children[0].value
+        print('#### var name', var_name)
         symbol = self.symbol_table.lookup_symbol(var_name)
         print('### symbol', str(symbol.type.name))
         label = symbol.label
@@ -775,7 +776,7 @@ class Cgen(Interpreter):
         end_label = '_end_'+check_label
 
         parent_scope = self.symbol_table.get_current_scope()
-        current_scope = Scope(parent_scope, check_label)
+        current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         symbol = Symbol('loop', 'loop', value=None,
                         scope=current_scope, label=check_label)
@@ -1038,7 +1039,7 @@ int main(){
 
 
 if __name__ == '__main__':
-    tree = get_parse_tree(test_double_operation)
+    tree = get_parse_tree(while_test_code)
     print(tree.pretty())
     code = mips_text()
     code += '.globl main\n'

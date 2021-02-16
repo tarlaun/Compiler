@@ -1,6 +1,7 @@
 #### start the code generation
 ### variable
 #### start stmt
+#### var name a
 ### symbol bool
 #### EXPR
 #### EXPR
@@ -8,9 +9,11 @@
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name a
 ### symbol bool
 #type: bool
 #### start stmt
+#### var name a
 ### symbol bool
 #### EXPR
 #### EXPR
@@ -18,6 +21,7 @@
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name a
 ### symbol bool
 #type: bool
 .text

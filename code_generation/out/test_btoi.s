@@ -1,21 +1,25 @@
 #### start the code generation
 ### variable
 #### start stmt
+#### var name a
 ### symbol int
 #### EXPR
 #### EXPR
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name a
 ### symbol int
 #type: int
 #### start stmt
+#### var name a
 ### symbol int
 #### EXPR
 #### EXPR
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name a
 ### symbol int
 #type: int
 .text

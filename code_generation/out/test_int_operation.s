@@ -3,73 +3,95 @@
 ### variable
 ### variable
 #### start stmt
+#### var name a
 ### symbol int
 #### EXPR
 #### const_int
 #### start stmt
+#### var name b
 ### symbol int
 #### EXPR
 #### const_int
 #### start stmt
+#### var name c
 ### symbol int
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol int
 #### val code gen
+#### var name b
 ### symbol int
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol int
 #type: int
 #### start stmt
+#### var name c
 ### symbol int
 #### EXPR
 #### val code gen
+#### var name b
 ### symbol int
 #### val code gen
+#### var name a
 ### symbol int
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol int
 #type: int
 #### start stmt
+#### var name c
 ### symbol int
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol int
 #### val code gen
+#### var name b
 ### symbol int
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol int
 #type: int
 #### start stmt
+#### var name c
 ### symbol int
 #### EXPR
 #### val code gen
+#### var name b
 ### symbol int
 #### val code gen
+#### var name a
 ### symbol int
 #########im in integer div
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol int
 #type: int
 #### start stmt
+#### var name c
 ### symbol int
 #### EXPR
 #### val code gen
+#### var name a
 ### symbol int
 #### val code gen
+#### var name b
 ### symbol int
 #########im in integer div
 #### start stmt
 ### print_stmt
 #### val code gen
+#### var name c
 ### symbol int
 #type: int
 .text
