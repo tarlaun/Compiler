@@ -829,6 +829,41 @@ class Cgen(Interpreter):
         self._types.append(Type(Type.bool))
         return code
 
+    def btoi(self, tree):
+        code = ''
+        code = self.visit_children(tree)[0]
+        tp = self._types.pop()
+        if tp.name != Type.bool:
+            raise TypeError('Invalid Type for btoi')
+        code += mips_jal(mips_get_label('btoi'))
+        code += sub_stack(8)
+        code += mips_store('$v0', '$sp')
+        self._types.append(Type(Type.int))
+        return code
+
+    def itod(self, tree):
+        code = self.visit_children(tree)[0]
+        tp = self._types.pop()
+        if tp.name != Type.int:
+            raise TypeError('Invalid Type for itod')
+        code += mips_jal(mips_get_label('itod'))
+        code += sub_stack(8)
+        code += mips_store('$v0', '$sp')
+        self._types.append(Type(Type.double))
+        return code
+
+    def dtoi(self, tree):
+        code = ''
+        code = self.visit_children(tree)[0]
+        tp = self._types.pop()
+        if tp.name != Type.double:
+            raise TypeError('Invalid Type for dtoi')
+        code += mips_jal(mips_get_label('dtoi'))
+        code += sub_stack(8)
+        code += mips_store('$v0', '$sp')
+        self._types.append(Type(Type.int))
+        return code
+
     def declare_global_static_funcs(self):
         code = ''
         code += mips_new_array()
