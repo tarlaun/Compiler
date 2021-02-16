@@ -1,9 +1,59 @@
 .text
 .globl main
-__<symbol_table.Scope__object__at__0x104cc8640>__:
+main:
 sub $sp, $sp, 8
 sw $ra, 0($sp)
-la $t0 , <symbol_table.Scope object at 0x104cc82e0>/a
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 0
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+j loop_label_2
+loop_label_1:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+li $t0, 1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 8($sp)
+add $t2, $t0, $t1
+sw $t2, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+loop_label_2:
+la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
@@ -15,7 +65,42 @@ addi $sp, $sp, 8
 jr $ra
 main:
 sub $sp, $sp, 8
-sw $ra, 0($sp)
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+li $t0, 1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 8($sp)
+add $t2, $t0, $t1
+sw $t2, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+j loop_label_1
+_end_loop_label_1:
+la $t0 , str_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+jal __print__string__
+jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
@@ -138,8 +223,10 @@ syscall
 jr $ra
 
 .data
-<symbol_table.Scope object at 0x104cc82e0>_a: .space 4
+var_1:
 .align 2
+.space 4
+str_1: .asciiz "done"
 true: 
 .align 2
  .asciiz "true"
