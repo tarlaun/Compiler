@@ -258,7 +258,7 @@ def mips_dtoi():
     code = ""
     code += mips_create_label('dtoi')
     code += ('l.s $f0, 0($sp)\n')
-    code += ('round.w.s $f0, $f0\n')
+    code += ('cvt.w.s $f0, $f0\n')
     code += ('mfc1 $v0, $f0\n')
     code += add_stack(8)
     code += mips_jr('$ra')
