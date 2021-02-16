@@ -1001,10 +1001,12 @@ int main(){
     double a;
     double b;
     double c;
-    a = 1.5;
+    a = 11.5;
+    Print(a);
     b = 3.4;
+    Print(b);
     c = a + b;
-    Print(c);
+    Print(c); 
 }
 '''
 

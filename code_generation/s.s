@@ -14,88 +14,76 @@ sw $t0, 0($sp)
 li $t0, 5
 sub $sp, $sp, 8
 sw $t0, 0($sp)
+li.s $f0 , 11.5
+sub $sp, $sp, 8
+s.s $f0, 0($sp)
 lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+jal __print__double__
 jal __print__new__line__
-j ll_7
-ll_6:
-la $t0 , var_1
+la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-li $t0, 6
+li.s $f0 , 3.4
 sub $sp, $sp, 8
-sw $t0, 0($sp)
+s.s $f0, 0($sp)
 lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
 addi $sp, $sp, 8
 addi $sp, $sp, 8
-la $t0 , var_1
+la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+jal __print__double__
 jal __print__new__line__
-lw $a0, 0($sp)
-addi $sp, $sp, 8
-beq $a0, 0, ll_17
-j ll_15
-ll_15:
-la $t0 , var_1
+la $t0 , var_3
 sub $sp, $sp, 8
 sw $t0, 0($sp)
-li $t0, 5
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
-jal __print__new__line__
-j ll_17
-ll_16:
-la $t0 , var_1
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-li $t0, 6
-sub $sp, $sp, 8
-sw $t0, 0($sp)
-lw $t0, 8($sp)
-lw $t1, 0($sp)
-sw $t1, 0($t0)
-sw $t1, 8($sp)
-addi $sp, $sp, 8
-addi $sp, $sp, 8
-la $t0 , var_1
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+la $t0 , var_2
 sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $t0, 0($sp)
-lw $t1, 0($t0)
-sw $t1, 0($sp)
-jal __print__integer__
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+l.s $f0, 0($sp)
+l.s $f2, 8($sp)
+add.s $f4, $f0, $f2
+s.s $f4, 8($sp)
+addi $sp, $sp, 8
+lw $t0, 8($sp)
+l.s $f0, 0($sp)
+s.s $f0, 0($t0)
+s.s $f0, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_3
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+l.s $f0, 0($t0)
+s.s $f0, 0($sp)
+jal __print__double__
 jal __print__new__line__
 lw $ra, 0($sp)
 addi $sp, $sp, 8
@@ -158,9 +146,8 @@ __not__eq__str__:
 li $v0 , 0
 jr $ra
 __print__double__:
-l.d $f12, 0($sp)
+l.s $f12, 0($sp)
 addi $sp, $sp, 8
-cvt.s.d $f12 , $f12
 li $v0 , 2
 syscall
 jr $ra
