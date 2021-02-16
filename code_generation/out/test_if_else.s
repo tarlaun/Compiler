@@ -13,6 +13,39 @@
 #### val code gen
 ### symbol int
 #type: int
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
+#### start stmt
+### start if_stmt
+#### EXPR
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
+#### start stmt
+#### start stmt
+### symbol int
+#### EXPR
+#### const_int
+#### start stmt
+### print_stmt
+#### val code gen
+### symbol int
+#type: int
 .text
 .globl main
 main:
@@ -23,7 +56,7 @@ sub $sp, $sp, 8
 sw $t0, 0($sp)
 lw $a0, 0($sp)
 addi $sp, $sp, 8
-beq $a0, 0, ll_6
+beq $a0, 0, ll_5
 la $t0 , var_1
 sub $sp, $sp, 8
 sw $t0, 0($sp)
@@ -44,7 +77,78 @@ lw $t1, 0($t0)
 sw $t1, 0($sp)
 jal __print__integer__
 jal __print__new__line__
+j ll_6
+ll_5:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 6
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
 ll_6:
+li $t0, 0
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $a0, 0($sp)
+addi $sp, $sp, 8
+beq $a0, 0, ll_14
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 5
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+j ll_15
+ll_14:
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+li $t0, 6
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 8($sp)
+lw $t1, 0($sp)
+sw $t1, 0($t0)
+sw $t1, 8($sp)
+addi $sp, $sp, 8
+addi $sp, $sp, 8
+la $t0 , var_1
+sub $sp, $sp, 8
+sw $t0, 0($sp)
+lw $t0, 0($sp)
+lw $t1, 0($t0)
+sw $t1, 0($sp)
+jal __print__integer__
+jal __print__new__line__
+ll_15:
 lw $ra, 0($sp)
 addi $sp, $sp, 8
 jr $ra
