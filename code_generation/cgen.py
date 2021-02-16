@@ -242,6 +242,7 @@ class Cgen(Interpreter):
             code += mips_store('$t1', '$sp', offset=8)
             code += add_stack(8)
         code += add_stack(8)
+        
         self._types.pop()
         return code
 
@@ -822,11 +823,10 @@ class Cgen(Interpreter):
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
 
-        init_code = self.filter_lists(self.visit_children(tree.children[0]))
-        check_code = self.filter_lists(self.visit_children(tree.children[1]))
-        every_loop_code = self.filter_lists(
-            self.visit_children(tree.children[2]))
-        stmt_code = self.filter_lists(self.visit_children(tree.children[3]))
+        init_code = self.visit(tree.children[0])
+        check_code = self.visit(tree.children[1])
+        every_loop_code =  self.visit(tree.children[2])
+        stmt_code = self.visit(tree.children[3])
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
         code = ''
@@ -851,9 +851,9 @@ class Cgen(Interpreter):
         current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        init_code = self.visit_children(tree.children[0])
-        check_code = self.visit_children(tree.children[1])
-        stmt_code = self.visit_children(tree.children[2])
+        init_code = self.visit(tree.children[0])
+        check_code = self.visit(tree.children[1])
+        stmt_code = self.visit(tree.children[2])
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
         code = ''
@@ -870,19 +870,22 @@ class Cgen(Interpreter):
 
     def for3(self, tree):
         check_label = self.new_loop_label()
+        check_label2 = self.new_loop_label()
         end_label = '_end_' + check_label
         parent_scope = self.symbol_table.get_current_scope()
         current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        check_code = self.visit_children(tree.children[0])
-        every_loop_code = self.visit_children(tree.children[1])
-        stmt_code = self.visit_children(tree.children[2])
+        check_code = (self.visit(tree.children[0]))
+        every_loop_code = (self.visit(tree.children[1]))
+        stmt_code = (self.visit(tree.children[2]))
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
         code = ''
+        code += mips_jump(check_label2)
         code += '{}:\n'.format(check_label)
         code += every_loop_code
+        code += '{}:\n'.format(check_label2)
         code += check_code
         code += mips_load('$a0', '$sp', 0)
         code += add_stack(8)
@@ -899,8 +902,8 @@ class Cgen(Interpreter):
         current_scope = Scope(check_label, parent_scope)
         self.symbol_table.push_scope(current_scope)
         self.loop_labels.append(check_label)
-        check_code =self.filter_lists(self.visit_children(tree.children[0]))
-        stmt_code = self.filter_lists(self.visit_children(tree.children[1]))
+        check_code =self.visit(tree.children[0])
+        stmt_code = self.visit(tree.children[1])
         self.symbol_table.pop_scope()
         self.loop_labels.pop()
         code = ''
@@ -1037,7 +1040,7 @@ for_test_code = """
 int main() {
   int i;
   i = 0;
-   for (; i <10;) {
+   for (i = 3; i <10;i = i + 1 ) {
      Print(i);
      i = i + 1;
   }
